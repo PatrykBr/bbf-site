@@ -40,11 +40,12 @@ export async function POST(request: Request) {
 
       // Check email-based rate limit
       await emailLimiter.consume(email.toLowerCase());
-    } catch (rateLimiterError: any) {
+    } catch (rateLimiterError: unknown) {
       console.log("Rate limit exceeded:", ip, email);
 
       // Calculate remaining cooldown time in seconds
-      const msBeforeNext = rateLimiterError.msBeforeNext || 60000;
+      const msBeforeNext =
+        (rateLimiterError as { msBeforeNext?: number }).msBeforeNext || 60000;
       const cooldownSeconds = Math.ceil(msBeforeNext / 1000);
 
       return NextResponse.json(

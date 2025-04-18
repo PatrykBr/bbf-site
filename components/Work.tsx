@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
@@ -53,6 +53,23 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 const Work = () => {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex justify-center items-center py-16">
+          <div className="animate-pulse text-center">
+            <div className="text-2xl">Loading gallery...</div>
+          </div>
+        </div>
+      }
+    >
+      <WorkContent />
+    </Suspense>
+  );
+};
+
+// Separate component for the content to use hooks that need Suspense
+const WorkContent = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<WorkImage | null>(null);
@@ -85,7 +102,7 @@ const Work = () => {
         });
       }
     }
-  }, [searchParams]);
+  }, [searchParams, posthog]);
 
   // Filter images based on selected category
   const filteredImages =

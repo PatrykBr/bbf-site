@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePostHog } from "posthog-js/react";
@@ -10,6 +10,13 @@ enum HeaderEvents {
   CONTACT_METHOD_CLICK = "contact_methods:method_click",
 }
 
+// Navigation links with their corresponding section IDs
+const NAV_LINKS = [
+  { name: "HOME", id: "Hero" },
+  { name: "WORK", id: "Work" },
+  { name: "ABOUT", id: "About" },
+] as const;
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("Hero");
@@ -18,12 +25,8 @@ const Header = () => {
   const navRefs = useRef<{ [key: string]: HTMLLIElement | null }>({});
   const posthog = usePostHog();
 
-  // Navigation links with their corresponding section IDs
-  const navLinks = [
-    { name: "HOME", id: "Hero" },
-    { name: "WORK", id: "Work" },
-    { name: "ABOUT", id: "About" },
-  ];
+  // Memoize navLinks to prevent unnecessary re-renders
+  const navLinks = useMemo(() => NAV_LINKS, []);
 
   // Handle scroll events to update header appearance and active section
   useEffect(() => {
@@ -51,7 +54,7 @@ const Header = () => {
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  }, [navLinks]);
 
   // Close mobile menu when clicking outside
   useEffect(() => {
