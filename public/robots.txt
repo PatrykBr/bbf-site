@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+Disallow: /ingest/
+
+# Sitemap location
+Sitemap: https://www.broncelfurniture.com/sitemap.xml 
