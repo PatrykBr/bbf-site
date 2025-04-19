@@ -112,9 +112,9 @@ const Header = () => {
       }`}
     >
       <div className="container mx-auto px-4 md:px-12">
-        <div className="flex w-full">
-          {/* Logo Container - Separate and spans full height */}
-          <div className="flex items-center mr-8">
+        <div className="flex w-full justify-between items-center">
+          {/* Logo Container */}
+          <div className="flex items-center">
             <Link href="/" className="flex-shrink-0">
               <Image
                 src="/logo.webp"
@@ -127,10 +127,36 @@ const Header = () => {
             </Link>
           </div>
 
-          {/* Right Content Container */}
-          <div className="flex-1 flex flex-col">
+          {/* Mobile Menu Button - Moved here to align with logo */}
+          <button
+            type="button"
+            className="md:hidden flex items-center"
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            aria-label="Toggle menu"
+          >
+            <div className="w-6 flex flex-col items-end justify-between gap-1.5">
+              <span
+                className={`block h-0.5 bg-white transition-all duration-300 ${
+                  isMenuOpen ? "w-6 transform rotate-45 translate-y-2" : "w-6"
+                }`}
+              ></span>
+              <span
+                className={`block h-0.5 bg-white transition-opacity duration-300 ${
+                  isMenuOpen ? "opacity-0" : "opacity-100 w-6"
+                }`}
+              ></span>
+              <span
+                className={`block h-0.5 bg-white transition-all duration-300 ${
+                  isMenuOpen ? "w-6 transform -rotate-45 -translate-y-2" : "w-6"
+                }`}
+              ></span>
+            </div>
+          </button>
+
+          {/* Right Content Container - Desktop Only */}
+          <div className="hidden md:flex flex-1 flex-col ml-8">
             {/* Top Section with Phone and Contact */}
-            <div className="hidden md:flex justify-end items-center text-sm">
+            <div className="flex justify-end items-center text-sm">
               <a
                 href="tel:+44 7523 706742"
                 className="flex items-center mr-6 text-white font-medium hover:text-secondary transition-colors"
@@ -163,7 +189,7 @@ const Header = () => {
             {/* Main Navigation Section */}
             <div className="flex items-center justify-end">
               {/* Desktop Navigation */}
-              <nav className="hidden md:block">
+              <nav className="block">
                 <div className="relative">
                   <ul className="flex space-x-8 items-center">
                     {navLinks.map((link) => (
@@ -194,36 +220,6 @@ const Header = () => {
                   />
                 </div>
               </nav>
-
-              {/* Mobile Menu Button */}
-              <button
-                type="button"
-                className="md:hidden flex items-center"
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                aria-label="Toggle menu"
-              >
-                <div className="w-6 flex flex-col items-end justify-between gap-1.5">
-                  <span
-                    className={`block h-0.5 bg-gray-700 transition-all duration-300 ${
-                      isMenuOpen
-                        ? "w-6 transform rotate-45 translate-y-2"
-                        : "w-6"
-                    }`}
-                  ></span>
-                  <span
-                    className={`block h-0.5 bg-gray-700 transition-opacity duration-300 ${
-                      isMenuOpen ? "opacity-0" : "opacity-100 w-6"
-                    }`}
-                  ></span>
-                  <span
-                    className={`block h-0.5 bg-gray-700 transition-all duration-300 ${
-                      isMenuOpen
-                        ? "w-6 transform -rotate-45 -translate-y-2"
-                        : "w-6"
-                    }`}
-                  ></span>
-                </div>
-              </button>
             </div>
           </div>
         </div>

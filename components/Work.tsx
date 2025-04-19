@@ -147,7 +147,9 @@ const WorkContent = () => {
   return (
     <section id="Work" className="py-16 bg-secondary">
       <div className="container mx-auto px-4">
-        <h2 className="text-4xl font-bold text-center mb-12">Our Work</h2>
+        <h2 className="text-4xl text-white font-bold text-center mb-12">
+          Our Work
+        </h2>
 
         {/* Category Filter */}
         <div className="flex flex-wrap justify-center gap-4 mb-10">

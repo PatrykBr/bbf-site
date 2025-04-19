@@ -36,16 +36,32 @@ body {
 
 .hero-background {
   background-image: url("/hero-background.webp");
-  background-attachment: fixed;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  /* Remove fixed attachment for iOS compatibility */
+  @supports (-webkit-touch-callout: none) {
+    /* iOS devices */
+    background-attachment: scroll;
+  }
+  @supports not (-webkit-touch-callout: none) {
+    /* Non-iOS devices */
+    background-attachment: fixed;
+  }
 }
 
 .about-background {
   background-image: url("/about-background.webp");
-  background-attachment: fixed;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  /* Remove fixed attachment for iOS compatibility */
+  @supports (-webkit-touch-callout: none) {
+    /* iOS devices */
+    background-attachment: scroll;
+  }
+  @supports not (-webkit-touch-callout: none) {
+    /* Non-iOS devices */
+    background-attachment: fixed;
+  }
 }

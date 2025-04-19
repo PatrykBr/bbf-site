@@ -167,43 +167,43 @@ const Contact = () => {
           {/* Contact Info - 2 columns */}
           <div className="lg:col-span-2 flex flex-col space-y-8 order-1 lg:order-1 lg:h-full">
             {/* Contact Methods Card */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-xl p-8 transform hover:scale-[1.02] transition-transform duration-300 border-l-4 border-secondary relative overflow-hidden">
-              <h3 className="text-2xl font-bold mb-6 text-primary pb-3 relative">
+            <div className="bg-white/90 backdrop-blur-sm rounded-lg shadow-xl p-6 sm:p-8 transform hover:scale-[1.02] transition-transform duration-300 border-l-4 border-secondary relative overflow-hidden">
+              <h3 className="text-xl sm:text-2xl font-bold mb-6 text-primary pb-3 relative">
                 Contact Methods
                 <span className="absolute bottom-0 left-0 w-16 h-0.5 bg-secondary"></span>
                 <span className="absolute bottom-0 left-16 w-full h-0.5 bg-primary/10"></span>
               </h3>
 
-              <div className="space-y-8 relative z-10">
+              <div className="space-y-6 sm:space-y-8 relative z-10">
                 {/* Phone Contact */}
                 <a
                   href="tel:+44 7523 706742"
                   className="block cursor-pointer"
                   onClick={() => handleContactMethodClick("phone")}
                 >
-                  <div className="flex items-start group hover:bg-secondary/5 p-3 -m-3 rounded-lg transition-colors duration-300">
-                    <div className="flex-shrink-0 h-14 w-14 flex items-center justify-center rounded-xl shadow-sm bg-white group-hover:shadow-md transition-all duration-300">
+                  <div className="flex items-start group hover:bg-secondary/5 p-2 sm:p-3 -m-2 sm:-m-3 rounded-lg transition-colors duration-300">
+                    <div className="flex-shrink-0 h-12 w-12 sm:h-14 sm:w-14 flex items-center justify-center rounded-xl shadow-sm bg-white group-hover:shadow-md transition-all duration-300">
                       <Image
                         src="/phone.webp"
                         alt="Phone Icon"
-                        width={30}
-                        height={30}
+                        width={25}
+                        height={25}
                         className="object-contain transition-all duration-300 group-hover:brightness-110"
                       />
                     </div>
-                    <div className="ml-4">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-base font-medium text-dark-gray group-hover:text-primary transition-colors duration-300">
+                    <div className="ml-3 sm:ml-4 flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-2">
+                        <h4 className="text-sm sm:text-base font-medium text-dark-gray group-hover:text-primary transition-colors duration-300">
                           Phone
                         </h4>
-                        <span className="text-xs font-medium text-primary border border-primary px-2 py-0.5 rounded-full">
+                        <span className="text-xs font-medium text-primary border border-primary px-2 py-0.5 rounded-full whitespace-nowrap">
                           Preferred
                         </span>
                       </div>
-                      <div className="text-lg font-semibold text-primary group-hover:translate-x-1 inline-block transition-transform duration-300 mt-1">
+                      <div className="text-base sm:text-lg font-semibold text-primary group-hover:translate-x-1 inline-block transition-transform duration-300 mt-1">
                         +44 7523 706742
                       </div>
-                      <p className="text-sm text-dark-gray/70 mt-1 group-hover:text-dark-gray/90 transition-colors duration-300">
+                      <p className="text-xs sm:text-sm text-dark-gray/70 mt-1 group-hover:text-dark-gray/90 transition-colors duration-300">
                         Available Monday-Friday, 9am-6pm
                       </p>
                     </div>
@@ -216,24 +216,24 @@ const Contact = () => {
                   className="block cursor-pointer"
                   onClick={() => handleContactMethodClick("email")}
                 >
-                  <div className="flex items-start group hover:bg-secondary/5 p-3 -m-3 rounded-lg transition-colors duration-300">
-                    <div className="flex-shrink-0 h-14 w-14 flex items-center justify-center rounded-xl shadow-sm bg-white group-hover:shadow-md transition-all duration-300">
+                  <div className="flex items-start group hover:bg-secondary/5 p-2 sm:p-3 -m-2 sm:-m-3 rounded-lg transition-colors duration-300">
+                    <div className="flex-shrink-0 h-12 w-12 sm:h-14 sm:w-14 flex items-center justify-center rounded-xl shadow-sm bg-white group-hover:shadow-md transition-all duration-300">
                       <Image
                         src="/email.webp"
                         alt="Email Icon"
-                        width={30}
-                        height={30}
+                        width={25}
+                        height={25}
                         className="object-contain transition-all duration-300 group-hover:brightness-110"
                       />
                     </div>
-                    <div className="ml-4">
-                      <h4 className="text-base font-medium text-dark-gray group-hover:text-primary transition-colors duration-300">
+                    <div className="ml-3 sm:ml-4 flex-1 min-w-0">
+                      <h4 className="text-sm sm:text-base font-medium text-dark-gray group-hover:text-primary transition-colors duration-300">
                         Email
                       </h4>
-                      <div className="text-lg font-semibold text-primary group-hover:translate-x-1 inline-block transition-transform duration-300 mt-1 break-words">
+                      <div className="text-base sm:text-lg font-semibold text-primary group-hover:translate-x-1 inline-block transition-transform duration-300 mt-1 break-all">
                         broncelfurniture@gmail.com
                       </div>
-                      <p className="text-sm text-dark-gray/70 mt-1 group-hover:text-dark-gray/90 transition-colors duration-300">
+                      <p className="text-xs sm:text-sm text-dark-gray/70 mt-1 group-hover:text-dark-gray/90 transition-colors duration-300">
                         We respond to emails within 24 hours
                       </p>
                     </div>
@@ -248,24 +248,24 @@ const Contact = () => {
                   className="block cursor-pointer"
                   onClick={() => handleContactMethodClick("facebook")}
                 >
-                  <div className="flex items-start group hover:bg-secondary/5 p-3 -m-3 rounded-lg transition-colors duration-300">
-                    <div className="flex-shrink-0 h-14 w-14 flex items-center justify-center rounded-xl shadow-sm bg-white group-hover:shadow-md transition-all duration-300">
+                  <div className="flex items-start group hover:bg-secondary/5 p-2 sm:p-3 -m-2 sm:-m-3 rounded-lg transition-colors duration-300">
+                    <div className="flex-shrink-0 h-12 w-12 sm:h-14 sm:w-14 flex items-center justify-center rounded-xl shadow-sm bg-white group-hover:shadow-md transition-all duration-300">
                       <Image
                         src="/facebook.webp"
                         alt="Facebook Icon"
-                        width={30}
-                        height={30}
+                        width={25}
+                        height={25}
                         className="object-contain transition-all duration-300 group-hover:brightness-110"
                       />
                     </div>
-                    <div className="ml-4">
-                      <h4 className="text-base font-medium text-dark-gray group-hover:text-primary transition-colors duration-300">
+                    <div className="ml-3 sm:ml-4 flex-1 min-w-0">
+                      <h4 className="text-sm sm:text-base font-medium text-dark-gray group-hover:text-primary transition-colors duration-300">
                         Facebook
                       </h4>
-                      <div className="text-lg font-semibold text-primary group-hover:translate-x-1 inline-block transition-transform duration-300 mt-1">
+                      <div className="text-base sm:text-lg font-semibold text-primary group-hover:translate-x-1 inline-block transition-transform duration-300 mt-1 truncate">
                         Bespoke Broncel Furniture
                       </div>
-                      <p className="text-sm text-dark-gray/70 mt-1 group-hover:text-dark-gray/90 transition-colors duration-300">
+                      <p className="text-xs sm:text-sm text-dark-gray/70 mt-1 group-hover:text-dark-gray/90 transition-colors duration-300">
                         Follow us for latest updates and inspiration
                       </p>
                     </div>
