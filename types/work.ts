@@ -4,7 +4,7 @@ export const categories = [
   "Featured",
   "Wardrobes",
   "Kitchens",
-  "Others",
+  // "Others",
 ] as const;
 
 // Define view modes

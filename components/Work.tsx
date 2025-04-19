@@ -87,6 +87,8 @@ const WorkContent = () => {
       if (image) {
         setSelectedImage(image);
         setModalOpen(true);
+        // Disable scrolling when modal is opened via URL
+        document.body.style.overflow = "hidden";
         setSelectedCategory(image.category);
         posthog?.capture(WorkEvents.PHOTO_VIEW, {
           category: image.category,
@@ -108,6 +110,8 @@ const WorkContent = () => {
   // Handle modal close
   const handleModalClose = () => {
     setModalOpen(false);
+    // Re-enable scrolling
+    document.body.style.overflow = "auto";
     // Clear the image parameter from URL without causing a refresh
     const url = new URL(window.location.toString());
     url.searchParams.delete("image");
@@ -125,6 +129,8 @@ const WorkContent = () => {
 
     setSelectedImage(image);
     setModalOpen(true);
+    // Disable scrolling
+    document.body.style.overflow = "hidden";
     // Update URL without causing a refresh
     const url = new URL(window.location.toString());
     url.searchParams.set("image", image.slug);
@@ -192,6 +198,9 @@ const WorkContent = () => {
           >
             Featured Work
           </button>
+          <div className="bg-white">
+            <div className="w-px h-full bg-gray-300"></div>
+          </div>
           <button
             onClick={() => setSelectedCategory("All")}
             className={`px-8 py-3 rounded-r-full transition-all text-lg ${

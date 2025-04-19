@@ -157,11 +157,11 @@ export default function Footer() {
               <li>
                 <CategoryLink category="Kitchens">Custom Kitchens</CategoryLink>
               </li>
-              <li>
+              {/* <li>
                 <CategoryLink category="Others">
                   Other Custom Pieces
                 </CategoryLink>
-              </li>
+              </li> */}
             </ul>
           </div>
         </div>
