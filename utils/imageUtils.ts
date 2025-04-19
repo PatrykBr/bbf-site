@@ -7,16 +7,44 @@ export const getFileName = (src: string): string => {
   return fullFileName.split(".")[0];
 };
 
+// Convert a string to kebab case
+export const toKebabCase = (str: string): string => {
+  return str
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+};
+
+// Generate a unique URL-safe name for an image
+export const generateUniqueImageName = (
+  name: string,
+  existingNames: Set<string>
+): string => {
+  const baseKebabName = toKebabCase(name);
+  let uniqueName = baseKebabName;
+  let counter = 1;
+
+  while (existingNames.has(uniqueName)) {
+    uniqueName = `${baseKebabName}-${String(counter).padStart(3, "0")}`;
+    counter++;
+  }
+
+  return uniqueName;
+};
+
 // Generate slugs for images based on category and name
 export const processImages = (images: WorkImage[]): WorkImage[] => {
-  return images.map((img, index) => {
-    // Create a slug from category and index (e.g., "wardrobes-1")
-    const categorySlug = img.category.toLowerCase();
-    const slug = `${categorySlug}-${index + 1}`;
+  const existingNames = new Set<string>();
 
+  return images.map((img) => {
+    // Generate a unique URL-safe name for the slug
+    const uniqueName = generateUniqueImageName(img.name, existingNames);
+    existingNames.add(uniqueName);
+
+    // Keep the original src path unchanged for file location
     return {
       ...img,
-      slug,
+      slug: uniqueName,
     };
   });
 };

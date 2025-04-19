@@ -1,16 +1,56 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+
+// Create a client component for category links
+const CategoryLink = ({
+  category,
+  children,
+}: {
+  category: string;
+  children: React.ReactNode;
+}) => {
+  const handleClick = () => {
+    // First navigate to the work section
+    const workSection = document.getElementById("work");
+    workSection?.scrollIntoView({ behavior: "smooth" });
+
+    // Wait for scroll to complete before updating category
+    setTimeout(() => {
+      // Update URL with category
+      const url = new URL(window.location.toString());
+      url.searchParams.set("category", category);
+      window.history.replaceState({}, "", url);
+
+      // Click the category button
+      const button = document.querySelector(
+        `button[data-category="${category}"]`
+      ) as HTMLButtonElement;
+      button?.click();
+    }, 100);
+  };
+
+  return (
+    <button
+      onClick={handleClick}
+      className="text-white/80 hover:text-white transition-colors block py-0.5 text-left w-full"
+    >
+      {children}
+    </button>
+  );
+};
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="bg-primary text-white py-8">
-      <div className="container mx-auto px-4">
+    <footer className="bg-primary text-white py-8 md:py-10">
+      <div className="container mx-auto px-6 md:px-8">
         {/* Main Footer Content */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mb-6">
           {/* Company Info */}
-          <div>
+          <div className="space-y-3">
             <h2 className="text-xl font-bold mb-3">
               Bespoke Broncel Furniture
             </h2>
@@ -88,10 +128,10 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="#portfolio"
+                  href="#work"
                   className="text-white/80 hover:text-white transition-colors block py-0.5"
                 >
-                  Portfolio
+                  Work
                 </a>
               </li>
               <li>
@@ -110,35 +150,24 @@ export default function Footer() {
             <h3 className="text-lg font-semibold mb-3">Services</h3>
             <ul className="space-y-1">
               <li>
-                <a
-                  href="#portfolio"
-                  className="text-white/80 hover:text-white transition-colors block py-0.5"
-                >
+                <CategoryLink category="Wardrobes">
                   Bespoke Wardrobes
-                </a>
+                </CategoryLink>
               </li>
               <li>
-                <a
-                  href="#portfolio"
-                  className="text-white/80 hover:text-white transition-colors block py-0.5"
-                >
-                  Custom Kitchens
-                </a>
+                <CategoryLink category="Kitchens">Custom Kitchens</CategoryLink>
               </li>
               <li>
-                <a
-                  href="#portfolio"
-                  className="text-white/80 hover:text-white transition-colors block py-0.5"
-                >
+                <CategoryLink category="Others">
                   Other Custom Pieces
-                </a>
+                </CategoryLink>
               </li>
             </ul>
           </div>
         </div>
 
         {/* Bottom Footer */}
-        <div className="border-t border-white/20 pt-4 flex flex-col md:flex-row justify-between items-center">
+        <div className="border-t border-white/20 pt-4 mt-4 flex flex-col md:flex-row justify-between items-center">
           <p className="text-white/70 text-sm mb-4 md:mb-0">
             &copy; {currentYear} Bespoke Broncel Furniture. All rights reserved.
           </p>
@@ -146,7 +175,7 @@ export default function Footer() {
           {/* Social Media - Only include if exists */}
           <div className="flex space-x-4">
             <a
-              href="https://facebook.com/bespokebroncelfurniture"
+              href="https://www.facebook.com/broncelfurniture/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-white/70 hover:text-white transition-colors"

@@ -151,7 +151,7 @@ const Contact = () => {
 
   return (
     <section
-      id="Contact"
+      id="contact"
       className="bg-secondary py-20 relative overflow-hidden"
     >
       <div className="container mx-auto px-6 md:px-8 lg:px-16 relative z-10">
@@ -277,7 +277,7 @@ const Contact = () => {
             {/* Studio Image Section */}
             <div className="relative flex-grow rounded-lg overflow-hidden shadow-xl hidden lg:flex">
               <Image
-                src="/workshop.jpg"
+                src="/workshop.webp"
                 alt="Woodworking Workshop"
                 fill
                 className="object-cover"

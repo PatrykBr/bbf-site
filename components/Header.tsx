@@ -12,14 +12,14 @@ enum HeaderEvents {
 
 // Navigation links with their corresponding section IDs
 const NAV_LINKS = [
-  { name: "HOME", id: "Hero" },
-  { name: "WORK", id: "Work" },
-  { name: "ABOUT", id: "About" },
+  { name: "HOME", id: "hero" },
+  { name: "WORK", id: "work" },
+  { name: "ABOUT", id: "about" },
 ] as const;
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("Hero");
+  const [activeSection, setActiveSection] = useState("hero");
   const [scrolled, setScrolled] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
   const navRefs = useRef<{ [key: string]: HTMLLIElement | null }>({});

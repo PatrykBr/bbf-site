@@ -1,17 +1,27 @@
 // Define the categories
-export const categories = ["All", "Wardrobes", "Kitchens", "Others"] as const;
+export const categories = [
+  "All",
+  "Featured",
+  "Wardrobes",
+  "Kitchens",
+  "Others",
+] as const;
 
-// Define category type
-export type Category = (typeof categories)[number] | "All";
+// Define view modes
+export type ViewMode = "Featured" | "All";
+
+// Define category type (excluding Featured since it's a view mode)
+export type Category = Exclude<(typeof categories)[number], "Featured" | "All">;
 
 // Define image interface
 export interface WorkImage {
   id?: number;
   src: string;
   name: string;
-  category: Exclude<Category, "All">;
+  category: Category;
   aspectRatio: "landscape" | "portrait";
   slug?: string;
+  featured?: boolean;
 }
 
 // Define image dimensions interface

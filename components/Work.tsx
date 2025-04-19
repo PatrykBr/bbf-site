@@ -18,6 +18,7 @@ import {
 } from "../utils/imageUtils";
 import { imageData } from "../data/images";
 import ImageModal from "./ImageModal";
+import { generateGalleryMetadata } from "../lib/seo/metadata";
 
 // Dynamically import the Masonry component to avoid hydration mismatch
 const ResponsiveMasonry = dynamic(
@@ -32,24 +33,7 @@ const Masonry = dynamic(
 
 // Add metadata generation for the gallery
 export async function generateMetadata(): Promise<Metadata> {
-  return {
-    other: {
-      "json-ld": JSON.stringify({
-        "@context": "https://schema.org",
-        "@type": "ImageGallery",
-        name: "Bespoke Broncel Furniture Gallery",
-        description:
-          "Gallery of our custom-made furniture including kitchens, wardrobes, and other bespoke pieces",
-        image: imageData.map((img) => ({
-          "@type": "ImageObject",
-          contentUrl: img.src,
-          name: img.name,
-          description: `${img.name} - ${img.category} by Bespoke Broncel Furniture`,
-          caption: img.category,
-        })),
-      }),
-    },
-  };
+  return generateGalleryMetadata();
 }
 
 const Work = () => {
@@ -70,7 +54,7 @@ const Work = () => {
 
 // Separate component for the content to use hooks that need Suspense
 const WorkContent = () => {
-  const [selectedCategory, setSelectedCategory] = useState("All");
+  const [selectedCategory, setSelectedCategory] = useState("Featured");
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<WorkImage | null>(null);
   const [images, setImages] = useState<WorkImage[]>([]);
@@ -87,8 +71,17 @@ const WorkContent = () => {
     const arrangedImages = arrangeImagesForVisualFlow(processedImageData);
     setImages(arrangedImages);
 
-    // Check URL parameters for direct image viewing
+    // Check URL parameters for direct image viewing or category selection
     const imageSlug = searchParams.get("image");
+    const category = searchParams.get("category");
+
+    if (
+      category &&
+      categories.includes(category as (typeof categories)[number])
+    ) {
+      setSelectedCategory(category as (typeof categories)[number]);
+    }
+
     if (imageSlug) {
       const image = arrangedImages.find((img) => img.slug === imageSlug);
       if (image) {
@@ -106,14 +99,36 @@ const WorkContent = () => {
 
   // Filter images based on selected category
   const filteredImages =
-    selectedCategory === "All"
+    selectedCategory === "Featured"
+      ? images.filter((img) => img.featured)
+      : selectedCategory === "All"
       ? images
       : images.filter((img) => img.category === selectedCategory);
 
+  // Handle modal close
+  const handleModalClose = () => {
+    setModalOpen(false);
+    // Clear the image parameter from URL without causing a refresh
+    const url = new URL(window.location.toString());
+    url.searchParams.delete("image");
+    window.history.replaceState({}, "", url);
+
+    // Scroll to Work section after a brief delay to ensure modal transition is complete
+    setTimeout(() => {
+      document.getElementById("Work")?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
+
   // Handle image click
   const handleImageClick = (image: WorkImage) => {
+    if (!image.slug) return;
+
     setSelectedImage(image);
     setModalOpen(true);
+    // Update URL without causing a refresh
+    const url = new URL(window.location.toString());
+    url.searchParams.set("image", image.slug);
+    window.history.replaceState({}, "", url);
     posthog?.capture(WorkEvents.PHOTO_VIEW, {
       category: image.category,
       file_name: getFileName(image.src),
@@ -123,50 +138,99 @@ const WorkContent = () => {
 
   // Get next image
   const getNextImage = () => {
-    if (!selectedImage) return;
+    if (!selectedImage?.slug) return;
 
     const currentIndex = filteredImages.findIndex(
       (img) => img.slug === selectedImage.slug
     );
     const nextIndex = (currentIndex + 1) % filteredImages.length;
-    setSelectedImage(filteredImages[nextIndex]);
+    const nextImage = filteredImages[nextIndex];
+    if (!nextImage.slug) return;
+
+    setSelectedImage(nextImage);
+    // Update URL without causing a refresh
+    const url = new URL(window.location.toString());
+    url.searchParams.set("image", nextImage.slug);
+    window.history.replaceState({}, "", url);
   };
 
   // Get previous image
   const getPrevImage = () => {
-    if (!selectedImage) return;
+    if (!selectedImage?.slug) return;
 
     const currentIndex = filteredImages.findIndex(
       (img) => img.slug === selectedImage.slug
     );
     const prevIndex =
       (currentIndex - 1 + filteredImages.length) % filteredImages.length;
-    setSelectedImage(filteredImages[prevIndex]);
+    const prevImage = filteredImages[prevIndex];
+    if (!prevImage.slug) return;
+
+    setSelectedImage(prevImage);
+    // Update URL without causing a refresh
+    const url = new URL(window.location.toString());
+    url.searchParams.set("image", prevImage.slug);
+    window.history.replaceState({}, "", url);
   };
 
   return (
-    <section id="Work" className="py-16 bg-secondary">
+    <section id="work" className="py-16 bg-secondary">
       <div className="container mx-auto px-4">
         <h2 className="text-4xl text-white font-bold text-center mb-12">
           Our Work
         </h2>
 
-        {/* Category Filter */}
-        <div className="flex flex-wrap justify-center gap-4 mb-10">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setSelectedCategory(category)}
-              className={`px-6 py-2 rounded-full transition-all ${
-                selectedCategory === category
-                  ? "bg-primary text-white"
-                  : "bg-gray-100 hover:bg-gray-200"
-              }`}
-            >
-              {category}
-            </button>
-          ))}
+        {/* Featured/View All Toggle */}
+        <div className="flex justify-center mb-6">
+          <button
+            onClick={() => setSelectedCategory("Featured")}
+            className={`px-8 py-3 rounded-l-full transition-all text-lg ${
+              selectedCategory === "Featured"
+                ? "bg-primary text-white"
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
+          >
+            Featured Work
+          </button>
+          <button
+            onClick={() => setSelectedCategory("All")}
+            className={`px-8 py-3 rounded-r-full transition-all text-lg ${
+              selectedCategory === "All"
+                ? "bg-primary text-white"
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
+          >
+            View All
+          </button>
         </div>
+
+        {/* Category Filter - Only shown when viewing all */}
+        {selectedCategory !== "Featured" && (
+          <div className="flex flex-wrap justify-center gap-4 mb-10">
+            {categories
+              .filter((cat) => !["All", "Featured"].includes(cat))
+              .map((category) => (
+                <button
+                  key={category}
+                  data-category={category}
+                  onClick={() => {
+                    setSelectedCategory(category);
+                    // Update URL without causing a refresh
+                    const url = new URL(window.location.toString());
+                    url.searchParams.set("category", category);
+                    window.history.replaceState({}, "", url);
+                  }}
+                  className={`px-6 py-2 rounded-full transition-all ${
+                    selectedCategory === category
+                      ? "bg-primary text-white"
+                      : "bg-gray-100 hover:bg-gray-200"
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+          </div>
+        )}
 
         {/* Image Gallery - Only rendered client-side */}
         {isClient && images.length > 0 ? (
@@ -211,6 +275,7 @@ const WorkContent = () => {
                           loading={
                             filteredImages.indexOf(image) < 6 ? "eager" : "lazy"
                           }
+                          title={image.name}
                         />
                       </div>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end">
@@ -219,6 +284,11 @@ const WorkContent = () => {
                           <p className="text-sm opacity-90 mt-1">
                             {image.category}
                           </p>
+                          <meta itemProp="name" content={image.name} />
+                          <meta
+                            itemProp="description"
+                            content={`${image.name} - ${image.category} custom furniture by Bespoke Broncel Furniture`}
+                          />
                         </div>
                       </div>
                     </div>
@@ -238,10 +308,33 @@ const WorkContent = () => {
         {/* Image Modal */}
         <ImageModal
           isOpen={modalOpen}
-          onClose={() => setModalOpen(false)}
+          onClose={handleModalClose}
           image={selectedImage!}
           onNext={getNextImage}
           onPrev={getPrevImage}
+          prevImage={
+            selectedImage
+              ? filteredImages[
+                  (filteredImages.findIndex(
+                    (img) => img.slug === selectedImage.slug
+                  ) -
+                    1 +
+                    filteredImages.length) %
+                    filteredImages.length
+                ]
+              : undefined
+          }
+          nextImage={
+            selectedImage
+              ? filteredImages[
+                  (filteredImages.findIndex(
+                    (img) => img.slug === selectedImage.slug
+                  ) +
+                    1) %
+                    filteredImages.length
+                ]
+              : undefined
+          }
         />
       </div>
     </section>

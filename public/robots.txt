@@ -1,8 +1,28 @@
+# Allow all crawlers
 User-agent: *
 Allow: /
+Allow: /work
+Allow: /about
+Allow: /contact
+Allow: /*.webp$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.png$
+
+# Specify crawl delay to prevent server overload
+Crawl-delay: 1
+
+# Point to sitemap
+Sitemap: https://bespokebroncelfurniture.com/sitemap.xml
+
+# Image-specific directives
+User-agent: Googlebot-Image
+Allow: /
+Allow: /*.webp$
 Disallow: /api/
 Disallow: /_next/
-Disallow: /ingest/
 
-# Sitemap location
-Sitemap: https://www.broncelfurniture.com/sitemap.xml 
+# Prevent crawling of development/internal paths
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/ 

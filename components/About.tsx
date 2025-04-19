@@ -2,7 +2,7 @@ import React from "react";
 
 const About = () => {
   return (
-    <div id="About" className="relative bg-primary h-screen overflow-hidden">
+    <div id="about" className="relative bg-primary h-screen overflow-hidden">
       <div className="absolute inset-0 py-32 sm:p-8 md:p-12">
         <div className="w-full h-full bg-cover bg-center bg-no-repeat about-background brightness-50">
           <div className="absolute inset-0 backdrop-filter backdrop-blur-xs" />
