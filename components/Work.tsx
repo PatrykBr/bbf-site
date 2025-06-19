@@ -89,7 +89,8 @@ const WorkContent = () => {
         setModalOpen(true);
         // Disable scrolling when modal is opened via URL
         document.body.style.overflow = "hidden";
-        setSelectedCategory(image.category);
+        // Don't change category when opening from URL - keep current selected category
+        // setSelectedCategory(image.category);
         posthog?.capture(WorkEvents.PHOTO_VIEW, {
           category: image.category,
           file_name: getFileName(image.src),
@@ -135,6 +136,7 @@ const WorkContent = () => {
     const url = new URL(window.location.toString());
     url.searchParams.set("image", image.slug);
     window.history.replaceState({}, "", url);
+
     posthog?.capture(WorkEvents.PHOTO_VIEW, {
       category: image.category,
       file_name: getFileName(image.src),
@@ -144,12 +146,15 @@ const WorkContent = () => {
 
   // Get next image
   const getNextImage = () => {
-    if (!selectedImage?.slug) return;
+    if (!selectedImage?.slug || filteredImages.length === 0) return;
 
     const currentIndex = filteredImages.findIndex(
       (img) => img.slug === selectedImage.slug
     );
-    const nextIndex = (currentIndex + 1) % filteredImages.length;
+
+    // If current image is not in filtered list (edge case), start from beginning
+    const safeCurrentIndex = currentIndex === -1 ? 0 : currentIndex;
+    const nextIndex = (safeCurrentIndex + 1) % filteredImages.length;
     const nextImage = filteredImages[nextIndex];
     if (!nextImage.slug) return;
 
@@ -162,13 +167,16 @@ const WorkContent = () => {
 
   // Get previous image
   const getPrevImage = () => {
-    if (!selectedImage?.slug) return;
+    if (!selectedImage?.slug || filteredImages.length === 0) return;
 
     const currentIndex = filteredImages.findIndex(
       (img) => img.slug === selectedImage.slug
     );
+
+    // If current image is not in filtered list (edge case), start from end
+    const safeCurrentIndex = currentIndex === -1 ? 0 : currentIndex;
     const prevIndex =
-      (currentIndex - 1 + filteredImages.length) % filteredImages.length;
+      (safeCurrentIndex - 1 + filteredImages.length) % filteredImages.length;
     const prevImage = filteredImages[prevIndex];
     if (!prevImage.slug) return;
 
@@ -189,27 +197,29 @@ const WorkContent = () => {
         {/* Featured/View All Toggle */}
         <div className="flex justify-center mb-6">
           <button
-            onClick={() => setSelectedCategory("Featured")}
-            className={`px-8 py-3 rounded-l-full transition-all text-lg ${
-              selectedCategory === "Featured"
-                ? "bg-primary text-white"
-                : "bg-gray-100 hover:bg-gray-200"
-            }`}
-          >
-            Featured Work
-          </button>
-          <div className="bg-white">
-            <div className="w-px h-full bg-gray-300"></div>
-          </div>
-          <button
             onClick={() => setSelectedCategory("All")}
-            className={`px-8 py-3 rounded-r-full transition-all text-lg ${
+            className={`px-4 sm:px-8 py-3 rounded-l-full transition-all text-sm sm:text-lg cursor-pointer ${
               selectedCategory === "All"
                 ? "bg-primary text-white"
                 : "bg-gray-100 hover:bg-gray-200"
             }`}
           >
-            View All
+            <span className="sm:hidden">All</span>
+            <span className="hidden sm:inline">View All</span>
+          </button>
+          <div className="bg-white">
+            <div className="w-px h-full bg-gray-300"></div>
+          </div>
+          <button
+            onClick={() => setSelectedCategory("Featured")}
+            className={`px-4 sm:px-8 py-3 rounded-r-full transition-all text-sm sm:text-lg cursor-pointer ${
+              selectedCategory === "Featured"
+                ? "bg-primary text-white"
+                : "bg-gray-100 hover:bg-gray-200"
+            }`}
+          >
+            <span className="sm:hidden">Featured</span>
+            <span className="hidden sm:inline">Featured Work</span>
           </button>
         </div>
 
@@ -229,7 +239,7 @@ const WorkContent = () => {
                     url.searchParams.set("category", category);
                     window.history.replaceState({}, "", url);
                   }}
-                  className={`px-6 py-2 rounded-full transition-all ${
+                  className={`px-6 py-2 rounded-full transition-all cursor-pointer ${
                     selectedCategory === category
                       ? "bg-primary text-white"
                       : "bg-gray-100 hover:bg-gray-200"
@@ -274,7 +284,7 @@ const WorkContent = () => {
                       >
                         <Image
                           src={image.src}
-                          alt={`${image.name} - ${image.category} custom furniture by Bespoke Broncel Furniture`}
+                          alt={`${image.name} - Custom furniture handcrafted by Bespoke Broncel Furniture in Yorkshire`}
                           width={getImageDimensions(image.aspectRatio).width}
                           height={getImageDimensions(image.aspectRatio).height}
                           className="object-cover w-full h-full rounded-lg"
@@ -284,19 +294,35 @@ const WorkContent = () => {
                           loading={
                             filteredImages.indexOf(image) < 6 ? "eager" : "lazy"
                           }
-                          title={image.name}
+                          title={`${image.name} | Bespoke Broncel Furniture Gallery`}
                         />
                       </div>
                       <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300 flex items-end">
                         <div className="p-6 w-full text-white">
                           <h3 className="text-xl font-medium">{image.name}</h3>
                           <p className="text-sm opacity-90 mt-1">
-                            {image.category}
+                            {image.category} | Bespoke Broncel Furniture
                           </p>
+                          {image.description && (
+                            <p className="text-xs opacity-80 mt-2 hidden md:block">
+                              {image.description}
+                            </p>
+                          )}
                           <meta itemProp="name" content={image.name} />
                           <meta
                             itemProp="description"
-                            content={`${image.name} - ${image.category} custom furniture by Bespoke Broncel Furniture`}
+                            content={
+                              image.description ||
+                              `${image.name} - ${image.category} custom furniture by Bespoke Broncel Furniture`
+                            }
+                          />
+                          <meta
+                            itemProp="author"
+                            content="Bespoke Broncel Furniture"
+                          />
+                          <meta
+                            itemProp="keywords"
+                            content={`bespoke broncel furniture, ${image.category.toLowerCase()}, custom furniture, yorkshire, handmade`}
                           />
                         </div>
                       </div>
@@ -322,26 +348,32 @@ const WorkContent = () => {
           onNext={getNextImage}
           onPrev={getPrevImage}
           prevImage={
-            selectedImage
-              ? filteredImages[
-                  (filteredImages.findIndex(
+            selectedImage && filteredImages.length > 0
+              ? (() => {
+                  const currentIndex = filteredImages.findIndex(
                     (img) => img.slug === selectedImage.slug
-                  ) -
-                    1 +
-                    filteredImages.length) %
-                    filteredImages.length
-                ]
+                  );
+                  const safeCurrentIndex =
+                    currentIndex === -1 ? 0 : currentIndex;
+                  const prevIndex =
+                    (safeCurrentIndex - 1 + filteredImages.length) %
+                    filteredImages.length;
+                  return filteredImages[prevIndex];
+                })()
               : undefined
           }
           nextImage={
-            selectedImage
-              ? filteredImages[
-                  (filteredImages.findIndex(
+            selectedImage && filteredImages.length > 0
+              ? (() => {
+                  const currentIndex = filteredImages.findIndex(
                     (img) => img.slug === selectedImage.slug
-                  ) +
-                    1) %
-                    filteredImages.length
-                ]
+                  );
+                  const safeCurrentIndex =
+                    currentIndex === -1 ? 0 : currentIndex;
+                  const nextIndex =
+                    (safeCurrentIndex + 1) % filteredImages.length;
+                  return filteredImages[nextIndex];
+                })()
               : undefined
           }
         />

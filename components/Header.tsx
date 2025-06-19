@@ -130,7 +130,7 @@ const Header = () => {
           {/* Mobile Menu Button - Moved here to align with logo */}
           <button
             type="button"
-            className="md:hidden flex items-center"
+            className="md:hidden flex items-center cursor-pointer"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
@@ -159,7 +159,7 @@ const Header = () => {
             <div className="flex justify-end items-center text-sm">
               <a
                 href="tel:+44 7523 706742"
-                className="flex items-center mr-6 text-white font-medium hover:text-secondary transition-colors"
+                className="flex items-center mr-6 text-white font-medium hover:text-secondary transition-colors cursor-pointer"
                 onClick={() => handleContactMethodClick("phone")}
               >
                 <svg
@@ -180,7 +180,7 @@ const Header = () => {
               </a>
               <Link
                 href="#contact"
-                className="px-4 py-1 bg-secondary text-white rounded-md text-sm font-medium hover:bg-secondary/80 transition-colors"
+                className="px-4 py-1 bg-secondary text-white rounded-md text-sm font-medium hover:bg-secondary/80 transition-colors cursor-pointer"
               >
                 Contact Us
               </Link>
@@ -202,7 +202,7 @@ const Header = () => {
                       >
                         <Link
                           href={`#${link.id}`}
-                          className={`hover:text-secondary transition-colors text-white ${
+                          className={`hover:text-secondary transition-colors text-white cursor-pointer ${
                             activeSection === link.id
                               ? "font-medium"
                               : "font-normal"
@@ -238,7 +238,7 @@ const Header = () => {
                 <Link
                   key={link.id}
                   href={`#${link.id}`}
-                  className={`px-4 py-2 text-lg font-medium border-l-4 ${
+                  className={`px-4 py-2 text-lg font-medium border-l-4 cursor-pointer ${
                     activeSection === link.id
                       ? "border-primary text-primary bg-gray-50"
                       : "border-transparent text-gray-700 hover:text-primary hover:bg-gray-50"
@@ -251,7 +251,7 @@ const Header = () => {
               <div className="pt-4 border-t border-gray-100">
                 <a
                   href="tel:+44 7523 706742"
-                  className="flex items-center px-4 py-2 text-primary"
+                  className="flex items-center px-4 py-2 text-primary cursor-pointer"
                   onClick={() => handleContactMethodClick("phone")}
                 >
                   <svg
@@ -272,7 +272,7 @@ const Header = () => {
                 </a>
                 <Link
                   href="#contact"
-                  className="flex items-center px-4 py-2 mt-2 bg-primary text-white rounded-md"
+                  className="flex items-center px-4 py-2 mt-2 bg-primary text-white rounded-md cursor-pointer"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   <svg

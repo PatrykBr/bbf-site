@@ -22,6 +22,7 @@ export interface WorkImage {
   aspectRatio: "landscape" | "portrait";
   slug?: string;
   featured?: boolean;
+  description?: string;
 }
 
 // Define image dimensions interface

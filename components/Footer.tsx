@@ -34,7 +34,7 @@ const CategoryLink = ({
   return (
     <button
       onClick={handleClick}
-      className="text-white/80 hover:text-white transition-colors block py-0.5 text-left w-full"
+      className="text-white/80 hover:text-white transition-colors block py-0.5 text-left w-full cursor-pointer"
     >
       {children}
     </button>
@@ -113,7 +113,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/"
-                  className="text-white/80 hover:text-white transition-colors block py-0.5"
+                  className="text-white/80 hover:text-white transition-colors block py-0.5 cursor-pointer"
                 >
                   Home
                 </Link>
@@ -121,7 +121,7 @@ export default function Footer() {
               <li>
                 <a
                   href="#about"
-                  className="text-white/80 hover:text-white transition-colors block py-0.5"
+                  className="text-white/80 hover:text-white transition-colors block py-0.5 cursor-pointer"
                 >
                   About
                 </a>
@@ -129,7 +129,7 @@ export default function Footer() {
               <li>
                 <a
                   href="#work"
-                  className="text-white/80 hover:text-white transition-colors block py-0.5"
+                  className="text-white/80 hover:text-white transition-colors block py-0.5 cursor-pointer"
                 >
                   Work
                 </a>
@@ -137,7 +137,7 @@ export default function Footer() {
               <li>
                 <a
                   href="#contact"
-                  className="text-white/80 hover:text-white transition-colors block py-0.5"
+                  className="text-white/80 hover:text-white transition-colors block py-0.5 cursor-pointer"
                 >
                   Contact
                 </a>
@@ -178,7 +178,7 @@ export default function Footer() {
               href="https://www.facebook.com/broncelfurniture/"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-white/70 hover:text-white transition-colors"
+              className="text-white/70 hover:text-white transition-colors cursor-pointer"
               aria-label="Facebook"
             >
               <svg

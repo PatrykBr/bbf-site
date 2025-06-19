@@ -230,7 +230,7 @@ const Contact = () => {
                       <h4 className="text-sm sm:text-base font-medium text-dark-gray group-hover:text-primary transition-colors duration-300">
                         Email
                       </h4>
-                      <div className="text-base sm:text-lg font-semibold text-primary group-hover:translate-x-1 inline-block transition-transform duration-300 mt-1 break-all">
+                      <div className="text-base sm:text-lg font-semibold text-primary group-hover:translate-x-1 inline-block transition-transform duration-300 mt-1 break-all email-text">
                         broncelfurniture@gmail.com
                       </div>
                       <p className="text-xs sm:text-sm text-dark-gray/70 mt-1 group-hover:text-dark-gray/90 transition-colors duration-300">
@@ -262,7 +262,7 @@ const Contact = () => {
                       <h4 className="text-sm sm:text-base font-medium text-dark-gray group-hover:text-primary transition-colors duration-300">
                         Facebook
                       </h4>
-                      <div className="text-base sm:text-lg font-semibold text-primary group-hover:translate-x-1 inline-block transition-transform duration-300 mt-1 truncate">
+                      <div className="text-base sm:text-lg font-semibold text-primary group-hover:translate-x-1 inline-block transition-transform duration-300 mt-1 truncate facebook-text">
                         Bespoke Broncel Furniture
                       </div>
                       <p className="text-xs sm:text-sm text-dark-gray/70 mt-1 group-hover:text-dark-gray/90 transition-colors duration-300">
@@ -330,7 +330,7 @@ const Contact = () => {
                       </p>
                       <button
                         onClick={() => setSubmitSuccess(false)}
-                        className="px-6 py-2 bg-secondary/10 text-secondary hover:bg-secondary hover:text-white font-medium rounded-md transition-colors duration-300"
+                        className="px-6 py-2 bg-secondary/10 text-secondary hover:bg-secondary hover:text-white font-medium rounded-md transition-colors duration-300 cursor-pointer"
                       >
                         Send another message
                       </button>
@@ -496,7 +496,9 @@ const Contact = () => {
                           type="submit"
                           disabled={isSubmitting}
                           className={`w-full py-4 px-6 font-medium text-white bg-primary rounded-md shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 ${
-                            isSubmitting ? "opacity-70 cursor-not-allowed" : ""
+                            isSubmitting
+                              ? "opacity-70 cursor-not-allowed"
+                              : "cursor-pointer"
                           }`}
                         >
                           <span className="relative flex justify-center items-center">
@@ -555,7 +557,7 @@ const Contact = () => {
         </div>
       </div>
 
-      {/* Add CSS animations */}
+      {/* Add CSS animations and responsive text sizes */}
       <style jsx>{`
         @keyframes expand-line {
           0%,
@@ -569,6 +571,20 @@ const Contact = () => {
 
         .animate-expand-line {
           animation: expand-line 5s ease-in-out infinite;
+        }
+
+        /* Reduce email text size below 430px */
+        @media (max-width: 429px) {
+          .email-text {
+            font-size: 0.72rem !important; /* 14px */
+          }
+        }
+
+        /* Reduce Facebook name size below 390px */
+        @media (max-width: 389px) {
+          .facebook-text {
+            font-size: 0.8rem !important; /* 14px */
+          }
         }
       `}</style>
     </section>

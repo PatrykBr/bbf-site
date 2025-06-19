@@ -7,6 +7,7 @@ export enum WorkEvents {
 // Share platforms
 export enum SharePlatform {
   FACEBOOK = "facebook",
+  WHATSAPP = "whatsapp",
   CLIPBOARD = "clipboard",
 }
 

@@ -4,6 +4,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { PostHogProvider } from "@/components/PostHogProvider";
+import { generateImageStructuredData } from "@/lib/seo/structuredData";
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -28,6 +29,10 @@ export const metadata: Metadata = {
     "Doncaster furniture maker",
     "Barnsley furniture maker",
     "Yorkshire furniture maker",
+    "bespoke broncel furniture",
+    "broncel furniture gallery",
+    "custom wardrobes yorkshire",
+    "bespoke kitchens sheffield",
   ],
   authors: [{ name: "Broncel Furniture" }],
   creator: "Broncel Furniture",
@@ -130,6 +135,7 @@ export const metadata: Metadata = {
           },
         ],
       }),
+      ...generateImageStructuredData().map((data) => JSON.stringify(data)),
     ],
   },
 };

@@ -28,14 +28,14 @@ const Hero = () => {
           <div className="flex justify-center gap-4">
             <Link
               href="#work"
-              className="bg-primary text-white px-6 py-2 rounded-full text-sm sm:text-base hover:bg-primary/80 transition-colors"
+              className="bg-primary text-white px-6 py-2 rounded-full text-sm sm:text-base hover:bg-primary/80 transition-colors cursor-pointer"
               aria-label="View our portfolio of custom furniture"
             >
               View Our Work
             </Link>
             <Link
               href="#contact"
-              className="bg-secondary text-white px-6 py-2 rounded-full text-sm sm:text-base hover:bg-secondary/80 transition-colors"
+              className="bg-secondary text-white px-6 py-2 rounded-full text-sm sm:text-base hover:bg-secondary/80 transition-colors cursor-pointer"
               aria-label="Contact us for a free quote"
             >
               Get In Touch

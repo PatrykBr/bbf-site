@@ -3,6 +3,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaFacebook,
+  FaWhatsapp,
   FaShare,
   FaTimes,
   FaArrowLeft,
@@ -95,6 +96,24 @@ const ImageModal: React.FC<ImageModalProps> = ({
     });
   };
 
+  // Share to WhatsApp
+  const shareToWhatsApp = () => {
+    if (!image || !image.slug || typeof window === "undefined") return;
+
+    const text = `Check out this ${image.category.toLowerCase()} - ${
+      image.name
+    }`;
+    const url = `https://wa.me/?text=${encodeURIComponent(
+      `${text} ${getShareableLink()}`
+    )}`;
+    window.open(url, "_blank");
+    posthog?.capture(WorkEvents.PHOTO_SHARE, {
+      category: image.category,
+      file_name: getFileName(image.src),
+      share_platform: SharePlatform.WHATSAPP,
+    });
+  };
+
   // Copy link to clipboard
   const copyLinkToClipboard = () => {
     if (!image || !image.slug || typeof window === "undefined") return;
@@ -145,7 +164,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
             {/* Close button */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 z-10 text-white bg-black/60 rounded-full p-3 hover:bg-black/80 transition-colors"
+              className="absolute top-4 right-4 z-10 text-white bg-black/60 rounded-full p-3 hover:bg-black/80 transition-colors cursor-pointer"
               aria-label="Close"
             >
               <FaTimes size={20} />
@@ -231,21 +250,21 @@ const ImageModal: React.FC<ImageModalProps> = ({
                       draggable={false}
                     />
 
-                    {/* Mobile navigation buttons */}
-                    <div className="lg:hidden absolute inset-x-0 bottom-4 flex justify-center gap-4">
+                    {/* Mobile navigation buttons - positioned on the sides */}
+                    <div className="lg:hidden">
                       <button
                         onClick={() => paginate(-1)}
-                        className="text-white bg-black/60 rounded-full p-3 hover:bg-black/80 transition-colors"
+                        className="absolute left-4 top-1/2 -translate-y-1/2 text-white bg-black/60 rounded-full p-3 hover:bg-black/80 transition-colors z-10 cursor-pointer"
                         aria-label="Previous image"
                       >
-                        <FaArrowLeft size={20} />
+                        <FaArrowLeft size={16} />
                       </button>
                       <button
                         onClick={() => paginate(1)}
-                        className="text-white bg-black/60 rounded-full p-3 hover:bg-black/80 transition-colors"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white bg-black/60 rounded-full p-3 hover:bg-black/80 transition-colors z-10 cursor-pointer"
                         aria-label="Next image"
                       >
-                        <FaArrowRight size={20} />
+                        <FaArrowRight size={16} />
                       </button>
                     </div>
                   </motion.div>
@@ -297,20 +316,30 @@ const ImageModal: React.FC<ImageModalProps> = ({
                     <h3 className="text-xl font-bold mb-1">{image.name}</h3>
                     <p className="opacity-80">Category: {image.category}</p>
                   </div>
-                  <div className="flex gap-3">
+                  <div className="flex gap-1.5 sm:gap-3 justify-center">
                     <button
                       onClick={copyLinkToClipboard}
-                      className="flex items-center gap-2 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-full transition-colors"
+                      className="flex items-center justify-center gap-1.5 bg-white/20 hover:bg-white/30 text-white px-3 py-2.5 rounded-full transition-colors text-sm flex-1 sm:flex-none sm:px-5 cursor-pointer"
                     >
-                      <FaShare size={16} />
-                      <span>Copy Link</span>
+                      <FaShare size={16} className="flex-shrink-0" />
+                      <span className="hidden sm:inline">Copy Link</span>
+                      <span className="sm:hidden truncate">Copy</span>
+                    </button>
+                    <button
+                      onClick={shareToWhatsApp}
+                      className="flex items-center justify-center gap-1.5 bg-green-600 text-white hover:bg-green-700 px-3 py-2.5 rounded-full transition-colors text-sm flex-1 sm:flex-none sm:px-5 cursor-pointer"
+                    >
+                      <FaWhatsapp size={16} className="flex-shrink-0" />
+                      <span className="hidden sm:inline">WhatsApp</span>
+                      <span className="sm:hidden truncate">WA</span>
                     </button>
                     <button
                       onClick={shareToFacebook}
-                      className="flex items-center gap-2 bg-blue-600 text-white hover:bg-blue-700 px-4 py-2 rounded-full transition-colors"
+                      className="flex items-center justify-center gap-1.5 bg-blue-600 text-white hover:bg-blue-700 px-3 py-2.5 rounded-full transition-colors text-sm flex-1 sm:flex-none sm:px-5 cursor-pointer"
                     >
-                      <FaFacebook size={16} />
-                      <span>Share</span>
+                      <FaFacebook size={16} className="flex-shrink-0" />
+                      <span className="hidden sm:inline">Facebook</span>
+                      <span className="sm:hidden truncate">FB</span>
                     </button>
                   </div>
                 </div>
