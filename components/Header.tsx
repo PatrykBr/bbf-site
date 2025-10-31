@@ -85,8 +85,7 @@ const Header = () => {
                                 alt="Bespoke Broncel Furniture Logo"
                                 width={140}
                                 height={50}
-                                className="transition-all duration-300"
-                                style={{ width: `${logoWidth}px`, height: `${logoHeight}px` }}
+                                className={`h-auto transition-all duration-300 ${scrolled ? "w-[120px]" : "w-[140px]"}`}
                                 priority
                             />
                         </Link>
