@@ -2,93 +2,76 @@ import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { RateLimiterMemory } from "rate-limiter-flexible";
 
-// Create a rate limiter instance - in-memory store for simplicity
-// In production, consider using Redis or another persistent store
 const rateLimiter = new RateLimiterMemory({
-  keyPrefix: "ip-limit",
-  points: 1, // Number of submissions allowed (increased from 1)
-  duration: 60, // Per minute (adjust as needed)
-  blockDuration: 60, // Block for 1 minute after exceeding points (reduced from 5 minutes)
+    keyPrefix: "ip-limit",
+    points: 1,
+    duration: 60,
+    blockDuration: 60
 });
 
-// Store for tracking submissions per email
 const emailLimiter = new RateLimiterMemory({
-  keyPrefix: "email-limit",
-  points: 3, // Allow 3 submissions
-  duration: 60 * 60, // Per hour
-  blockDuration: 60 * 60, // Block for 1 hour after exceeding (reduced from 24 hours)
+    keyPrefix: "email-limit",
+    points: 3,
+    duration: 60 * 60,
+    blockDuration: 60 * 60
 });
 
 export async function POST(request: Request) {
-  try {
-    // Get client IP or a unique identifier
-    const ip =
-      request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip") ||
-      "127.0.0.1";
-
-    const { name, email, phone, message } = await request.json();
-
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
-    }
-
-    // Check rate limits
     try {
-      // Check IP-based rate limit
-      await rateLimiter.consume(ip);
+        const ip = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "127.0.0.1";
+        const { name, email, phone, message } = await request.json();
 
-      // Check email-based rate limit
-      await emailLimiter.consume(email.toLowerCase());
-    } catch (rateLimiterError: unknown) {
-      console.log("Rate limit exceeded:", ip, email);
+        if (!email || !name || !message) {
+            return NextResponse.json({ error: "Name, email, and message are required" }, { status: 400 });
+        }
 
-      // Calculate remaining cooldown time in seconds
-      const msBeforeNext =
-        (rateLimiterError as { msBeforeNext?: number }).msBeforeNext || 60000;
-      const cooldownSeconds = Math.ceil(msBeforeNext / 1000);
+        try {
+            await rateLimiter.consume(ip);
+            await emailLimiter.consume(email.toLowerCase());
+        } catch (rateLimiterError: unknown) {
+            console.log("Rate limit exceeded:", ip, email);
 
-      return NextResponse.json(
-        {
-          error: "Too many submissions. Please try again later.",
-          cooldown: true,
-          cooldownSeconds: cooldownSeconds,
-        },
-        { status: 429 }
-      );
-    }
+            const msBeforeNext = (rateLimiterError as { msBeforeNext?: number }).msBeforeNext || 60000;
+            const cooldownSeconds = Math.ceil(msBeforeNext / 1000);
 
-    // Create a transporter using SMTP
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: true,
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASSWORD,
-      },
-    });
+            return NextResponse.json(
+                {
+                    error: "Too many submissions. Please try again later.",
+                    cooldown: true,
+                    cooldownSeconds
+                },
+                { status: 429 }
+            );
+        }
 
-    // Format the sender name to be DKIM-compliant
-    const senderName = name.replace(/[^\w\s]/gi, "").trim();
+        const transporter = nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: Number(process.env.SMTP_PORT),
+            secure: true,
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASSWORD
+            }
+        });
 
-    // Email content with improved headers
-    const mailOptions = {
-      from: {
-        name: "Broncel Furniture Website",
-        address: process.env.SMTP_USER as string,
-      },
-      replyTo: email,
-      to: process.env.CONTACT_EMAIL || "broncelfurniture@gmail.com",
-      subject: `New Enquiry from ${senderName} - Broncel Furniture`,
-      headers: {
-        "X-Priority": "1",
-        "X-MSMail-Priority": "High",
-        Importance: "high",
-        "X-Contact-Form": "true",
-        "X-Sender-IP": ip,
-      },
-      text: `
+        const senderName = name.replace(/[^\w\s]/gi, "").trim();
+
+        const mailOptions = {
+            from: {
+                name: "Broncel Furniture Website",
+                address: process.env.SMTP_USER as string
+            },
+            replyTo: email,
+            to: process.env.CONTACT_EMAIL || "broncelfurniture@gmail.com",
+            subject: `New Enquiry from ${senderName} - Broncel Furniture`,
+            headers: {
+                "X-Priority": "1",
+                "X-MSMail-Priority": "High",
+                Importance: "high",
+                "X-Contact-Form": "true",
+                "X-Sender-IP": ip
+            },
+            text: `
 New contact form submission from your website:
 
 Name: ${name}
@@ -102,7 +85,7 @@ ${message}
 ---
 This email was sent from the contact form on broncelfurniture.com
       `.trim(),
-      html: `
+            html: `
 <!DOCTYPE html>
 <html>
 <head>
@@ -144,21 +127,14 @@ This email was sent from the contact form on broncelfurniture.com
   </div>
 </body>
 </html>
-      `.trim(),
-    };
+      `.trim()
+        };
 
-    // Send email
-    await transporter.sendMail(mailOptions);
+        await transporter.sendMail(mailOptions);
 
-    return NextResponse.json(
-      { message: "Email sent successfully" },
-      { status: 200 }
-    );
-  } catch (error) {
-    console.error("Error sending email:", error);
-    return NextResponse.json(
-      { error: "Failed to send email" },
-      { status: 500 }
-    );
-  }
+        return NextResponse.json({ message: "Email sent successfully" }, { status: 200 });
+    } catch (error) {
+        console.error("Error sending email:", error);
+        return NextResponse.json({ error: "Failed to send email" }, { status: 500 });
+    }
 }

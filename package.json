@@ -1,36 +1,38 @@
 {
-  "name": "new-bbf",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev --turbopack",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint .",
-    "update-deps": "npm update && npm audit fix",
-    "check-outdated": "npm outdated"
-  },
-  "dependencies": {
-    "@types/nodemailer": "^7.0.3",
-    "framer-motion": "^12.23.24",
-    "next": "^16.0.1",
-    "nodemailer": "^7.0.10",
-    "posthog-js": "^1.282.0",
-    "posthog-node": "^5.10.4",
-    "rate-limiter-flexible": "^8.1.0",
-    "react": "^19.2.0",
-    "react-icons": "^5.5.0",
-    "react-responsive-masonry": "^2.7.1"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3.3.1",
-    "@tailwindcss/postcss": "^4.1.16",
-    "@types/node": "^24.9.2",
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2",
-    "eslint": "^9.38.0",
-    "eslint-config-next": "^16.0.1",
-    "tailwindcss": "^4.1.16",
-    "typescript": "^5.9.3"
-  }
+    "name": "new-bbf",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "dev": "next dev --turbopack",
+        "build": "next build",
+        "start": "next start",
+        "lint": "eslint .",
+        "update-deps": "npm update && npm audit fix",
+        "check-outdated": "npm outdated"
+    },
+    "dependencies": {
+        "@types/nodemailer": "^7.0.3",
+        "framer-motion": "^12.23.24",
+        "next": "^16.0.1",
+        "nodemailer": "^7.0.10",
+        "posthog-js": "^1.282.0",
+        "posthog-node": "^5.10.4",
+        "rate-limiter-flexible": "^8.1.0",
+        "react": "^19.2.0",
+        "react-icons": "^5.5.0",
+        "react-responsive-masonry": "^2.7.1"
+    },
+    "devDependencies": {
+        "@eslint/eslintrc": "^3.3.1",
+        "@tailwindcss/postcss": "^4.1.16",
+        "@types/node": "^24.9.2",
+        "@types/react": "^19.2.2",
+        "@types/react-dom": "^19.2.2",
+        "eslint": "^9.38.0",
+        "eslint-config-next": "^16.0.1",
+        "prettier": "^3.6.2",
+        "prettier-plugin-tailwindcss": "^0.7.1",
+        "tailwindcss": "^4.1.16",
+        "typescript": "^5.9.3"
+    }
 }
