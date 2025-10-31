@@ -13,6 +13,7 @@ import {
 import { usePostHog } from "posthog-js/react";
 import { WorkImage } from "../types/work";
 import { WorkEvents, SharePlatform } from "../constants/analytics";
+import { SWIPE_CONFIDENCE_THRESHOLD } from "../constants/config";
 import { getFileName, getImageDimensions } from "../utils/imageUtils";
 
 interface ImageModalProps {
@@ -42,7 +43,6 @@ const variants = {
   }),
 };
 
-const swipeConfidenceThreshold = 10000;
 const swipePower = (offset: number, velocity: number) => {
   return Math.abs(offset) * velocity;
 };
@@ -62,14 +62,10 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
   // Create a shareable link
   const getShareableLink = () => {
-    if (!image || !image.slug) return "";
+    if (!image?.slug) return "";
+    if (typeof window === "undefined") return `?image=${image.slug}`;
 
-    // Create a direct link to the image
-    // Safely access window object only on client side
-    if (typeof window !== "undefined") {
-      return `${window.location.origin}${window.location.pathname}?image=${image.slug}`;
-    }
-    return `?image=${image.slug}`;
+    return `${window.location.origin}${window.location.pathname}?image=${image.slug}`;
   };
 
   const paginate = (newDirection: number) => {
@@ -83,13 +79,13 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
   // Share to Facebook
   const shareToFacebook = () => {
-    if (!image || !image.slug || typeof window === "undefined") return;
+    if (!image?.slug || typeof window === "undefined") return;
 
     const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
       getShareableLink()
     )}`;
     window.open(url, "_blank");
-    posthog?.capture(WorkEvents.PHOTO_SHARE, {
+    posthog.capture(WorkEvents.PHOTO_SHARE, {
       category: image.category,
       file_name: getFileName(image.src),
       share_platform: SharePlatform.FACEBOOK,
@@ -98,7 +94,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
   // Share to WhatsApp
   const shareToWhatsApp = () => {
-    if (!image || !image.slug || typeof window === "undefined") return;
+    if (!image?.slug || typeof window === "undefined") return;
 
     const text = `Check out this ${image.category.toLowerCase()} - ${
       image.name
@@ -107,7 +103,7 @@ const ImageModal: React.FC<ImageModalProps> = ({
       `${text} ${getShareableLink()}`
     )}`;
     window.open(url, "_blank");
-    posthog?.capture(WorkEvents.PHOTO_SHARE, {
+    posthog.capture(WorkEvents.PHOTO_SHARE, {
       category: image.category,
       file_name: getFileName(image.src),
       share_platform: SharePlatform.WHATSAPP,
@@ -116,14 +112,14 @@ const ImageModal: React.FC<ImageModalProps> = ({
 
   // Copy link to clipboard
   const copyLinkToClipboard = () => {
-    if (!image || !image.slug || typeof window === "undefined") return;
+    if (!image?.slug || typeof window === "undefined") return;
 
     navigator.clipboard
       .writeText(getShareableLink())
       .then(() => {
         setShowCopyToast(true);
         setTimeout(() => setShowCopyToast(false), 2000);
-        posthog?.capture(WorkEvents.PHOTO_SHARE, {
+        posthog.capture(WorkEvents.PHOTO_SHARE, {
           category: image.category,
           file_name: getFileName(image.src),
           share_platform: SharePlatform.CLIPBOARD,
@@ -230,9 +226,9 @@ const ImageModal: React.FC<ImageModalProps> = ({
                     onDragEnd={(e, { offset, velocity }) => {
                       const swipe = swipePower(offset.x, velocity.x);
 
-                      if (swipe < -swipeConfidenceThreshold) {
+                      if (swipe < -SWIPE_CONFIDENCE_THRESHOLD) {
                         paginate(1);
-                      } else if (swipe > swipeConfidenceThreshold) {
+                      } else if (swipe > SWIPE_CONFIDENCE_THRESHOLD) {
                         paginate(-1);
                       }
                     }}

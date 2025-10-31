@@ -10,6 +10,9 @@ const poppins = Poppins({
   variable: "--font-poppins",
   weight: ["300", "400", "500", "600", "700"],
   subsets: ["latin"],
+  display: "swap",
+  preload: true,
+  adjustFontFallback: true,
 });
 
 export const metadata: Metadata = {
@@ -41,6 +44,13 @@ export const metadata: Metadata = {
     email: false,
     address: false,
     telephone: false,
+  },
+  // Next.js 16 manifest support
+  manifest: "/manifest.json",
+  // PWA icons
+  icons: {
+    icon: "/icon.tsx",
+    apple: "/apple-icon.png",
   },
   openGraph: {
     title: "Bespoke Broncel Furniture | Custom Furniture in South Yorkshire",

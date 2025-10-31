@@ -3,6 +3,11 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { usePostHog } from "posthog-js/react";
+import {
+  RATE_LIMIT_COOLDOWN_SECONDS,
+  HTTP_STATUS_TOO_MANY_REQUESTS,
+  SUCCESS_MESSAGE_DURATION,
+} from "../constants/config";
 
 // PostHog event names
 enum ContactEvents {
@@ -20,8 +25,11 @@ const Contact = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [submitError, setSubmitError] = useState<string>("");
   const [cooldown, setCooldown] = useState(false);
-  const [cooldownTimeLeft, setCooldownTimeLeft] = useState(60);
+  const [cooldownTimeLeft, setCooldownTimeLeft] = useState(
+    RATE_LIMIT_COOLDOWN_SECONDS
+  );
 
   const posthog = usePostHog();
 
@@ -29,6 +37,7 @@ const Contact = () => {
   useEffect(() => {
     setCooldown(false);
     setCooldownTimeLeft(0);
+    setSubmitError("");
   }, []);
 
   // Cooldown timer
@@ -97,6 +106,7 @@ const Contact = () => {
     if (cooldown) return; // Prevent submission during cooldown
 
     setIsSubmitting(true);
+    setSubmitError("");
 
     try {
       const response = await fetch("/api/contact", {
@@ -110,15 +120,21 @@ const Contact = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        if (response.status === 429 && data.cooldown) {
+        if (
+          response.status === HTTP_STATUS_TOO_MANY_REQUESTS &&
+          data.cooldown
+        ) {
           // Rate limit exceeded with cooldown info
           setCooldown(true);
-          setCooldownTimeLeft(data.cooldownSeconds || 60);
-          throw new Error(
+          setCooldownTimeLeft(
+            data.cooldownSeconds || RATE_LIMIT_COOLDOWN_SECONDS
+          );
+          setSubmitError(
             `Rate limit exceeded. Please wait ${
-              data.cooldownSeconds || 60
+              data.cooldownSeconds || RATE_LIMIT_COOLDOWN_SECONDS
             } seconds before trying again.`
           );
+          return;
         }
         throw new Error(data.error || "Failed to send message");
       }
@@ -127,15 +143,17 @@ const Contact = () => {
       setFormData({ name: "", email: "", phone: "", message: "" });
       setSubmitSuccess(true);
 
-      // Hide success message after 5 seconds
+      // Hide success message after timeout
       setTimeout(() => {
         setSubmitSuccess(false);
-      }, 5000);
+      }, SUCCESS_MESSAGE_DURATION);
     } catch (error) {
       console.error("Error submitting form:", error);
-      if (!(error instanceof Error && error.message.includes("Rate limit"))) {
-        alert("Failed to send message. Please try again later.");
-      }
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to send message. Please try again later.";
+      setSubmitError(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -143,7 +161,7 @@ const Contact = () => {
 
   // Handle contact method click
   const handleContactMethodClick = (method: string) => {
-    posthog?.capture(ContactEvents.CONTACT_METHOD_CLICK, {
+    posthog.capture(ContactEvents.CONTACT_METHOD_CLICK, {
       method: method,
       location: "contact_section",
     });
@@ -368,6 +386,11 @@ const Contact = () => {
                       onSubmit={handleSubmit}
                       className="space-y-6 relative z-10"
                     >
+                      {submitError && (
+                        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4">
+                          <p className="text-sm">{submitError}</p>
+                        </div>
+                      )}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                           <label

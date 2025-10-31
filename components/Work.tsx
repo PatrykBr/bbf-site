@@ -1,6 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  Suspense,
+  startTransition,
+} from "react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import dynamic from "next/dynamic";
@@ -11,10 +17,15 @@ import { Metadata } from "next";
 import { WorkImage, categories } from "../types/work";
 import { WorkEvents, ViewSource } from "../constants/analytics";
 import {
+  MODAL_SCROLL_DELAY,
+  INITIAL_IMAGES_TO_LOAD,
+} from "../constants/config";
+import {
   processImages,
   arrangeImagesForVisualFlow,
   getFileName,
   getImageDimensions,
+  getAdjacentImage,
 } from "../utils/imageUtils";
 import { imageData } from "../data/images";
 import ImageModal from "./ImageModal";
@@ -57,20 +68,35 @@ const WorkContent = () => {
   const [selectedCategory, setSelectedCategory] = useState("Featured");
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<WorkImage | null>(null);
-  const [images, setImages] = useState<WorkImage[]>([]);
   const [isClient, setIsClient] = useState(false);
   const searchParams = useSearchParams();
   const posthog = usePostHog();
 
-  useEffect(() => {
-    // Mark as client-side
-    setIsClient(true);
-
-    // Initialize images with processed slugs and arranged for visual flow
+  const images = useMemo(() => {
     const processedImageData = processImages(imageData);
-    const arrangedImages = arrangeImagesForVisualFlow(processedImageData);
-    setImages(arrangedImages);
+    return arrangeImagesForVisualFlow(processedImageData);
+  }, []);
 
+  useEffect(() => {
+    startTransition(() => setIsClient(true));
+  }, []);
+
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+
+    const { style } = document.body;
+    const previousOverflow = style.overflow;
+
+    style.overflow = modalOpen ? "hidden" : "";
+
+    return () => {
+      style.overflow = previousOverflow;
+    };
+  }, [modalOpen]);
+
+  useEffect(() => {
     // Check URL parameters for direct image viewing or category selection
     const imageSlug = searchParams.get("image");
     const category = searchParams.get("category");
@@ -79,40 +105,45 @@ const WorkContent = () => {
       category &&
       categories.includes(category as (typeof categories)[number])
     ) {
-      setSelectedCategory(category as (typeof categories)[number]);
+      startTransition(() => {
+        setSelectedCategory(category as (typeof categories)[number]);
+      });
     }
 
     if (imageSlug) {
-      const image = arrangedImages.find((img) => img.slug === imageSlug);
+      const image = images.find((img) => img.slug === imageSlug);
       if (image) {
-        setSelectedImage(image);
-        setModalOpen(true);
-        // Disable scrolling when modal is opened via URL
-        document.body.style.overflow = "hidden";
+        startTransition(() => {
+          setSelectedImage(image);
+          setModalOpen(true);
+        });
         // Don't change category when opening from URL - keep current selected category
         // setSelectedCategory(image.category);
-        posthog?.capture(WorkEvents.PHOTO_VIEW, {
+        posthog.capture(WorkEvents.PHOTO_VIEW, {
           category: image.category,
           file_name: getFileName(image.src),
           view_source: ViewSource.SHARED_LINK,
         });
       }
     }
-  }, [searchParams, posthog]);
+  }, [searchParams, posthog, images]);
 
   // Filter images based on selected category
-  const filteredImages =
-    selectedCategory === "Featured"
-      ? images.filter((img) => img.featured)
-      : selectedCategory === "All"
-      ? images
-      : images.filter((img) => img.category === selectedCategory);
+  const filteredImages = useMemo(() => {
+    if (selectedCategory === "Featured") {
+      return images.filter((img) => img.featured);
+    }
+
+    if (selectedCategory === "All") {
+      return images;
+    }
+
+    return images.filter((img) => img.category === selectedCategory);
+  }, [images, selectedCategory]);
 
   // Handle modal close
   const handleModalClose = () => {
     setModalOpen(false);
-    // Re-enable scrolling
-    document.body.style.overflow = "auto";
     // Clear the image parameter from URL without causing a refresh
     const url = new URL(window.location.toString());
     url.searchParams.delete("image");
@@ -120,8 +151,8 @@ const WorkContent = () => {
 
     // Scroll to Work section after a brief delay to ensure modal transition is complete
     setTimeout(() => {
-      document.getElementById("Work")?.scrollIntoView({ behavior: "smooth" });
-    }, 100);
+      document.getElementById("work")?.scrollIntoView({ behavior: "smooth" });
+    }, MODAL_SCROLL_DELAY);
   };
 
   // Handle image click
@@ -130,14 +161,12 @@ const WorkContent = () => {
 
     setSelectedImage(image);
     setModalOpen(true);
-    // Disable scrolling
-    document.body.style.overflow = "hidden";
     // Update URL without causing a refresh
     const url = new URL(window.location.toString());
     url.searchParams.set("image", image.slug);
     window.history.replaceState({}, "", url);
 
-    posthog?.capture(WorkEvents.PHOTO_VIEW, {
+    posthog.capture(WorkEvents.PHOTO_VIEW, {
       category: image.category,
       file_name: getFileName(image.src),
       view_source: ViewSource.GALLERY_CLICK,
@@ -148,15 +177,8 @@ const WorkContent = () => {
   const getNextImage = () => {
     if (!selectedImage?.slug || filteredImages.length === 0) return;
 
-    const currentIndex = filteredImages.findIndex(
-      (img) => img.slug === selectedImage.slug
-    );
-
-    // If current image is not in filtered list (edge case), start from beginning
-    const safeCurrentIndex = currentIndex === -1 ? 0 : currentIndex;
-    const nextIndex = (safeCurrentIndex + 1) % filteredImages.length;
-    const nextImage = filteredImages[nextIndex];
-    if (!nextImage.slug) return;
+    const nextImage = getAdjacentImage(filteredImages, selectedImage, "next");
+    if (!nextImage?.slug) return;
 
     setSelectedImage(nextImage);
     // Update URL without causing a refresh
@@ -169,16 +191,8 @@ const WorkContent = () => {
   const getPrevImage = () => {
     if (!selectedImage?.slug || filteredImages.length === 0) return;
 
-    const currentIndex = filteredImages.findIndex(
-      (img) => img.slug === selectedImage.slug
-    );
-
-    // If current image is not in filtered list (edge case), start from end
-    const safeCurrentIndex = currentIndex === -1 ? 0 : currentIndex;
-    const prevIndex =
-      (safeCurrentIndex - 1 + filteredImages.length) % filteredImages.length;
-    const prevImage = filteredImages[prevIndex];
-    if (!prevImage.slug) return;
+    const prevImage = getAdjacentImage(filteredImages, selectedImage, "prev");
+    if (!prevImage?.slug) return;
 
     setSelectedImage(prevImage);
     // Update URL without causing a refresh
@@ -290,9 +304,15 @@ const WorkContent = () => {
                           className="object-cover w-full h-full rounded-lg"
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           quality={90}
-                          priority={filteredImages.indexOf(image) < 6}
+                          priority={
+                            filteredImages.indexOf(image) <
+                            INITIAL_IMAGES_TO_LOAD
+                          }
                           loading={
-                            filteredImages.indexOf(image) < 6 ? "eager" : "lazy"
+                            filteredImages.indexOf(image) <
+                            INITIAL_IMAGES_TO_LOAD
+                              ? "eager"
+                              : "lazy"
                           }
                           title={`${image.name} | Bespoke Broncel Furniture Gallery`}
                         />
@@ -349,31 +369,12 @@ const WorkContent = () => {
           onPrev={getPrevImage}
           prevImage={
             selectedImage && filteredImages.length > 0
-              ? (() => {
-                  const currentIndex = filteredImages.findIndex(
-                    (img) => img.slug === selectedImage.slug
-                  );
-                  const safeCurrentIndex =
-                    currentIndex === -1 ? 0 : currentIndex;
-                  const prevIndex =
-                    (safeCurrentIndex - 1 + filteredImages.length) %
-                    filteredImages.length;
-                  return filteredImages[prevIndex];
-                })()
+              ? getAdjacentImage(filteredImages, selectedImage, "prev")
               : undefined
           }
           nextImage={
             selectedImage && filteredImages.length > 0
-              ? (() => {
-                  const currentIndex = filteredImages.findIndex(
-                    (img) => img.slug === selectedImage.slug
-                  );
-                  const safeCurrentIndex =
-                    currentIndex === -1 ? 0 : currentIndex;
-                  const nextIndex =
-                    (safeCurrentIndex + 1) % filteredImages.length;
-                  return filteredImages[nextIndex];
-                })()
+              ? getAdjacentImage(filteredImages, selectedImage, "next")
               : undefined
           }
         />

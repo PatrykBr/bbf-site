@@ -1,7 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState, startTransition } from "react";
 import Link from "next/link";
+
+const BUILD_YEAR = new Date().getFullYear();
+const homeHash = (hash: string) => ({ pathname: "/", hash });
 
 // Create a client component for category links
 const CategoryLink = ({
@@ -42,7 +45,13 @@ const CategoryLink = ({
 };
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
+  const [currentYear, setCurrentYear] = useState(BUILD_YEAR);
+
+  useEffect(() => {
+    startTransition(() => {
+      setCurrentYear(new Date().getFullYear());
+    });
+  }, []);
 
   return (
     <footer className="bg-primary text-white py-8 md:py-10">
@@ -119,28 +128,28 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <a
-                  href="#about"
+                <Link
+                  href={homeHash("about")}
                   className="text-white/80 hover:text-white transition-colors block py-0.5 cursor-pointer"
                 >
                   About
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#work"
+                <Link
+                  href={homeHash("work")}
                   className="text-white/80 hover:text-white transition-colors block py-0.5 cursor-pointer"
                 >
                   Work
-                </a>
+                </Link>
               </li>
               <li>
-                <a
-                  href="#contact"
+                <Link
+                  href={homeHash("contact")}
                   className="text-white/80 hover:text-white transition-colors block py-0.5 cursor-pointer"
                 >
                   Contact
-                </a>
+                </Link>
               </li>
             </ul>
           </div>

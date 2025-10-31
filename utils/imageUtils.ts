@@ -117,3 +117,26 @@ export const getImageDimensions = (
     };
   }
 };
+
+// Helper to get adjacent image in filtered list
+export const getAdjacentImage = (
+  images: WorkImage[],
+  currentImage: WorkImage,
+  direction: "next" | "prev"
+): WorkImage | undefined => {
+  if (!currentImage.slug || images.length === 0) return undefined;
+
+  const currentIndex = images.findIndex(
+    (img) => img.slug === currentImage.slug
+  );
+
+  // If current image is not in filtered list (edge case), start from appropriate end
+  const safeCurrentIndex = currentIndex === -1 ? 0 : currentIndex;
+
+  const nextIndex =
+    direction === "next"
+      ? (safeCurrentIndex + 1) % images.length
+      : (safeCurrentIndex - 1 + images.length) % images.length;
+
+  return images[nextIndex];
+};

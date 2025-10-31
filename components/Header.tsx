@@ -4,6 +4,10 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePostHog } from "posthog-js/react";
+import {
+  HEADER_SCROLL_THRESHOLD,
+  ACTIVE_SECTION_OFFSET,
+} from "../constants/config";
 
 // PostHog event names
 enum HeaderEvents {
@@ -17,12 +21,19 @@ const NAV_LINKS = [
   { name: "ABOUT", id: "about" },
 ] as const;
 
+type SectionHash = (typeof NAV_LINKS)[number]["id"] | "contact";
+
+const buildHomeHashHref = (hash: SectionHash) => ({ pathname: "/", hash });
+
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("hero");
   const [scrolled, setScrolled] = useState(false);
   const headerRef = useRef<HTMLDivElement>(null);
   const navRefs = useRef<{ [key: string]: HTMLLIElement | null }>({});
+  const indicatorRef = useRef<HTMLSpanElement>(null);
+  const logoWidth = scrolled ? 120 : 140;
+  const logoHeight = (logoWidth * 50) / 140;
   const posthog = usePostHog();
 
   // Memoize navLinks to prevent unnecessary re-renders
@@ -32,7 +43,7 @@ const Header = () => {
   useEffect(() => {
     const handleScroll = () => {
       // Check if scrolled to update header appearance
-      if (window.scrollY > 50) {
+      if (window.scrollY > HEADER_SCROLL_THRESHOLD) {
         setScrolled(true);
       } else {
         setScrolled(false);
@@ -44,7 +55,10 @@ const Header = () => {
         if (!section) return false;
         const rect = section.getBoundingClientRect();
         // Consider a section "active" when it's taking up a significant portion of the viewport
-        return rect.top <= 150 && rect.bottom >= 150;
+        return (
+          rect.top <= ACTIVE_SECTION_OFFSET &&
+          rect.bottom >= ACTIVE_SECTION_OFFSET
+        );
       });
 
       if (currentSection !== -1) {
@@ -74,33 +88,34 @@ const Header = () => {
 
   // Handle contact method click
   const handleContactMethodClick = (method: string) => {
-    posthog?.capture(HeaderEvents.CONTACT_METHOD_CLICK, {
+    posthog.capture(HeaderEvents.CONTACT_METHOD_CLICK, {
       method: method,
       location: "header",
     });
   };
 
   // Function to get active indicator style for desktop nav
-  const getIndicatorStyle = () => {
+  useEffect(() => {
+    const indicator = indicatorRef.current;
     const activeNavItem = navRefs.current[activeSection];
 
-    if (!activeNavItem) {
-      return {
-        width: "0px",
-        transform: "translateX(0)",
-        opacity: 0,
-      };
+    if (!indicator) {
+      return;
     }
 
-    // Get position of the active nav item
+    if (!activeNavItem) {
+      indicator.style.width = "0px";
+      indicator.style.transform = "translateX(0)";
+      indicator.style.opacity = "0";
+      return;
+    }
+
     const { offsetLeft, offsetWidth } = activeNavItem;
 
-    return {
-      width: `${offsetWidth}px`,
-      transform: `translateX(${offsetLeft}px)`,
-      opacity: 1,
-    };
-  };
+    indicator.style.width = `${offsetWidth}px`;
+    indicator.style.transform = `translateX(${offsetLeft}px)`;
+    indicator.style.opacity = "1";
+  }, [activeSection]);
 
   return (
     <header
@@ -119,9 +134,10 @@ const Header = () => {
               <Image
                 src="/logo.webp"
                 alt="Bespoke Broncel Furniture Logo"
-                width={scrolled ? 120 : 140}
-                height={scrolled ? 40 : 50}
+                width={140}
+                height={50}
                 className="transition-all duration-300"
+                style={{ width: `${logoWidth}px`, height: `${logoHeight}px` }}
                 priority
               />
             </Link>
@@ -179,7 +195,7 @@ const Header = () => {
                 +44 7523 706742
               </a>
               <Link
-                href="#contact"
+                href={buildHomeHashHref("contact")}
                 className="px-4 py-1 bg-secondary text-white rounded-md text-sm font-medium hover:bg-secondary/80 transition-colors cursor-pointer"
               >
                 Contact Us
@@ -201,7 +217,7 @@ const Header = () => {
                         className="relative px-1 py-2"
                       >
                         <Link
-                          href={`#${link.id}`}
+                          href={buildHomeHashHref(link.id)}
                           className={`hover:text-secondary transition-colors text-white cursor-pointer ${
                             activeSection === link.id
                               ? "font-medium"
@@ -215,8 +231,13 @@ const Header = () => {
                   </ul>
                   {/* Sliding indicator line */}
                   <span
+                    ref={indicatorRef}
                     className="absolute bottom-0 h-0.5 bg-secondary transition-all duration-300 ease-in-out"
-                    style={getIndicatorStyle()}
+                    style={{
+                      width: "0px",
+                      transform: "translateX(0)",
+                      opacity: 0,
+                    }}
                   />
                 </div>
               </nav>
@@ -237,7 +258,7 @@ const Header = () => {
               {navLinks.map((link) => (
                 <Link
                   key={link.id}
-                  href={`#${link.id}`}
+                  href={buildHomeHashHref(link.id)}
                   className={`px-4 py-2 text-lg font-medium border-l-4 cursor-pointer ${
                     activeSection === link.id
                       ? "border-primary text-primary bg-gray-50"
@@ -271,7 +292,7 @@ const Header = () => {
                   +44 7523 706742
                 </a>
                 <Link
-                  href="#contact"
+                  href={buildHomeHashHref("contact")}
                   className="flex items-center px-4 py-2 mt-2 bg-primary text-white rounded-md cursor-pointer"
                   onClick={() => setIsMenuOpen(false)}
                 >
