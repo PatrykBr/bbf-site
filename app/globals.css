@@ -1,72 +1,69 @@
 @import "tailwindcss";
 
 :root {
-    --background: #0e370d;
-    --foreground: #171717;
-    --forest-green: #0e370d;
-    --sage-green: #518249;
-    --pale-yellow: #e3e25d;
-    --light-gray: #f5f5f5;
-    --dark-gray: #333333;
-    --font-poppins: var(--font-poppins, "Poppins", sans-serif);
+    --background: #ffffff;
+    --foreground: #1a1a1a;
+    --brand-dark: #0e370d;
+    --brand-light: #518249;
+    --brand-accent: #e3e25d;
 }
 
 @theme inline {
     --color-background: var(--background);
     --color-foreground: var(--foreground);
-    --color-primary: var(--forest-green);
-    --color-secondary: var(--sage-green);
-    --color-accent: var(--pale-yellow);
-    --font-sans: var(--font-poppins);
-}
-
-section {
-    min-height: 100vh;
-    padding: 4rem 1rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+    --color-brand-dark: var(--brand-dark);
+    --color-brand-light: var(--brand-light);
+    --color-brand-accent: var(--brand-accent);
+    --font-sans: var(--font-poppins), system-ui, sans-serif;
 }
 
 body {
     background: var(--background);
     color: var(--foreground);
-    font-family: var(--font-poppins);
+    font-family: var(--font-sans);
 }
 
-.hero-background {
-    background-image: url("/hero-background.webp");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    /* Remove fixed attachment for iOS compatibility */
-    @supports (-webkit-touch-callout: none) {
-        /* iOS devices */
-        background-attachment: scroll;
-    }
-    @supports not (-webkit-touch-callout: none) {
-        /* Non-iOS devices */
-        background-attachment: fixed;
-    }
+/* Masonry grid styles */
+.masonry-grid {
+    display: flex;
+    width: auto;
+    margin-left: -20px;
 }
 
-.about-background {
-    background-image: url("/about-background.webp");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    /* Remove fixed attachment for iOS compatibility */
-    @supports (-webkit-touch-callout: none) {
-        /* iOS devices */
-        background-attachment: scroll;
-    }
-    @supports not (-webkit-touch-callout: none) {
-        /* Non-iOS devices */
-        background-attachment: fixed;
-    }
+.masonry-grid_column {
+    padding-left: 20px;
+    background-clip: padding-box;
 }
 
-/* Enable smooth scrolling for the entire site */
+.masonry-grid_column > div {
+    margin-bottom: 20px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--brand-light);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--brand-dark);
+}
+
+/* Focus styles for accessibility */
+*:focus-visible {
+    outline: 2px solid var(--brand-light);
+    outline-offset: 2px;
+}
+
+/* Smooth scrolling */
 html {
     scroll-behavior: smooth;
 }
