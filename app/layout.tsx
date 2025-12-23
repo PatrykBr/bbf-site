@@ -35,7 +35,7 @@ export const metadata: Metadata = {
         description: "Custom-made wardrobes and kitchens crafted with exceptional craftsmanship.",
         images: [
             {
-                url: "/hero-bg.webp",
+                url: "https://www.broncelfurniture.com/hero-bg.webp",
                 width: 1200,
                 height: 630,
                 alt: "Bespoke Broncel Furniture"
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
         card: "summary_large_image",
         title: "Bespoke Broncel Furniture",
         description: "Custom-made wardrobes and kitchens crafted with exceptional craftsmanship.",
-        images: ["/hero-bg.webp"]
+        images: ["https://www.broncelfurniture.com/hero-bg.webp"]
     },
     robots: {
         index: true,
