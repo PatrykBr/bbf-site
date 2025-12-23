@@ -11,7 +11,7 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://broncelfurniture.co.uk"),
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://broncelfurniture.com"),
     title: {
         default: "Bespoke Broncel Furniture | Building Your Dream",
         template: "%s | Bespoke Broncel Furniture"
@@ -32,12 +32,21 @@ export const metadata: Metadata = {
         locale: "en_GB",
         siteName: "Bespoke Broncel Furniture",
         title: "Bespoke Broncel Furniture | Building Your Dream",
-        description: "Custom-made wardrobes and kitchens crafted with exceptional craftsmanship."
+        description: "Custom-made wardrobes and kitchens crafted with exceptional craftsmanship.",
+        images: [
+            {
+                url: "/hero-bg.webp",
+                width: 1200,
+                height: 630,
+                alt: "Bespoke Broncel Furniture"
+            }
+        ]
     },
     twitter: {
         card: "summary_large_image",
         title: "Bespoke Broncel Furniture",
-        description: "Custom-made wardrobes and kitchens crafted with exceptional craftsmanship."
+        description: "Custom-made wardrobes and kitchens crafted with exceptional craftsmanship.",
+        images: ["/hero-bg.webp"]
     },
     robots: {
         index: true,
