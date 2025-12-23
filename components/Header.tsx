@@ -2,11 +2,13 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { contactInfo } from "@/lib/data/contact";
 
 export function Header() {
+    const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [activeSection, setActiveSection] = useState("home");
     const [isNavigating, setIsNavigating] = useState(false);
@@ -25,35 +27,39 @@ export function Header() {
     };
 
     useEffect(() => {
+        if (pathname !== "/") {
+            setActiveSection("");
+            return;
+        }
+
         const sections = ["home", "work", "about", "contact"];
 
-        const observers: IntersectionObserver[] = [];
+        const observer = new IntersectionObserver(
+            entries => {
+                if (isNavigating) return;
+
+                // Find the first entry that is intersecting
+                const visibleEntry = entries.find(entry => entry.isIntersecting);
+                if (visibleEntry) {
+                    const sectionId = visibleEntry.target.id;
+                    const navSection = sectionId === "contact" ? "about" : sectionId;
+                    setActiveSection(navSection);
+                }
+            },
+            { threshold: 0, rootMargin: "-50% 0px -50% 0px" }
+        );
 
         sections.forEach(sectionId => {
             const element = document.getElementById(sectionId);
-            if (!element) return;
-
-            const observer = new IntersectionObserver(
-                entries => {
-                    entries.forEach(entry => {
-                        if (entry.isIntersecting && !isNavigating) {
-                            // Map contact section to "about" since it's not in nav
-                            const navSection = sectionId === "contact" ? "about" : sectionId;
-                            setActiveSection(navSection);
-                        }
-                    });
-                },
-                { threshold: [0.1, 0.2, 0.3], rootMargin: "-80px 0px -40% 0px" }
-            );
-
-            observer.observe(element);
-            observers.push(observer);
+            if (element) {
+                observer.observe(element);
+            }
         });
 
         return () => {
-            observers.forEach(observer => observer.disconnect());
+            observer.disconnect();
         };
-    }, [isNavigating]);
+    }, [isNavigating, pathname]);
 
     return (
         <motion.header
@@ -90,20 +96,37 @@ export function Header() {
                             transition={{ delay: 0.3 }}
                             className="flex items-center gap-4"
                         >
-                            <a
+                            <motion.a
                                 href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
                                 className="flex items-center gap-1.5 text-sm font-semibold text-white/90 hover:text-white"
+                                whileHover="shaking"
                             >
-                                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <motion.svg
+                                    variants={{
+                                        shaking: {
+                                            rotate: [0, -10, 10, -10, 10, 0],
+                                            transition: {
+                                                duration: 0.5,
+                                                repeat: Infinity,
+                                                repeatDelay: 1,
+                                                ease: "linear"
+                                            }
+                                        }
+                                    }}
+                                    className="h-4 w-4"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    viewBox="0 0 24 24"
+                                >
                                     <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
                                         strokeWidth={2}
                                         d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                                     />
-                                </svg>
+                                </motion.svg>
                                 <span>{contactInfo.phone}</span>
-                            </a>
+                            </motion.a>
                             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                 <Link
                                     href="/#contact"

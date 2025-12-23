@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import Link from "next/link";
 import Masonry from "react-masonry-css";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
@@ -17,7 +17,8 @@ interface WorkGridProps {
 const ITEMS_PER_PAGE = 12;
 
 const breakpointColumns = {
-    default: 3,
+    default: 4,
+    1280: 3,
     1024: 2,
     640: 1
 };
@@ -44,7 +45,17 @@ const itemVariants: Variants = {
     }
 };
 
-export function WorkGrid({ items, itemsPerPage = ITEMS_PER_PAGE }: WorkGridProps) {
+export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_PAGE }: WorkGridProps) {
+    const [itemsPerPage, setItemsPerPage] = useState(initialItemsPerPage);
+
+    useEffect(() => {
+        // Calculate items per page only once on mount
+        if (window.innerWidth > 1280) setItemsPerPage(16);
+        else if (window.innerWidth > 1024) setItemsPerPage(12);
+        else if (window.innerWidth > 640) setItemsPerPage(8);
+        else setItemsPerPage(5);
+    }, []);
+
     const [filter, setFilter] = useState<WorkFilter>("all");
     const [showFeatured, setShowFeatured] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
