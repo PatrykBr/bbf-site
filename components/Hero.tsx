@@ -1,45 +1,85 @@
-import Link from "next/link";
+"use client";
 
-export default function Hero() {
+import { useRef } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { companyInfo } from "@/lib/data/contact";
+
+export function Hero() {
+    const sectionRef = useRef<HTMLElement>(null);
+    const { scrollYProgress } = useScroll({
+        target: sectionRef,
+        offset: ["start start", "end start"]
+    });
+    const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+    const backgroundScale = useTransform(scrollYProgress, [0, 1], [1, 1.25]);
+
     return (
         <section
-            id="hero"
-            className="bg-primary relative h-screen overflow-hidden"
-            aria-label="Welcome to Bespoke Broncel Furniture"
+            id="home"
+            ref={sectionRef}
+            className="bg-brand-dark relative flex min-h-screen flex-col items-center justify-center px-2 pt-20 pb-8 sm:px-8 sm:pt-24 sm:pb-16 lg:px-16"
         >
-            <div className="absolute inset-0 py-32 sm:px-8 md:px-12">
-                <div
-                    className="hero-background h-full w-full bg-cover bg-center bg-no-repeat brightness-75"
-                    role="img"
-                    aria-label="Showcase of bespoke furniture craftsmanship"
+            {/* Window Frame - stays fixed, clips the parallax image */}
+            <div className="relative w-full overflow-hidden rounded-lg">
+                {/* Parallax Background Image - moves behind the window */}
+                <motion.div
+                    className="absolute inset-0 scale-125"
+                    style={{
+                        y: backgroundY,
+                        scale: backgroundScale
+                    }}
                 >
-                    <div className="absolute inset-0 backdrop-blur-xs backdrop-filter" />
-                </div>
-            </div>
-            <div className="relative z-10 flex h-full items-center justify-center py-4 sm:p-8 md:p-12">
-                <div className="text-center">
-                    <h1 className="mb-4 text-4xl font-bold text-white drop-shadow-md sm:text-5xl md:text-7xl">
-                        Bespoke Broncel Furniture
-                    </h1>
-                    <h2 className="mb-8 text-xl text-white italic sm:text-2xl">
-                        Building your dream furniture in South Yorkshire
-                    </h2>
-                    <div className="flex justify-center gap-4">
+                    <Image
+                        src="/hero-bg.webp"
+                        alt="Bespoke furniture craftsmanship"
+                        fill
+                        priority
+                        fetchPriority="high"
+                        sizes="100vw"
+                        className="object-cover object-center"
+                    />
+                </motion.div>
+                <div className="absolute inset-0 bg-black/30 backdrop-blur-xs" />
+
+                {/* Content inside the window */}
+                <div className="relative z-10 px-4 py-35 text-center text-white sm:px-8 sm:py-32 md:py-40 lg:py-48">
+                    <motion.h1
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        className="mb-6 text-4xl leading-tight font-bold sm:text-5xl md:text-7xl"
+                    >
+                        {companyInfo.name}
+                    </motion.h1>
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                        className="mb-8 text-xl text-white/90 italic sm:text-2xl"
+                    >
+                        {companyInfo.tagline}
+                    </motion.p>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+                        className="flex flex-col justify-center gap-4 sm:flex-row"
+                    >
                         <Link
-                            href={{ pathname: "/", hash: "work" }}
-                            className="bg-primary hover:bg-primary/80 cursor-pointer rounded-full px-6 py-2 text-sm text-white transition-colors sm:text-base"
-                            aria-label="View our portfolio of custom furniture"
+                            href="/#work"
+                            className="text-brand-dark inline-flex items-center justify-center gap-2 rounded-lg bg-white px-8 py-3.5 font-semibold shadow-lg shadow-black/20 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-black/30"
                         >
                             View Our Work
                         </Link>
                         <Link
-                            href={{ pathname: "/", hash: "contact" }}
-                            className="bg-secondary hover:bg-secondary/80 cursor-pointer rounded-full px-6 py-2 text-sm text-white transition-colors sm:text-base"
-                            aria-label="Contact us for a free quote"
+                            href="/#contact"
+                            className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/30 bg-white/10 px-8 py-3.5 font-semibold text-white shadow-lg shadow-black/10 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white/20 hover:shadow-xl"
                         >
                             Get In Touch
                         </Link>
-                    </div>
+                    </motion.div>
                 </div>
             </div>
         </section>

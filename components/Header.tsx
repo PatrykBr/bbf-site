@@ -1,142 +1,122 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { usePostHog } from "posthog-js/react";
-import { HEADER_SCROLL_THRESHOLD, ACTIVE_SECTION_OFFSET } from "../constants/config";
-import { ContactEvents } from "../constants/analytics";
+import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { contactInfo } from "@/lib/data/contact";
 
-// Navigation links with their corresponding section IDs
-const NAV_LINKS = [
-    { name: "HOME", id: "hero" },
-    { name: "WORK", id: "work" },
-    { name: "ABOUT", id: "about" }
-] as const;
-
-const Header = () => {
+export function Header() {
+    const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [activeSection, setActiveSection] = useState("hero");
-    const [scrolled, setScrolled] = useState(false);
-    const headerRef = useRef<HTMLDivElement>(null);
-    const navRefs = useRef<Record<string, HTMLElement | null>>({});
-    const [indicatorStyle, setIndicatorStyle] = useState({ width: 0, left: 0 });
-    const logoWidth = scrolled ? 120 : 140;
-    const logoHeight = (logoWidth * 50) / 140;
-    const posthog = usePostHog();
+    const [activeSection, setActiveSection] = useState("home");
+    const [isNavigating, setIsNavigating] = useState(false);
+
+    const navLinks = [
+        { href: "/", label: "HOME", section: "home" },
+        { href: "/#work", label: "WORK", section: "work" },
+        { href: "/#about", label: "ABOUT", section: "about" }
+    ];
+
+    const handleNavClick = (section: string) => {
+        setIsNavigating(true);
+        setActiveSection(section);
+        // Re-enable observer updates after scroll completes
+        setTimeout(() => setIsNavigating(false), 1000);
+    };
 
     useEffect(() => {
-        const handleScroll = () => {
-            setScrolled(window.scrollY > HEADER_SCROLL_THRESHOLD);
-
-            const sections = NAV_LINKS.map(link => document.getElementById(link.id));
-            const currentSection = sections.findIndex(section => {
-                if (!section) return false;
-                const rect = section.getBoundingClientRect();
-                return rect.top <= ACTIVE_SECTION_OFFSET && rect.bottom >= ACTIVE_SECTION_OFFSET;
-            });
-
-            if (currentSection !== -1) {
-                setActiveSection(NAV_LINKS[currentSection].id);
-            }
-        };
-
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
-
-    // Close mobile menu when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (headerRef.current && !headerRef.current.contains(event.target as Node) && isMenuOpen) {
-                setIsMenuOpen(false);
-            }
-        };
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [isMenuOpen]);
-
-    // Update indicator position when active section changes
-    useEffect(() => {
-        const activeNav = navRefs.current[activeSection];
-        if (activeNav) {
-            setIndicatorStyle({
-                width: activeNav.offsetWidth,
-                left: activeNav.offsetLeft
-            });
+        if (pathname !== "/") {
+            setActiveSection("");
+            return;
         }
-    }, [activeSection]);
+
+        const sections = ["home", "work", "about", "contact"];
+
+        const observer = new IntersectionObserver(
+            entries => {
+                if (isNavigating) return;
+
+                // Find the first entry that is intersecting
+                const visibleEntry = entries.find(entry => entry.isIntersecting);
+                if (visibleEntry) {
+                    const sectionId = visibleEntry.target.id;
+                    const navSection = sectionId === "contact" ? "about" : sectionId;
+                    setActiveSection(navSection);
+                }
+            },
+            { threshold: 0, rootMargin: "-50% 0px -50% 0px" }
+        );
+
+        sections.forEach(sectionId => {
+            const element = document.getElementById(sectionId);
+            if (element) {
+                observer.observe(element);
+            }
+        });
+
+        return () => {
+            observer.disconnect();
+        };
+    }, [isNavigating, pathname]);
 
     return (
-        <header
-            ref={headerRef}
-            className={`fixed top-0 left-0 z-50 w-full transition-all duration-300 ${
-                scrolled ? "bg-primary/80 py-2 pt-5 shadow-md backdrop-blur-md" : "bg-transparent py-4 pt-6"
-            }`}
+        <motion.header
+            initial={{ y: -100 }}
+            animate={{ y: 0 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="bg-brand-dark/90 fixed top-0 right-0 left-0 z-50 backdrop-blur-xs"
         >
-            <div className="container mx-auto px-4 md:px-12">
-                <div className="flex w-full items-center justify-between">
-                    {/* Logo Container */}
-                    <div className="flex items-center">
-                        <Link href="/" className="flex-shrink-0">
+            <div className="mx-auto px-6 py-2 sm:px-10 lg:px-25">
+                <div className="flex h-16 items-center justify-between md:h-20">
+                    {/* Logo */}
+                    <Link href="/" className="flex h-full items-center gap-3">
+                        <motion.div
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="relative aspect-715/349 h-[75%]"
+                        >
                             <Image
                                 src="/logo.webp"
-                                alt="Bespoke Broncel Furniture Logo"
-                                width={140}
-                                height={50}
-                                className={`h-auto transition-all duration-300 ${scrolled ? "w-[120px]" : "w-[140px]"}`}
+                                alt="Bespoke Broncel Furniture"
+                                fill
+                                className="object-contain"
                                 priority
                             />
-                        </Link>
-                    </div>
+                        </motion.div>
+                    </Link>
 
-                    {/* Mobile Menu Button - Moved here to align with logo */}
-                    <button
-                        type="button"
-                        className="flex cursor-pointer items-center md:hidden"
-                        onClick={() => setIsMenuOpen(!isMenuOpen)}
-                        aria-label="Toggle menu"
-                    >
-                        <div className="flex w-6 flex-col items-end justify-between gap-1.5">
-                            <span
-                                className={`block h-0.5 bg-white transition-all duration-300 ${
-                                    isMenuOpen ? "w-6 translate-y-2 rotate-45 transform" : "w-6"
-                                }`}
-                            ></span>
-                            <span
-                                className={`block h-0.5 bg-white transition-opacity duration-300 ${
-                                    isMenuOpen ? "opacity-0" : "w-6 opacity-100"
-                                }`}
-                            ></span>
-                            <span
-                                className={`block h-0.5 bg-white transition-all duration-300 ${
-                                    isMenuOpen ? "w-6 -translate-y-2 -rotate-45 transform" : "w-6"
-                                }`}
-                            ></span>
-                        </div>
-                    </button>
-
-                    {/* Right Content Container - Desktop Only */}
-                    <div className="ml-8 hidden flex-1 flex-col md:flex">
-                        {/* Top Section with Phone and Contact */}
-                        <div className="flex items-center justify-end text-sm">
-                            <a
-                                href="tel:+44 7523 706742"
-                                className="hover:text-secondary mr-6 flex cursor-pointer items-center font-medium text-white transition-colors"
-                                onClick={() =>
-                                    posthog.capture(ContactEvents.METHOD_CLICK, {
-                                        method: "phone",
-                                        location: "header"
-                                    })
-                                }
+                    {/* Desktop Navigation - Two Row Layout */}
+                    <div className="hidden flex-col items-end gap-1 md:flex">
+                        {/* Top Row: Phone & Contact Button */}
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ delay: 0.3 }}
+                            className="flex items-center gap-4"
+                        >
+                            <motion.a
+                                href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
+                                className="flex items-center gap-1.5 text-sm font-semibold text-white/90 hover:text-white"
+                                whileHover="shaking"
                             >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="mr-1 h-4 w-4"
+                                <motion.svg
+                                    variants={{
+                                        shaking: {
+                                            rotate: [0, -10, 10, -10, 10, 0],
+                                            transition: {
+                                                duration: 0.5,
+                                                repeat: Infinity,
+                                                repeatDelay: 1,
+                                                ease: "linear"
+                                            }
+                                        }
+                                    }}
+                                    className="h-4 w-4"
                                     fill="none"
-                                    viewBox="0 0 24 24"
                                     stroke="currentColor"
+                                    viewBox="0 0 24 24"
                                 >
                                     <path
                                         strokeLinecap="round"
@@ -144,95 +124,121 @@ const Header = () => {
                                         strokeWidth={2}
                                         d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                                     />
-                                </svg>
-                                +44 7523 706742
-                            </a>
-                            <Link
-                                href={{ pathname: "/", hash: "contact" }}
-                                className="bg-secondary hover:bg-secondary/80 cursor-pointer rounded-md px-4 py-1 text-sm font-medium text-white transition-colors"
-                            >
-                                Contact Us
-                            </Link>
-                        </div>
+                                </motion.svg>
+                                <span>{contactInfo.phone}</span>
+                            </motion.a>
+                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                                <Link
+                                    href="/#contact"
+                                    className="bg-brand-light inline-block rounded-lg px-4 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+                                >
+                                    Contact Us
+                                </Link>
+                            </motion.div>
+                        </motion.div>
 
-                        {/* Main Navigation Section */}
-                        <div className="flex items-center justify-end">
-                            {/* Desktop Navigation */}
-                            <nav className="block">
-                                <div className="relative">
-                                    <ul className="flex items-center space-x-8">
-                                        {NAV_LINKS.map(link => (
-                                            <li
-                                                key={link.id}
-                                                ref={el => {
-                                                    navRefs.current[link.id] = el;
-                                                }}
-                                            >
-                                                <Link
-                                                    href={{ pathname: "/", hash: link.id }}
-                                                    className={`hover:text-secondary block cursor-pointer px-1 py-2 text-white transition-colors ${
-                                                        activeSection === link.id ? "font-medium" : "font-normal"
-                                                    }`}
-                                                >
-                                                    {link.name}
-                                                </Link>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    {/* Sliding indicator line */}
-                                    <span
-                                        className="bg-secondary absolute bottom-0 h-0.5 transition-all duration-300 ease-in-out"
-                                        style={{
-                                            width: `${indicatorStyle.width}px`,
-                                            transform: `translateX(${indicatorStyle.left}px)`
-                                        }}
+                        {/* Bottom Row: Navigation Links with Animated Underline */}
+                        <nav className="flex items-center gap-8">
+                            {navLinks.map((link, index) => (
+                                <motion.div
+                                    key={link.href}
+                                    initial={{ opacity: 0, y: -10 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.1 * (index + 1) }}
+                                    className="relative py-1"
+                                >
+                                    <Link
+                                        href={link.href}
+                                        onClick={() => handleNavClick(link.section)}
+                                        className={`text-sm font-semibold tracking-wide transition-colors ${
+                                            activeSection === link.section
+                                                ? "text-white"
+                                                : "text-white/80 hover:text-white"
+                                        }`}
+                                    >
+                                        {link.label}
+                                    </Link>
+                                    {activeSection === link.section && (
+                                        <motion.div
+                                            layoutId="activeSection"
+                                            className="bg-brand-light absolute right-0 -bottom-0.5 left-0 -mx-1 h-[2.5px] rounded-xs"
+                                            transition={{ type: "spring", stiffness: 380, damping: 25 }}
+                                        />
+                                    )}
+                                </motion.div>
+                            ))}
+                        </nav>
+                    </div>
+
+                    {/* Mobile Menu Button & Contact */}
+                    <div className="flex items-center gap-2 md:hidden">
+                        <Link
+                            href="/#contact"
+                            className="bg-brand-light rounded-lg px-5 py-1.5 text-sm font-medium text-white"
+                        >
+                            Contact
+                        </Link>
+                        <button
+                            onClick={() => setIsMenuOpen(!isMenuOpen)}
+                            className="p-2 text-white"
+                            aria-label="Toggle menu"
+                        >
+                            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {isMenuOpen ? (
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M6 18L18 6M6 6l12 12"
                                     />
-                                </div>
-                            </nav>
-                        </div>
+                                ) : (
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M4 6h16M4 12h16M4 18h16"
+                                    />
+                                )}
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
                 {/* Mobile Menu */}
-                <div
-                    className={`absolute top-full right-0 left-0 bg-white shadow-lg transition-all duration-300 md:hidden ${
-                        isMenuOpen ? "visible max-h-screen opacity-100" : "invisible max-h-0 overflow-hidden opacity-0"
-                    }`}
-                >
-                    <div className="container mx-auto px-4 py-4">
-                        <nav className="flex flex-col space-y-4">
-                            {NAV_LINKS.map(link => (
-                                <Link
-                                    key={link.id}
-                                    href={{ pathname: "/", hash: link.id }}
-                                    className={`cursor-pointer border-l-4 px-4 py-2 text-lg font-medium ${
-                                        activeSection === link.id
-                                            ? "border-primary text-primary bg-gray-50"
-                                            : "hover:text-primary border-transparent text-gray-700 hover:bg-gray-50"
-                                    }`}
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    {link.name}
-                                </Link>
-                            ))}
-                            <div className="border-t border-gray-100 pt-4">
-                                <a
-                                    href="tel:+44 7523 706742"
-                                    className="text-primary flex cursor-pointer items-center px-4 py-2"
-                                    onClick={() =>
-                                        posthog.capture(ContactEvents.METHOD_CLICK, {
-                                            method: "phone",
-                                            location: "header"
-                                        })
-                                    }
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="mr-2 h-5 w-5"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
+                <AnimatePresence>
+                    {isMenuOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.2 }}
+                            className="overflow-hidden border-t border-white/10 py-4 md:hidden"
+                        >
+                            <nav className="flex flex-col gap-4">
+                                {navLinks.map((link, index) => (
+                                    <motion.div
+                                        key={link.href}
+                                        initial={{ opacity: 0, x: -20 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: 0.05 * index }}
                                     >
+                                        <Link
+                                            href={link.href}
+                                            onClick={() => setIsMenuOpen(false)}
+                                            className="block font-medium text-white/80 transition-colors hover:text-white"
+                                        >
+                                            {link.label}
+                                        </Link>
+                                    </motion.div>
+                                ))}
+                                <motion.a
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: 0.2 }}
+                                    href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
+                                    className="flex items-center gap-1.5 text-sm text-white/80 hover:text-white"
+                                >
+                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
@@ -240,36 +246,13 @@ const Header = () => {
                                             d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                                         />
                                     </svg>
-                                    +44 7523 706742
-                                </a>
-                                <Link
-                                    href={{ pathname: "/", hash: "contact" }}
-                                    className="bg-primary mt-2 flex cursor-pointer items-center rounded-md px-4 py-2 text-white"
-                                    onClick={() => setIsMenuOpen(false)}
-                                >
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        className="mr-2 h-5 w-5"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                                        />
-                                    </svg>
-                                    Contact Us
-                                </Link>
-                            </div>
-                        </nav>
-                    </div>
-                </div>
+                                    {contactInfo.phone}
+                                </motion.a>
+                            </nav>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
-        </header>
+        </motion.header>
     );
-};
-
-export default Header;
+}
