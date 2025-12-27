@@ -147,7 +147,12 @@ export default async function WorkDetailPage({ params }: PageProps) {
                             <p className="mb-8 leading-relaxed text-gray-600">{item.description}</p>
 
                             {/* Image Gallery */}
-                            {item.images.length > 1 && <ProjectGallery images={item.images} projectName={item.name} />}
+                            <ProjectGallery
+                                images={item.images}
+                                projectName={item.name}
+                                workId={item.id}
+                                category={item.category}
+                            />
                         </div>
 
                         {/* Sidebar */}

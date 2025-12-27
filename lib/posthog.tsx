@@ -3,7 +3,14 @@
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
 import { ReactNode } from "react";
-import type { SharePastWorkEvent, ClickPastWorkEvent, ShareMethod, WorkCategory } from "./types";
+import type {
+    SharePastWorkEvent,
+    ClickPastWorkEvent,
+    ViewPastWorkEvent,
+    ShareMethod,
+    WorkCategory,
+    ViewSource
+} from "./types";
 
 /**
  * PostHog provider wrapper component
@@ -61,8 +68,31 @@ export function useAnalytics() {
         }
     };
 
+    /**
+     * Track when user views a past work item (via click, navigation, or gallery)
+     */
+    const trackViewPastWork = (workId: string, category: WorkCategory, viewSource: ViewSource) => {
+        const event: ViewPastWorkEvent = {
+            work_id: workId,
+            category,
+            view_source: viewSource,
+            timestamp: new Date().toISOString()
+        };
+
+        try {
+            posthogClient?.capture("view_past_work", event);
+
+            if (process.env.NODE_ENV === "development") {
+                console.log("[Analytics] view_past_work:", event);
+            }
+        } catch (error) {
+            console.error("[Analytics] Failed to track view event:", error);
+        }
+    };
+
     return {
         trackSharePastWork,
-        trackClickPastWork
+        trackClickPastWork,
+        trackViewPastWork
     };
 }

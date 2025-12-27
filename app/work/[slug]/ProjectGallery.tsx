@@ -3,11 +3,14 @@
 import { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { FallbackImage } from "@/components";
-import type { WorkImage, ImageOrientation } from "@/lib/types";
+import { useAnalytics } from "@/lib/posthog";
+import type { WorkImage, ImageOrientation, WorkCategory } from "@/lib/types";
 
 interface ProjectGalleryProps {
     images: WorkImage[];
     projectName: string;
+    workId: string;
+    category: WorkCategory;
 }
 
 // Get aspect ratio class based on image orientation
@@ -23,26 +26,29 @@ const getAspectRatioClass = (orientation: ImageOrientation = "landscape"): strin
     }
 };
 
-export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
+export function ProjectGallery({ images, projectName, workId, category }: ProjectGalleryProps) {
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+    const { trackViewPastWork } = useAnalytics();
 
     const handleClose = useCallback(() => {
         setSelectedIndex(null);
     }, []);
 
     const handlePrev = useCallback(() => {
+        trackViewPastWork(workId, category, "gallery");
         setSelectedIndex(prev => {
             if (prev === null) return null;
             return (prev - 1 + images.length) % images.length;
         });
-    }, [images.length]);
+    }, [images.length, workId, category, trackViewPastWork]);
 
     const handleNext = useCallback(() => {
+        trackViewPastWork(workId, category, "gallery");
         setSelectedIndex(prev => {
             if (prev === null) return null;
             return (prev + 1) % images.length;
         });
-    }, [images.length]);
+    }, [images.length, workId, category, trackViewPastWork]);
 
     // Keyboard navigation
     useEffect(() => {
@@ -73,12 +79,17 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
 
     return (
         <>
-            <h3 className="text-brand-dark mb-4 text-xl font-semibold">Project Gallery</h3>
+            <h3 className="text-brand-dark mb-4 text-xl font-semibold">
+                {images.length > 1 ? "Project Gallery" : "Project Image"}
+            </h3>
             <div className="columns-1 gap-4 space-y-4 sm:columns-2">
                 {images.map((image, index) => (
                     <button
                         key={index}
-                        onClick={() => setSelectedIndex(index)}
+                        onClick={() => {
+                            trackViewPastWork(workId, category, "gallery");
+                            setSelectedIndex(index);
+                        }}
                         className={`relative ${getAspectRatioClass(image.orientation)} group w-full cursor-pointer break-inside-avoid overflow-hidden rounded-lg`}
                     >
                         <FallbackImage
@@ -216,7 +227,8 @@ export function ProjectGallery({ images, projectName }: ProjectGalleryProps) {
                             className="absolute right-0 bottom-4 left-0 text-center"
                         >
                             <p className="text-sm text-white/80">
-                                {projectName} • {selectedIndex + 1} of {images.length}
+                                {projectName}
+                                {images.length > 1 && ` • ${selectedIndex + 1} of ${images.length}`}
                             </p>
                         </motion.div>
                     </motion.div>
