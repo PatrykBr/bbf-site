@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { FallbackImage } from "./FallbackImage";
 import { useAnalytics } from "@/lib/posthog";
 import { getFacebookShareUrl, getWhatsAppShareUrl, copyToClipboard } from "@/lib/utils";
-import type { PastWorkItem, ShareMethod } from "@/lib/types";
+import type { PastWorkItem, ShareMethod, WorkFilter } from "@/lib/types";
 
 interface ImageModalProps {
     item: PastWorkItem;
@@ -14,14 +14,36 @@ interface ImageModalProps {
     currentItemIndex: number;
     onClose: () => void;
     onNavigateToItem: (index: number) => void;
+    activeFilter?: WorkFilter;
+    showFeatured?: boolean;
 }
 
-export function ImageModal({ item, allItems, currentItemIndex, onClose, onNavigateToItem }: ImageModalProps) {
+// Helper to get display label for filter
+const getFilterLabel = (filter: WorkFilter, showFeatured: boolean): string => {
+    if (showFeatured) {
+        if (filter === "all") return "Featured Work";
+        if (filter === "wardrobe") return "Featured Wardrobes";
+        return "Featured Kitchens";
+    }
+    if (filter === "all") return "All Work";
+    if (filter === "wardrobe") return "Wardrobes";
+    return "Kitchens";
+};
+
+export function ImageModal({
+    item,
+    allItems,
+    currentItemIndex,
+    onClose,
+    onNavigateToItem,
+    activeFilter = "all",
+    showFeatured = false
+}: ImageModalProps) {
     const [copySuccess, setCopySuccess] = useState(false);
     const [direction, setDirection] = useState(0);
     const [showGallery, setShowGallery] = useState(false);
     const [galleryImageIndex, setGalleryImageIndex] = useState(0);
-    const { trackSharePastWork } = useAnalytics();
+    const { trackSharePastWork, trackViewPastWork } = useAnalytics();
 
     const currentImage = item.images[0]; // Always show first image in main view
     const hasMultipleImages = item.images.length > 1;
@@ -35,12 +57,18 @@ export function ImageModal({ item, allItems, currentItemIndex, onClose, onNaviga
                     case "Escape":
                         setShowGallery(false);
                         break;
-                    case "ArrowRight":
-                        setGalleryImageIndex(prev => (prev + 1) % item.images.length);
+                    case "ArrowRight": {
+                        const nextIdx = (galleryImageIndex + 1) % item.images.length;
+                        trackViewPastWork(item.id, item.category, "gallery");
+                        setGalleryImageIndex(nextIdx);
                         break;
-                    case "ArrowLeft":
-                        setGalleryImageIndex(prev => (prev - 1 + item.images.length) % item.images.length);
+                    }
+                    case "ArrowLeft": {
+                        const prevIdx = (galleryImageIndex - 1 + item.images.length) % item.images.length;
+                        trackViewPastWork(item.id, item.category, "gallery");
+                        setGalleryImageIndex(prevIdx);
                         break;
+                    }
                 }
             } else {
                 // Work item navigation
@@ -48,14 +76,26 @@ export function ImageModal({ item, allItems, currentItemIndex, onClose, onNaviga
                     case "Escape":
                         onClose();
                         break;
-                    case "ArrowRight":
+                    case "ArrowRight": {
                         setDirection(1);
-                        onNavigateToItem((currentItemIndex + 1) % allItems.length);
+                        const nextIndex = (currentItemIndex + 1) % allItems.length;
+                        const nextItem = allItems[nextIndex];
+                        if (nextItem) {
+                            trackViewPastWork(nextItem.id, nextItem.category, "navigation");
+                        }
+                        onNavigateToItem(nextIndex);
                         break;
-                    case "ArrowLeft":
+                    }
+                    case "ArrowLeft": {
                         setDirection(-1);
-                        onNavigateToItem((currentItemIndex - 1 + allItems.length) % allItems.length);
+                        const prevIndex = (currentItemIndex - 1 + allItems.length) % allItems.length;
+                        const prevItem = allItems[prevIndex];
+                        if (prevItem) {
+                            trackViewPastWork(prevItem.id, prevItem.category, "navigation");
+                        }
+                        onNavigateToItem(prevIndex);
                         break;
+                    }
                 }
             }
         };
@@ -67,7 +107,16 @@ export function ImageModal({ item, allItems, currentItemIndex, onClose, onNaviga
             document.removeEventListener("keydown", handleKeyDown);
             document.body.style.overflow = "unset";
         };
-    }, [onClose, onNavigateToItem, currentItemIndex, allItems.length, showGallery, item.images.length]);
+    }, [
+        onClose,
+        onNavigateToItem,
+        currentItemIndex,
+        allItems,
+        showGallery,
+        item,
+        galleryImageIndex,
+        trackViewPastWork
+    ]);
 
     // Reset gallery when item changes
     useEffect(() => {
@@ -101,13 +150,23 @@ export function ImageModal({ item, allItems, currentItemIndex, onClose, onNaviga
     const handlePrev = (e: React.MouseEvent) => {
         e.stopPropagation();
         setDirection(-1);
-        onNavigateToItem((currentItemIndex - 1 + allItems.length) % allItems.length);
+        const prevIndex = (currentItemIndex - 1 + allItems.length) % allItems.length;
+        const prevItem = allItems[prevIndex];
+        if (prevItem) {
+            trackViewPastWork(prevItem.id, prevItem.category, "navigation");
+        }
+        onNavigateToItem(prevIndex);
     };
 
     const handleNext = (e: React.MouseEvent) => {
         e.stopPropagation();
         setDirection(1);
-        onNavigateToItem((currentItemIndex + 1) % allItems.length);
+        const nextIndex = (currentItemIndex + 1) % allItems.length;
+        const nextItem = allItems[nextIndex];
+        if (nextItem) {
+            trackViewPastWork(nextItem.id, nextItem.category, "navigation");
+        }
+        onNavigateToItem(nextIndex);
     };
 
     const imageVariants = {
@@ -172,6 +231,7 @@ export function ImageModal({ item, allItems, currentItemIndex, onClose, onNaviga
                     whileTap={{ scale: 0.9 }}
                     onClick={e => {
                         e.stopPropagation();
+                        trackViewPastWork(item.id, item.category, "gallery");
                         setGalleryImageIndex(prev => (prev - 1 + item.images.length) % item.images.length);
                     }}
                     className="absolute top-1/2 left-4 z-50 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
@@ -187,6 +247,7 @@ export function ImageModal({ item, allItems, currentItemIndex, onClose, onNaviga
                     whileTap={{ scale: 0.9 }}
                     onClick={e => {
                         e.stopPropagation();
+                        trackViewPastWork(item.id, item.category, "gallery");
                         setGalleryImageIndex(prev => (prev + 1) % item.images.length);
                     }}
                     className="absolute top-1/2 right-4 z-50 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
@@ -229,7 +290,12 @@ export function ImageModal({ item, allItems, currentItemIndex, onClose, onNaviga
                     {item.images.map((img, idx) => (
                         <button
                             key={idx}
-                            onClick={() => setGalleryImageIndex(idx)}
+                            onClick={() => {
+                                if (idx !== galleryImageIndex) {
+                                    trackViewPastWork(item.id, item.category, "gallery");
+                                }
+                                setGalleryImageIndex(idx);
+                            }}
                             className={`h-16 w-16 overflow-hidden rounded-lg border-2 transition-all ${
                                 idx === galleryImageIndex
                                     ? "scale-110 border-white"
@@ -352,9 +418,9 @@ export function ImageModal({ item, allItems, currentItemIndex, onClose, onNaviga
                         {/* Item Info */}
                         <div>
                             <h3 className="text-lg font-semibold text-white">{item.name}</h3>
-                            <p className="text-sm text-white/70 capitalize">{item.category}</p>
+                            <p className="text-sm text-white/70">{getFilterLabel(activeFilter, showFeatured)}</p>
                             <p className="mt-1 text-xs text-white/50">
-                                {currentItemIndex + 1} of {allItems.length} works
+                                {currentItemIndex + 1} of {allItems.length}
                             </p>
                         </div>
 
@@ -364,7 +430,10 @@ export function ImageModal({ item, allItems, currentItemIndex, onClose, onNaviga
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => setShowGallery(true)}
+                                    onClick={() => {
+                                        trackViewPastWork(item.id, item.category, "gallery");
+                                        setShowGallery(true);
+                                    }}
                                     className="bg-brand-light hover:bg-brand-light/90 flex items-center gap-2 rounded px-4 py-2 text-sm font-medium text-white transition-colors"
                                 >
                                     <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

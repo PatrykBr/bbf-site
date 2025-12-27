@@ -64,7 +64,7 @@ export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_
         itemIndex: number;
     } | null>(null);
 
-    const { trackClickPastWork } = useAnalytics();
+    const { trackClickPastWork, trackViewPastWork } = useAnalytics();
 
     // Filter and sort items
     const filteredItems = useMemo(() => {
@@ -110,10 +110,11 @@ export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_
     const handleImageClick = useCallback(
         (item: PastWorkItem) => {
             trackClickPastWork(item.id, item.category);
-            const itemIndex = paginatedItems.findIndex(i => i.id === item.id);
+            trackViewPastWork(item.id, item.category, "click");
+            const itemIndex = filteredItems.findIndex(i => i.id === item.id);
             setModalState({ item, itemIndex });
         },
-        [trackClickPastWork, paginatedItems]
+        [trackClickPastWork, trackViewPastWork, filteredItems]
     );
 
     const handleModalClose = useCallback(() => {
@@ -122,12 +123,12 @@ export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_
 
     const handleNavigateToItem = useCallback(
         (index: number) => {
-            const newItem = paginatedItems[index];
+            const newItem = filteredItems[index];
             if (newItem) {
                 setModalState({ item: newItem, itemIndex: index });
             }
         },
-        [paginatedItems]
+        [filteredItems]
     );
 
     if (items.length === 0) {
@@ -346,10 +347,12 @@ export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_
                 {modalState && (
                     <ImageModal
                         item={modalState.item}
-                        allItems={paginatedItems}
+                        allItems={filteredItems}
                         currentItemIndex={modalState.itemIndex}
                         onClose={handleModalClose}
                         onNavigateToItem={handleNavigateToItem}
+                        activeFilter={filter}
+                        showFeatured={showFeatured}
                     />
                 )}
             </div>

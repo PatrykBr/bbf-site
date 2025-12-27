@@ -70,6 +70,16 @@ export interface ClickPastWorkEvent {
     timestamp: string;
 }
 
+// Source of work view
+export type ViewSource = "click" | "navigation" | "gallery";
+
+export interface ViewPastWorkEvent {
+    work_id: string;
+    category: WorkCategory;
+    view_source: ViewSource;
+    timestamp: string;
+}
+
 // API response types
 export interface ContactApiResponse {
     success: boolean;
