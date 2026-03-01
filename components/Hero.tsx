@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { companyInfo } from "@/lib/data/contact";
 
 export function Hero() {
@@ -12,8 +12,9 @@ export function Hero() {
         target: sectionRef,
         offset: ["start start", "end start"]
     });
-    const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
-    const backgroundScale = useTransform(scrollYProgress, [0, 1], [1, 1.25]);
+    const shouldReduceMotion = useReducedMotion();
+    const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", shouldReduceMotion ? "0%" : "100%"]);
+    const backgroundScale = useTransform(scrollYProgress, [0, 1], [1, shouldReduceMotion ? 1 : 1.25]);
 
     return (
         <section
@@ -46,25 +47,25 @@ export function Hero() {
                 {/* Content inside the window */}
                 <div className="relative z-10 px-4 py-35 text-center text-white sm:px-8 sm:py-32 md:py-40 lg:py-48">
                     <motion.h1
-                        initial={{ opacity: 0, y: 30 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        initial={shouldReduceMotion ? false : { opacity: 0, y: 30 }}
+                        animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+                        transition={shouldReduceMotion ? undefined : { duration: 0.8, ease: "easeOut" }}
                         className="mb-6 text-4xl leading-tight font-bold sm:text-5xl md:text-7xl"
                     >
                         {companyInfo.name}
                     </motion.h1>
                     <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.2, ease: "easeOut" }}
+                        initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+                        animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+                        transition={shouldReduceMotion ? undefined : { duration: 0.8, delay: 0.2, ease: "easeOut" }}
                         className="mb-8 text-xl text-white/90 italic sm:text-2xl"
                     >
                         {companyInfo.tagline}
                     </motion.p>
                     <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.8, delay: 0.4, ease: "easeOut" }}
+                        initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+                        animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+                        transition={shouldReduceMotion ? undefined : { duration: 0.8, delay: 0.4, ease: "easeOut" }}
                         className="flex flex-col justify-center gap-4 sm:flex-row"
                     >
                         <Link

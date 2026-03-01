@@ -87,7 +87,6 @@ function FallbackImageComponent({
                 onError={handleError}
                 onLoad={handleLoad}
                 onClick={onClick}
-                unoptimized={src.startsWith("/past-work/") || src.startsWith("/hero")}
             />
         </div>
     );

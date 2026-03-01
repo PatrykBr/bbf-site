@@ -3,15 +3,26 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { contactInfo } from "@/lib/data/contact";
 
 export function Header() {
+    return (
+        <Suspense>
+            <HeaderInner />
+        </Suspense>
+    );
+}
+
+function HeaderInner() {
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [activeSection, setActiveSection] = useState("home");
     const [isNavigating, setIsNavigating] = useState(false);
+    const navigationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const mobileMenuId = "mobile-navigation";
+    const activeSectionForNav = pathname === "/" ? activeSection : "";
 
     const navLinks = [
         { href: "/", label: "HOME", section: "home" },
@@ -20,15 +31,30 @@ export function Header() {
     ];
 
     const handleNavClick = (section: string) => {
+        if (navigationTimeoutRef.current) {
+            clearTimeout(navigationTimeoutRef.current);
+        }
+
         setIsNavigating(true);
         setActiveSection(section);
         // Re-enable observer updates after scroll completes
-        setTimeout(() => setIsNavigating(false), 1000);
+        navigationTimeoutRef.current = setTimeout(() => {
+            setIsNavigating(false);
+            navigationTimeoutRef.current = null;
+        }, 1000);
     };
+
+    useEffect(
+        () => () => {
+            if (navigationTimeoutRef.current) {
+                clearTimeout(navigationTimeoutRef.current);
+            }
+        },
+        []
+    );
 
     useEffect(() => {
         if (pathname !== "/") {
-            setActiveSection("");
             return;
         }
 
@@ -83,6 +109,7 @@ export function Header() {
                                 fill
                                 className="object-contain"
                                 priority
+                                sizes="220px"
                             />
                         </motion.div>
                     </Link>
@@ -151,14 +178,14 @@ export function Header() {
                                         href={link.href}
                                         onClick={() => handleNavClick(link.section)}
                                         className={`text-sm font-semibold tracking-wide transition-colors ${
-                                            activeSection === link.section
+                                            activeSectionForNav === link.section
                                                 ? "text-white"
                                                 : "text-white/80 hover:text-white"
                                         }`}
                                     >
                                         {link.label}
                                     </Link>
-                                    {activeSection === link.section && (
+                                    {activeSectionForNav === link.section && (
                                         <motion.div
                                             layoutId="activeSection"
                                             className="bg-brand-light absolute right-0 -bottom-0.5 left-0 -mx-1 h-[2.5px] rounded-xs"
@@ -179,9 +206,12 @@ export function Header() {
                             Contact
                         </Link>
                         <button
+                            type="button"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             className="p-2 text-white"
                             aria-label="Toggle menu"
+                            aria-expanded={isMenuOpen}
+                            aria-controls={mobileMenuId}
                         >
                             <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 {isMenuOpen ? (
@@ -208,6 +238,7 @@ export function Header() {
                 <AnimatePresence>
                     {isMenuOpen && (
                         <motion.div
+                            id={mobileMenuId}
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}

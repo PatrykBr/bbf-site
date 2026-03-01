@@ -7,12 +7,15 @@ export async function register() {
 
 export async function onRequestError(
     err: Error & { digest?: string },
-    request: { headers: { cookie?: string | string[] } },
-    _context: unknown
+    request: { headers: { cookie?: string | string[] } }
 ) {
     if (process.env.NEXT_RUNTIME === "nodejs") {
         const { getPostHogServer } = await import("./lib/posthog-server");
         const posthog = getPostHogServer();
+
+        if (!posthog) {
+            return;
+        }
 
         let distinctId: string | undefined;
 

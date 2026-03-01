@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FallbackImage } from "@/components";
+import { FallbackImage } from "@/components/FallbackImage";
 import { useAnalytics } from "@/lib/posthog";
-import type { WorkImage, ImageOrientation, WorkCategory } from "@/lib/types";
+import type { WorkImage, WorkCategory } from "@/lib/types";
+import { getAspectRatioClass } from "@/lib/utils";
 
 interface ProjectGalleryProps {
     images: WorkImage[];
@@ -13,25 +14,19 @@ interface ProjectGalleryProps {
     category: WorkCategory;
 }
 
-// Get aspect ratio class based on image orientation
-const getAspectRatioClass = (orientation: ImageOrientation = "landscape"): string => {
-    switch (orientation) {
-        case "portrait":
-            return "aspect-[3/4]";
-        case "square":
-            return "aspect-square";
-        case "landscape":
-        default:
-            return "aspect-[4/3]";
-    }
-};
-
 export function ProjectGallery({ images, projectName, workId, category }: ProjectGalleryProps) {
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
     const { trackViewPastWork } = useAnalytics();
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const lastFocusedElementRef = useRef<HTMLElement | null>(null);
 
     const handleClose = useCallback(() => {
         setSelectedIndex(null);
+
+        if (lastFocusedElementRef.current) {
+            lastFocusedElementRef.current.focus();
+            lastFocusedElementRef.current = null;
+        }
     }, []);
 
     const handlePrev = useCallback(() => {
@@ -53,6 +48,8 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
     // Keyboard navigation
     useEffect(() => {
         if (selectedIndex === null) return;
+
+        closeButtonRef.current?.focus();
 
         const handleKeyDown = (e: KeyboardEvent) => {
             switch (e.key) {
@@ -84,35 +81,40 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
             </h3>
             <div className="columns-1 gap-4 space-y-4 sm:columns-2">
                 {images.map((image, index) => (
-                    <button
-                        key={index}
-                        onClick={() => {
-                            trackViewPastWork(workId, category, "gallery");
-                            setSelectedIndex(index);
-                        }}
-                        className={`relative ${getAspectRatioClass(image.orientation)} group w-full cursor-pointer break-inside-avoid overflow-hidden rounded-lg`}
-                    >
-                        <FallbackImage
-                            src={image.url}
-                            alt={image.alt}
-                            fill
-                            className="object-cover transition-transform duration-300 group-hover:scale-105"
-                            sizes="(max-width: 768px) 100vw, 50vw"
-                        />
-                        {/* Hover overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
-                            <span className="font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
-                                <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path
-                                        strokeLinecap="round"
-                                        strokeLinejoin="round"
-                                        strokeWidth={2}
-                                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
-                                    />
-                                </svg>
-                            </span>
-                        </div>
-                    </button>
+                    <figure key={index} className="break-inside-avoid">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                lastFocusedElementRef.current =
+                                    document.activeElement instanceof HTMLElement ? document.activeElement : null;
+                                trackViewPastWork(workId, category, "gallery");
+                                setSelectedIndex(index);
+                            }}
+                            className={`relative ${getAspectRatioClass(image.orientation)} group w-full cursor-pointer overflow-hidden rounded-lg`}
+                        >
+                            <FallbackImage
+                                src={image.url}
+                                alt={image.alt}
+                                fill
+                                className="object-cover transition-transform duration-300 group-hover:scale-105"
+                                sizes="(max-width: 768px) 100vw, 50vw"
+                            />
+                            {/* Hover overlay */}
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
+                                <span className="font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+                                    <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"
+                                        />
+                                    </svg>
+                                </span>
+                            </div>
+                        </button>
+                        <figcaption className="sr-only">{image.alt}</figcaption>
+                    </figure>
                 ))}
             </div>
 
@@ -125,12 +127,17 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                         exit={{ opacity: 0 }}
                         transition={{ duration: 0.2 }}
                         className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label={`${projectName} image preview`}
                         onClick={handleClose}
                     >
                         {/* Close Button */}
                         <motion.button
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
+                            ref={closeButtonRef}
+                            type="button"
                             onClick={handleClose}
                             className="absolute top-4 right-4 z-50 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                             aria-label="Close"
@@ -152,6 +159,7 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                                 animate={{ opacity: 1, x: 0 }}
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
+                                type="button"
                                 onClick={e => {
                                     e.stopPropagation();
                                     handlePrev();
@@ -177,6 +185,7 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                                 animate={{ opacity: 1, x: 0 }}
                                 whileHover={{ scale: 1.1 }}
                                 whileTap={{ scale: 0.9 }}
+                                type="button"
                                 onClick={e => {
                                     e.stopPropagation();
                                     handleNext();

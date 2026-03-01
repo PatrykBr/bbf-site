@@ -44,6 +44,7 @@ export function ContactForm() {
             const validation = validateContactForm({
                 name: formData.name,
                 email: formData.email,
+                phone: formData.phone,
                 message: formData.message
             });
 
@@ -73,6 +74,8 @@ export function ContactForm() {
                 if (result.success) {
                     setStatus("success");
                     setStatusMessage(result.message);
+                    setErrors({});
+
                     // Reset form
                     setFormData({
                         name: "",
@@ -83,12 +86,22 @@ export function ContactForm() {
                 } else {
                     setStatus("error");
                     setStatusMessage(result.message || "Something went wrong. Please try again.");
-                    console.error("[Contact Form] Error:", result.error);
+
+                    if (result.fieldErrors) {
+                        setErrors(result.fieldErrors);
+                    }
+
+                    if (process.env.NODE_ENV === "development") {
+                        console.error("[Contact Form] Error:", result.error);
+                    }
                 }
             } catch (error) {
                 setStatus("error");
                 setStatusMessage("Unable to send message. Please try again or contact us directly.");
-                console.error("[Contact Form] Network error:", error);
+
+                if (process.env.NODE_ENV === "development") {
+                    console.error("[Contact Form] Network error:", error);
+                }
             }
         },
         [formData, honeypot, formRenderedAt]
@@ -120,13 +133,20 @@ export function ContactForm() {
                     name="name"
                     value={formData.name}
                     onChange={handleChange}
+                    required
+                    aria-invalid={Boolean(errors.name)}
+                    aria-describedby={errors.name ? "name-error" : undefined}
                     className={`focus:ring-brand-light w-full rounded-lg border px-4 py-2 transition-colors focus:border-transparent focus:ring-2 ${
                         errors.name ? "border-red-500" : "border-gray-300"
                     }`}
                     placeholder="Your Name"
                     disabled={status === "submitting"}
                 />
-                {errors.name && <p className="mt-1 text-sm text-red-500">{errors.name}</p>}
+                {errors.name ? (
+                    <p id="name-error" className="mt-1 text-sm text-red-500">
+                        {errors.name}
+                    </p>
+                ) : null}
             </div>
 
             {/* Email Field */}
@@ -140,13 +160,20 @@ export function ContactForm() {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
+                    required
+                    aria-invalid={Boolean(errors.email)}
+                    aria-describedby={errors.email ? "email-error" : undefined}
                     className={`focus:ring-brand-light w-full rounded-lg border px-4 py-2 transition-colors focus:border-transparent focus:ring-2 ${
                         errors.email ? "border-red-500" : "border-gray-300"
                     }`}
                     placeholder="Your Email"
                     disabled={status === "submitting"}
                 />
-                {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+                {errors.email ? (
+                    <p id="email-error" className="mt-1 text-sm text-red-500">
+                        {errors.email}
+                    </p>
+                ) : null}
             </div>
 
             {/* Phone Field (Optional) */}
@@ -160,10 +187,17 @@ export function ContactForm() {
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
+                    aria-invalid={Boolean(errors.phone)}
+                    aria-describedby={errors.phone ? "phone-error" : undefined}
                     className="focus:ring-brand-light w-full rounded-lg border border-gray-300 px-4 py-2 transition-colors focus:border-transparent focus:ring-2"
                     placeholder="Your Phone Number"
                     disabled={status === "submitting"}
                 />
+                {errors.phone ? (
+                    <p id="phone-error" className="mt-1 text-sm text-red-500">
+                        {errors.phone}
+                    </p>
+                ) : null}
             </div>
 
             {/* Message Field */}
@@ -177,24 +211,41 @@ export function ContactForm() {
                     value={formData.message}
                     onChange={handleChange}
                     rows={5}
+                    required
+                    aria-invalid={Boolean(errors.message)}
+                    aria-describedby={errors.message ? "message-error" : undefined}
                     className={`focus:ring-brand-light w-full resize-none rounded-lg border px-4 py-2 transition-colors focus:border-transparent focus:ring-2 ${
                         errors.message ? "border-red-500" : "border-gray-300"
                     }`}
                     placeholder="Tell us about your project..."
                     disabled={status === "submitting"}
                 />
-                {errors.message && <p className="mt-1 text-sm text-red-500">{errors.message}</p>}
+                {errors.message ? (
+                    <p id="message-error" className="mt-1 text-sm text-red-500">
+                        {errors.message}
+                    </p>
+                ) : null}
             </div>
 
             {/* Status Message */}
             {status === "success" && (
-                <div className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800">
+                <div
+                    role="status"
+                    aria-live="polite"
+                    className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800"
+                >
                     {statusMessage}
                 </div>
             )}
 
             {status === "error" && (
-                <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-800">{statusMessage}</div>
+                <div
+                    role="alert"
+                    aria-live="assertive"
+                    className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-800"
+                >
+                    {statusMessage}
+                </div>
             )}
 
             {/* Submit Button */}

@@ -43,13 +43,6 @@ export interface ContactFormData {
     message: string;
 }
 
-// Contact form validation errors
-export interface ContactFormErrors {
-    name?: string;
-    email?: string;
-    message?: string;
-}
-
 // Filter types for work gallery
 export type WorkFilter = "all" | "wardrobe" | "kitchen";
 
@@ -85,12 +78,5 @@ export interface ContactApiResponse {
     success: boolean;
     message: string;
     error?: string;
-}
-
-// Pagination state
-export interface PaginationState {
-    currentPage: number;
-    totalPages: number;
-    itemsPerPage: number;
-    totalItems: number;
+    fieldErrors?: Record<string, string>;
 }

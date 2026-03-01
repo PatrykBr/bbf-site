@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
+import { createHash, randomUUID } from "crypto";
+import { isIP } from "net";
 import fs from "fs";
 import path from "path";
 import { validateContactForm } from "@/lib/utils";
@@ -23,49 +25,113 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const TO_EMAIL = process.env.RESEND_TO_EMAIL || "broncelfurniture@gmail.com";
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev";
 
-export async function POST(request: NextRequest): Promise<NextResponse<ContactApiResponse>> {
-    try {
-        // Get client IP for rate limiting
-        const forwardedFor = request.headers.get("x-forwarded-for");
-        const ip = forwardedFor?.split(",")[0].trim() || request.headers.get("x-real-ip") || "unknown";
+const MAX_BODY_BYTES = 10 * 1024;
+const MAX_REQUESTS_PER_WINDOW = 5;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const BOT_MESSAGE = "Thank you for your message! We'll get back to you within 24 hours.";
 
-        // Check rate limit (5 submissions per hour per IP)
-        const rateLimit = checkRateLimit(ip, 5, 60 * 60 * 1000);
+interface ParsedBodySuccess {
+    success: true;
+    data: ContactFormSubmission;
+}
+
+interface ParsedBodyFailure {
+    success: false;
+    code: "INVALID_JSON" | "BODY_TOO_LARGE";
+}
+
+type ParsedBodyResult = ParsedBodySuccess | ParsedBodyFailure;
+
+export async function POST(request: NextRequest): Promise<NextResponse<ContactApiResponse>> {
+    const requestId = randomUUID();
+    const clientIp = getClientIp(request);
+    const rateLimitIdentifier = getRateLimitIdentifier(request, clientIp);
+
+    try {
+        const rateLimit = await checkRateLimit(rateLimitIdentifier, MAX_REQUESTS_PER_WINDOW, RATE_LIMIT_WINDOW_MS);
+        const rateLimitHeaders = getRateLimitHeaders(rateLimit);
+
         if (!rateLimit.success) {
-            console.log(`[Contact API] Rate limit exceeded for IP: ${ip}`);
+            logInfo(requestId, "Rate limit exceeded", {
+                clientIpHash: hashValue(clientIp),
+                resetIn: rateLimit.resetIn,
+                source: rateLimit.source
+            });
+
             return NextResponse.json(
                 {
                     success: false,
                     message: `Too many submissions. Please try again in ${Math.ceil(rateLimit.resetIn / 60)} minutes.`,
                     error: "RATE_LIMIT_EXCEEDED"
                 },
-                { status: 429 }
+                {
+                    status: 429,
+                    headers: {
+                        ...rateLimitHeaders,
+                        "Retry-After": String(rateLimit.resetIn)
+                    }
+                }
             );
         }
 
-        // Parse request body
-        const body: ContactFormSubmission = await request.json();
+        if (!request.headers.get("content-type")?.includes("application/json")) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Invalid content type.",
+                    error: "INVALID_CONTENT_TYPE"
+                },
+                { status: 415, headers: rateLimitHeaders }
+            );
+        }
+
+        const parsedBody = await parseJsonBody(request, MAX_BODY_BYTES);
+        if (!parsedBody.success) {
+            const isBodyTooLarge = parsedBody.code === "BODY_TOO_LARGE";
+
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: isBodyTooLarge ? "Request is too large." : "Invalid request payload.",
+                    error: parsedBody.code
+                },
+                { status: isBodyTooLarge ? 413 : 400, headers: rateLimitHeaders }
+            );
+        }
+
+        const body = parsedBody.data;
 
         // Honeypot check - if filled, it's likely a bot
         if (body._honeypot) {
-            console.log(`[Contact API] Honeypot triggered for IP: ${ip}`);
-            // Return success to not reveal the trap to bots
-            return NextResponse.json({
-                success: true,
-                message: "Thank you for your message! We'll get back to you within 24 hours."
+            logInfo(requestId, "Honeypot triggered", {
+                clientIpHash: hashValue(clientIp)
             });
+
+            return NextResponse.json(
+                {
+                    success: true,
+                    message: BOT_MESSAGE
+                },
+                { headers: rateLimitHeaders }
+            );
         }
 
         // Time-based check - form submitted too quickly (less than 3 seconds)
         if (body._formRenderedAt) {
             const submissionTime = Date.now() - body._formRenderedAt;
             if (submissionTime < 3000) {
-                console.log(`[Contact API] Submission too fast (${submissionTime}ms) for IP: ${ip}`);
-                // Return success to not reveal the trap to bots
-                return NextResponse.json({
-                    success: true,
-                    message: "Thank you for your message! We'll get back to you within 24 hours."
+                logInfo(requestId, "Submission rejected by speed trap", {
+                    clientIpHash: hashValue(clientIp),
+                    submissionTime
                 });
+
+                return NextResponse.json(
+                    {
+                        success: true,
+                        message: BOT_MESSAGE
+                    },
+                    { headers: rateLimitHeaders }
+                );
             }
         }
 
@@ -73,6 +139,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ContactAp
         const validation = validateContactForm({
             name: body.name,
             email: body.email,
+            phone: body.phone,
             message: body.message
         });
 
@@ -81,29 +148,30 @@ export async function POST(request: NextRequest): Promise<NextResponse<ContactAp
                 {
                     success: false,
                     message: "Please check the form for errors.",
-                    error: JSON.stringify(validation.errors)
+                    error: "VALIDATION_ERROR",
+                    fieldErrors: validation.errors
                 },
-                { status: 400 }
+                { status: 400, headers: rateLimitHeaders }
             );
         }
 
         // Check if Resend is configured
         if (!resend) {
-            console.error("[Contact API] Resend not configured. Set RESEND_API_KEY environment variable.");
+            logError(requestId, "Resend is not configured");
 
             // In development, log the message instead of sending
             if (process.env.NODE_ENV === "development") {
-                console.log("[Contact API] Development mode - Message received:", {
-                    name: body.name,
-                    email: body.email,
-                    phone: body.phone || "Not provided",
-                    message: body.message
+                logInfo(requestId, "Accepted contact form in development mode", {
+                    clientIpHash: hashValue(clientIp)
                 });
 
-                return NextResponse.json({
-                    success: true,
-                    message: "Message logged (dev mode). Configure RESEND_API_KEY for actual email delivery."
-                });
+                return NextResponse.json(
+                    {
+                        success: true,
+                        message: "Message logged (dev mode). Configure RESEND_API_KEY for actual email delivery."
+                    },
+                    { headers: rateLimitHeaders }
+                );
             }
 
             return NextResponse.json(
@@ -112,7 +180,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ContactAp
                     message: "Email service is not configured. Please contact us directly.",
                     error: "RESEND_NOT_CONFIGURED"
                 },
-                { status: 500 }
+                { status: 500, headers: rateLimitHeaders }
             );
         }
 
@@ -303,30 +371,41 @@ Sent from Bespoke Broncel Furniture website
         });
 
         if (error) {
-            console.error("[Contact API] Resend error:", error);
+            logError(requestId, "Resend delivery failed", {
+                resendErrorName: error.name
+            });
+
             return NextResponse.json(
                 {
                     success: false,
                     message: "Failed to send message. Please try again later.",
-                    error: error.message
+                    error: "DELIVERY_FAILED"
                 },
-                { status: 500 }
+                { status: 502, headers: rateLimitHeaders }
             );
         }
 
-        console.log("[Contact API] Email sent successfully:", data?.id);
-
-        return NextResponse.json({
-            success: true,
-            message: "Thank you for your message! We'll get back to you within 24 hours."
+        logInfo(requestId, "Email sent successfully", {
+            emailId: data?.id
         });
+
+        return NextResponse.json(
+            {
+                success: true,
+                message: BOT_MESSAGE
+            },
+            { headers: rateLimitHeaders }
+        );
     } catch (error) {
-        console.error("[Contact API] Unexpected error:", error);
+        logError(requestId, "Unexpected server error", {
+            errorName: error instanceof Error ? error.name : "unknown"
+        });
+
         return NextResponse.json(
             {
                 success: false,
                 message: "An unexpected error occurred. Please try again.",
-                error: error instanceof Error ? error.message : "Unknown error"
+                error: "INTERNAL_ERROR"
             },
             { status: 500 }
         );
@@ -343,4 +422,123 @@ function escapeHtml(text: string): string {
         "'": "&#039;"
     };
     return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+function hashValue(value: string): string {
+    return createHash("sha256").update(value).digest("hex").slice(0, 12);
+}
+
+function logInfo(requestId: string, message: string, context?: Record<string, unknown>) {
+    if (context) {
+        console.log(`[Contact API][${requestId}] ${message}`, context);
+        return;
+    }
+
+    console.log(`[Contact API][${requestId}] ${message}`);
+}
+
+function logError(requestId: string, message: string, context?: Record<string, unknown>) {
+    if (context) {
+        console.error(`[Contact API][${requestId}] ${message}`, context);
+        return;
+    }
+
+    console.error(`[Contact API][${requestId}] ${message}`);
+}
+
+function getClientIp(request: NextRequest): string {
+    const ipHeaders = ["x-vercel-forwarded-for", "cf-connecting-ip", "x-real-ip", "x-forwarded-for"];
+
+    for (const header of ipHeaders) {
+        const value = request.headers.get(header);
+
+        if (!value) {
+            continue;
+        }
+
+        const candidates = value.split(",").map(part => part.trim());
+        const validIp = candidates.find(candidate => isIP(candidate));
+
+        if (validIp) {
+            return validIp;
+        }
+    }
+
+    return "unknown";
+}
+
+function getRateLimitIdentifier(request: NextRequest, clientIp: string): string {
+    if (clientIp !== "unknown") {
+        return `ip:${hashValue(clientIp)}`;
+    }
+
+    const userAgent = request.headers.get("user-agent") || "unknown";
+    return `ua:${hashValue(userAgent)}`;
+}
+
+function getRateLimitHeaders(rateLimit: Awaited<ReturnType<typeof checkRateLimit>>): HeadersInit {
+    return {
+        "X-RateLimit-Limit": String(rateLimit.limit),
+        "X-RateLimit-Remaining": String(rateLimit.remaining),
+        "X-RateLimit-Reset": String(rateLimit.resetIn)
+    };
+}
+
+async function parseJsonBody(request: NextRequest, maxBodyBytes: number): Promise<ParsedBodyResult> {
+    const contentLengthHeader = request.headers.get("content-length");
+    const contentLength = contentLengthHeader ? Number(contentLengthHeader) : NaN;
+
+    if (Number.isFinite(contentLength) && contentLength > maxBodyBytes) {
+        return {
+            success: false,
+            code: "BODY_TOO_LARGE"
+        };
+    }
+
+    let rawBody: string;
+    try {
+        rawBody = await request.text();
+    } catch {
+        return {
+            success: false,
+            code: "INVALID_JSON"
+        };
+    }
+
+    if (Buffer.byteLength(rawBody, "utf8") > maxBodyBytes) {
+        return {
+            success: false,
+            code: "BODY_TOO_LARGE"
+        };
+    }
+
+    try {
+        const parsed = JSON.parse(rawBody) as Record<string, unknown>;
+
+        if (!parsed || typeof parsed !== "object") {
+            return {
+                success: false,
+                code: "INVALID_JSON"
+            };
+        }
+
+        const sanitizedBody: ContactFormSubmission = {
+            name: typeof parsed.name === "string" ? parsed.name : "",
+            email: typeof parsed.email === "string" ? parsed.email : "",
+            phone: typeof parsed.phone === "string" ? parsed.phone : undefined,
+            message: typeof parsed.message === "string" ? parsed.message : "",
+            _honeypot: typeof parsed._honeypot === "string" ? parsed._honeypot : undefined,
+            _formRenderedAt: typeof parsed._formRenderedAt === "number" ? parsed._formRenderedAt : undefined
+        };
+
+        return {
+            success: true,
+            data: sanitizedBody
+        };
+    } catch {
+        return {
+            success: false,
+            code: "INVALID_JSON"
+        };
+    }
 }

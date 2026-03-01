@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { companyInfo } from "@/lib/data/contact";
 
 export function AboutSection() {
@@ -11,8 +11,9 @@ export function AboutSection() {
         target: sectionRef,
         offset: ["start end", "end start"]
     });
-    const backgroundY = useTransform(scrollYProgress, [0, 1], ["-30%", "30%"]);
-    const backgroundScale = useTransform(scrollYProgress, [0, 1], [1, 1.25]);
+    const shouldReduceMotion = useReducedMotion();
+    const backgroundY = useTransform(scrollYProgress, [0, 1], ["-30%", shouldReduceMotion ? "-30%" : "30%"]);
+    const backgroundScale = useTransform(scrollYProgress, [0, 1], [1, shouldReduceMotion ? 1 : 1.25]);
 
     return (
         <section
@@ -43,19 +44,19 @@ export function AboutSection() {
                 {/* Content inside the window */}
                 <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 py-8 text-center text-white sm:px-8 sm:py-12">
                     <motion.h2
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
+                        initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+                        whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.6 }}
+                        transition={shouldReduceMotion ? undefined : { duration: 0.6 }}
                         className="mb-4 text-2xl font-bold sm:mb-6 sm:text-4xl md:text-5xl"
                     >
                         Designed for your Home
                     </motion.h2>
                     <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
+                        initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+                        whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
+                        transition={shouldReduceMotion ? undefined : { duration: 0.6, delay: 0.2 }}
                         className="max-w-3xl text-base leading-relaxed text-white/90 sm:text-lg"
                     >
                         {companyInfo.description}

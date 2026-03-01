@@ -1,9 +1,0 @@
-export { Header } from "./Header";
-export { Footer } from "./Footer";
-export { Hero } from "./Hero";
-export { AboutSection } from "./AboutSection";
-export { ContactSection } from "./ContactSection";
-export { ContactForm } from "./ContactForm";
-export { WorkGrid } from "./WorkGrid";
-export { ImageModal } from "./ImageModal";
-export { FallbackImage } from "./FallbackImage";
