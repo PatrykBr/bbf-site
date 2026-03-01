@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { FallbackImage } from "./FallbackImage";
 import { useAnalytics } from "@/lib/posthog";
-import { getFacebookShareUrl, getWhatsAppShareUrl, copyToClipboard } from "@/lib/utils";
+import { getFacebookShareUrl, getWhatsAppShareUrl, copyToClipboard, openExternalUrl } from "@/lib/utils";
 import type { PastWorkItem, ShareMethod, WorkFilter } from "@/lib/types";
 
 interface ImageModalProps {
@@ -44,15 +44,36 @@ export function ImageModal({
     const [showGallery, setShowGallery] = useState(false);
     const [galleryImageIndex, setGalleryImageIndex] = useState(0);
     const { trackSharePastWork, trackViewPastWork } = useAnalytics();
+    const copySuccessTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const mainCloseButtonRef = useRef<HTMLButtonElement>(null);
+    const galleryCloseButtonRef = useRef<HTMLButtonElement>(null);
+    const lastFocusedElementRef = useRef<HTMLElement | null>(null);
 
     const currentImage = item.images[0]; // Always show first image in main view
     const hasMultipleImages = item.images.length > 1;
 
-    // Handle keyboard navigation
+    useEffect(() => {
+        lastFocusedElementRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+        return () => {
+            if (copySuccessTimeoutRef.current) {
+                clearTimeout(copySuccessTimeoutRef.current);
+            }
+
+            if (lastFocusedElementRef.current) {
+                lastFocusedElementRef.current.focus();
+            }
+        };
+    }, []);
+
+    useEffect(() => {
+        const focusTarget = showGallery ? galleryCloseButtonRef.current : mainCloseButtonRef.current;
+        focusTarget?.focus();
+    }, [showGallery, item.id]);
+
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
             if (showGallery) {
-                // Gallery navigation
                 switch (e.key) {
                     case "Escape":
                         setShowGallery(false);
@@ -71,13 +92,14 @@ export function ImageModal({
                     }
                 }
             } else {
-                // Work item navigation
                 switch (e.key) {
                     case "Escape":
                         onClose();
                         break;
                     case "ArrowRight": {
                         setDirection(1);
+                        setShowGallery(false);
+                        setGalleryImageIndex(0);
                         const nextIndex = (currentItemIndex + 1) % allItems.length;
                         const nextItem = allItems[nextIndex];
                         if (nextItem) {
@@ -88,6 +110,8 @@ export function ImageModal({
                     }
                     case "ArrowLeft": {
                         setDirection(-1);
+                        setShowGallery(false);
+                        setGalleryImageIndex(0);
                         const prevIndex = (currentItemIndex - 1 + allItems.length) % allItems.length;
                         const prevItem = allItems[prevIndex];
                         if (prevItem) {
@@ -108,21 +132,15 @@ export function ImageModal({
             document.body.style.overflow = "unset";
         };
     }, [
+        showGallery,
+        galleryImageIndex,
+        item,
         onClose,
         onNavigateToItem,
         currentItemIndex,
         allItems,
-        showGallery,
-        item,
-        galleryImageIndex,
         trackViewPastWork
     ]);
-
-    // Reset gallery when item changes
-    useEffect(() => {
-        setShowGallery(false);
-        setGalleryImageIndex(0);
-    }, [item.id]);
 
     const handleShare = useCallback(
         async (method: ShareMethod) => {
@@ -130,16 +148,24 @@ export function ImageModal({
 
             switch (method) {
                 case "facebook":
-                    window.open(getFacebookShareUrl(item.slug), "_blank");
+                    openExternalUrl(getFacebookShareUrl(item.slug));
                     break;
                 case "whatsapp":
-                    window.open(getWhatsAppShareUrl(item.slug, item.name), "_blank");
+                    openExternalUrl(getWhatsAppShareUrl(item.slug, item.name));
                     break;
                 case "copy":
                     const success = await copyToClipboard(item.slug);
                     if (success) {
                         setCopySuccess(true);
-                        setTimeout(() => setCopySuccess(false), 2000);
+
+                        if (copySuccessTimeoutRef.current) {
+                            clearTimeout(copySuccessTimeoutRef.current);
+                        }
+
+                        copySuccessTimeoutRef.current = setTimeout(() => {
+                            setCopySuccess(false);
+                            copySuccessTimeoutRef.current = null;
+                        }, 2000);
                     }
                     break;
             }
@@ -150,6 +176,8 @@ export function ImageModal({
     const handlePrev = (e: React.MouseEvent) => {
         e.stopPropagation();
         setDirection(-1);
+        setShowGallery(false);
+        setGalleryImageIndex(0);
         const prevIndex = (currentItemIndex - 1 + allItems.length) % allItems.length;
         const prevItem = allItems[prevIndex];
         if (prevItem) {
@@ -161,6 +189,8 @@ export function ImageModal({
     const handleNext = (e: React.MouseEvent) => {
         e.stopPropagation();
         setDirection(1);
+        setShowGallery(false);
+        setGalleryImageIndex(0);
         const nextIndex = (currentItemIndex + 1) % allItems.length;
         const nextItem = allItems[nextIndex];
         if (nextItem) {
@@ -193,12 +223,16 @@ export function ImageModal({
                 exit={{ opacity: 0 }}
                 transition={{ duration: 0.2 }}
                 className="fixed inset-0 z-50 flex items-center justify-center bg-black/95"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${item.name} gallery`}
                 onClick={() => setShowGallery(false)}
             >
                 {/* Back Button */}
                 <motion.button
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
+                    type="button"
                     onClick={e => {
                         e.stopPropagation();
                         setShowGallery(false);
@@ -216,6 +250,8 @@ export function ImageModal({
                 <motion.button
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
+                    ref={galleryCloseButtonRef}
+                    type="button"
                     onClick={onClose}
                     className="absolute top-4 right-4 z-50 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                     aria-label="Close modal"
@@ -227,6 +263,7 @@ export function ImageModal({
 
                 {/* Gallery Navigation */}
                 <motion.button
+                    type="button"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={e => {
@@ -243,6 +280,7 @@ export function ImageModal({
                 </motion.button>
 
                 <motion.button
+                    type="button"
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={e => {
@@ -290,6 +328,7 @@ export function ImageModal({
                     {item.images.map((img, idx) => (
                         <button
                             key={idx}
+                            type="button"
                             onClick={() => {
                                 if (idx !== galleryImageIndex) {
                                     trackViewPastWork(item.id, item.category, "gallery");
@@ -332,6 +371,9 @@ export function ImageModal({
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="work-image-modal-title"
             onClick={onClose}
         >
             {/* Close Button */}
@@ -339,6 +381,8 @@ export function ImageModal({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.1 }}
+                ref={mainCloseButtonRef}
+                type="button"
                 onClick={onClose}
                 className="absolute top-4 right-4 z-50 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                 aria-label="Close modal"
@@ -355,6 +399,7 @@ export function ImageModal({
                 transition={{ delay: 0.15 }}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
+                type="button"
                 onClick={handlePrev}
                 className="absolute top-1/2 left-4 z-50 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                 aria-label="Previous image"
@@ -371,6 +416,7 @@ export function ImageModal({
                 transition={{ delay: 0.15 }}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
+                type="button"
                 onClick={handleNext}
                 className="absolute top-1/2 right-4 z-50 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                 aria-label="Next image"
@@ -417,7 +463,9 @@ export function ImageModal({
                     <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
                         {/* Item Info */}
                         <div>
-                            <h3 className="text-lg font-semibold text-white">{item.name}</h3>
+                            <h3 id="work-image-modal-title" className="text-lg font-semibold text-white">
+                                {item.name}
+                            </h3>
                             <p className="text-sm text-white/70">{getFilterLabel(activeFilter, showFeatured)}</p>
                             <p className="mt-1 text-xs text-white/50">
                                 {currentItemIndex + 1} of {allItems.length}
@@ -430,6 +478,7 @@ export function ImageModal({
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
+                                    type="button"
                                     onClick={() => {
                                         trackViewPastWork(item.id, item.category, "gallery");
                                         setShowGallery(true);
@@ -470,6 +519,7 @@ export function ImageModal({
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
+                            type="button"
                             onClick={() => handleShare("facebook")}
                             className="flex items-center gap-2 rounded bg-[#1877F2] px-4 py-2 text-sm text-white transition-colors hover:bg-[#1877F2]/90"
                             aria-label="Share on Facebook"
@@ -483,6 +533,7 @@ export function ImageModal({
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
+                            type="button"
                             onClick={() => handleShare("whatsapp")}
                             className="flex items-center gap-2 rounded bg-[#25D366] px-4 py-2 text-sm text-white transition-colors hover:bg-[#25D366]/90"
                             aria-label="Share on WhatsApp"
@@ -496,6 +547,7 @@ export function ImageModal({
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
+                            type="button"
                             onClick={() => handleShare("copy")}
                             className="flex items-center gap-2 rounded bg-gray-600 px-4 py-2 text-sm text-white transition-colors hover:bg-gray-500"
                             aria-label="Copy link"

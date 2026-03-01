@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { motion, type Variants } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { ContactForm } from "./ContactForm";
 import { contactInfo, businessHours } from "@/lib/data/contact";
 
@@ -31,6 +31,8 @@ const hoverAnimation = {
 };
 
 export function ContactSection() {
+    const shouldReduceMotion = useReducedMotion();
+
     return (
         <section
             id="contact"
@@ -38,10 +40,10 @@ export function ContactSection() {
         >
             <div className="w-full px-4 sm:px-8 lg:px-16">
                 <motion.h2
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+                    whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
+                    transition={shouldReduceMotion ? undefined : { duration: 0.6 }}
                     className="mb-12 text-center text-3xl font-bold text-white sm:text-4xl"
                 >
                     Get In Touch
@@ -50,18 +52,18 @@ export function ContactSection() {
                 <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
                     {/* Contact Methods */}
                     <motion.div
-                        initial={{ opacity: 0, x: -40 }}
-                        whileInView={{ opacity: 1, x: 0 }}
+                        initial={shouldReduceMotion ? false : { opacity: 0, x: -40 }}
+                        whileInView={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
                         viewport={{ once: true, margin: "-50px" }}
-                        transition={{ duration: 0.6 }}
+                        transition={shouldReduceMotion ? undefined : { duration: 0.6 }}
                         className="rounded-2xl bg-white/10 p-8 backdrop-blur-sm"
                     >
                         <h3 className="mb-6 text-xl font-semibold text-white">Contact Methods</h3>
 
                         <motion.div
                             variants={containerVariants}
-                            initial="hidden"
-                            whileInView="visible"
+                            initial={shouldReduceMotion ? false : "hidden"}
+                            whileInView={shouldReduceMotion ? undefined : "visible"}
                             viewport={{ once: true }}
                             className="space-y-6"
                         >
@@ -69,7 +71,7 @@ export function ContactSection() {
                             <motion.a
                                 href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
                                 variants={itemVariants}
-                                whileHover={hoverAnimation}
+                                whileHover={shouldReduceMotion ? undefined : hoverAnimation}
                                 className="-m-3 flex cursor-pointer items-start gap-4 rounded-xl p-3 transition-colors hover:bg-white/5"
                             >
                                 <div className="bg-brand-light flex h-12 w-12 shrink-0 items-center justify-center rounded-lg">
@@ -105,7 +107,7 @@ export function ContactSection() {
                             <motion.a
                                 href={`mailto:${contactInfo.email}`}
                                 variants={itemVariants}
-                                whileHover={hoverAnimation}
+                                whileHover={shouldReduceMotion ? undefined : hoverAnimation}
                                 className="-m-3 flex cursor-pointer items-start gap-4 rounded-xl p-3 transition-colors hover:bg-white/5"
                             >
                                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-red-500">
@@ -136,7 +138,7 @@ export function ContactSection() {
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 variants={itemVariants}
-                                whileHover={hoverAnimation}
+                                whileHover={shouldReduceMotion ? undefined : hoverAnimation}
                                 className="-m-3 flex cursor-pointer items-start gap-4 rounded-xl p-3 transition-colors hover:bg-white/5"
                             >
                                 <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#1877F2]">
@@ -180,10 +182,10 @@ export function ContactSection() {
 
                     {/* Contact Form */}
                     <motion.div
-                        initial={{ opacity: 0, x: 40 }}
-                        whileInView={{ opacity: 1, x: 0 }}
+                        initial={shouldReduceMotion ? false : { opacity: 0, x: 40 }}
+                        whileInView={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
                         viewport={{ once: true, margin: "-50px" }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
+                        transition={shouldReduceMotion ? undefined : { duration: 0.6, delay: 0.2 }}
                         className="rounded-2xl bg-white p-8"
                     >
                         <h3 className="text-brand-dark mb-6 text-xl font-semibold">Send Us A Message</h3>

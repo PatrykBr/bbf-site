@@ -1,39 +1,43 @@
 "use client";
 
 import { useState, useMemo, useCallback, useEffect } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Masonry from "react-masonry-css";
-import { motion, AnimatePresence, type Variants } from "framer-motion";
+import { motion, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
 import { FallbackImage } from "./FallbackImage";
-import { ImageModal } from "./ImageModal";
 import { useAnalytics } from "@/lib/posthog";
-import type { PastWorkItem, WorkFilter, ImageOrientation } from "@/lib/types";
+import type { PastWorkItem, WorkFilter } from "@/lib/types";
+import { getAspectRatioClass } from "@/lib/utils";
+
+const ImageModal = dynamic(() => import("./ImageModal").then(m => ({ default: m.ImageModal })));
 
 interface WorkGridProps {
     items: PastWorkItem[];
     itemsPerPage?: number;
 }
 
-const ITEMS_PER_PAGE = 12;
+function getResponsiveItemsPerPage(viewportWidth: number): number {
+    if (viewportWidth > 1280) {
+        return 16;
+    }
+
+    if (viewportWidth > 1024) {
+        return 12;
+    }
+
+    if (viewportWidth > 640) {
+        return 8;
+    }
+
+    return 5;
+}
 
 const breakpointColumns = {
     default: 4,
     1280: 3,
     1024: 2,
     640: 1
-};
-
-// Get aspect ratio class based on image orientation
-const getAspectRatioClass = (orientation: ImageOrientation = "landscape"): string => {
-    switch (orientation) {
-        case "portrait":
-            return "aspect-[3/4]"; // Tall images
-        case "square":
-            return "aspect-square"; // 1:1
-        case "landscape":
-        default:
-            return "aspect-[4/3]"; // Wide images
-    }
 };
 
 const itemVariants: Variants = {
@@ -45,17 +49,8 @@ const itemVariants: Variants = {
     }
 };
 
-export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_PAGE }: WorkGridProps) {
-    const [itemsPerPage, setItemsPerPage] = useState(initialItemsPerPage);
-
-    useEffect(() => {
-        // Calculate items per page only once on mount
-        if (window.innerWidth > 1280) setItemsPerPage(16);
-        else if (window.innerWidth > 1024) setItemsPerPage(12);
-        else if (window.innerWidth > 640) setItemsPerPage(8);
-        else setItemsPerPage(5);
-    }, []);
-
+export function WorkGrid({ items, itemsPerPage: itemsPerPageProp }: WorkGridProps) {
+    const [viewportWidth, setViewportWidth] = useState(0);
     const [filter, setFilter] = useState<WorkFilter>("all");
     const [showFeatured, setShowFeatured] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -65,6 +60,28 @@ export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_
     } | null>(null);
 
     const { trackClickPastWork, trackViewPastWork } = useAnalytics();
+    const shouldReduceMotion = useReducedMotion();
+
+    useEffect(() => {
+        if (typeof itemsPerPageProp === "number") {
+            return;
+        }
+
+        const updateViewportWidth = () => {
+            setViewportWidth(window.innerWidth);
+        };
+
+        const animationFrameId = window.requestAnimationFrame(updateViewportWidth);
+        window.addEventListener("resize", updateViewportWidth);
+
+        return () => {
+            window.cancelAnimationFrame(animationFrameId);
+            window.removeEventListener("resize", updateViewportWidth);
+        };
+    }, [itemsPerPageProp]);
+
+    const itemsPerPage =
+        typeof itemsPerPageProp === "number" ? itemsPerPageProp : getResponsiveItemsPerPage(viewportWidth);
 
     // Filter and sort items
     const filteredItems = useMemo(() => {
@@ -146,10 +163,10 @@ export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_
         <section id="work" className="bg-brand-light overflow-hidden py-20">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <motion.h2
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+                    whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.6 }}
+                    transition={shouldReduceMotion ? undefined : { duration: 0.6 }}
                     className="mb-8 text-center text-4xl leading-tight font-bold text-white drop-shadow-lg sm:text-5xl md:text-7xl"
                 >
                     Our Work
@@ -157,10 +174,10 @@ export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_
 
                 {/* Filter Buttons */}
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+                    whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.1 }}
+                    transition={shouldReduceMotion ? undefined : { duration: 0.6, delay: 0.1 }}
                     className="mb-8 flex flex-wrap justify-center gap-3"
                 >
                     <div className="relative flex overflow-hidden rounded-xl bg-white/80 p-1 shadow-lg shadow-black/10 backdrop-blur-sm">
@@ -173,7 +190,11 @@ export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_
                                 <motion.div
                                     layoutId="activeWorkFilter"
                                     className="bg-brand-dark absolute inset-0 -z-10 rounded-lg shadow-md"
-                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                    transition={
+                                        shouldReduceMotion
+                                            ? { duration: 0 }
+                                            : { type: "spring", stiffness: 400, damping: 30 }
+                                    }
                                 />
                             )}
                         </button>
@@ -186,7 +207,11 @@ export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_
                                 <motion.div
                                     layoutId="activeWorkFilter"
                                     className="bg-brand-dark absolute inset-0 -z-10 rounded-lg shadow-md"
-                                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                                    transition={
+                                        shouldReduceMotion
+                                            ? { duration: 0 }
+                                            : { type: "spring", stiffness: 400, damping: 30 }
+                                    }
                                 />
                             )}
                         </button>
@@ -195,18 +220,18 @@ export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_
 
                 {/* Category Filters */}
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
+                    initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
+                    whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
+                    transition={shouldReduceMotion ? undefined : { duration: 0.6, delay: 0.2 }}
                     className="mb-12 flex justify-center gap-2"
                 >
                     {(["all", "wardrobe", "kitchen"] as const).map(cat => (
                         <motion.button
                             key={cat}
                             onClick={() => handleFilterChange(cat)}
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
+                            whileHover={shouldReduceMotion ? undefined : { scale: 1.05 }}
+                            whileTap={shouldReduceMotion ? undefined : { scale: 0.95 }}
                             className={`rounded-full px-4 py-2 text-sm font-medium transition-colors ${
                                 filter === cat
                                     ? "bg-brand-dark text-white"
@@ -231,13 +256,13 @@ export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_
                                     <motion.div
                                         key={item.id}
                                         variants={itemVariants}
-                                        initial="hidden"
-                                        whileInView="visible"
+                                        initial={shouldReduceMotion ? false : "hidden"}
+                                        whileInView={shouldReduceMotion ? undefined : "visible"}
                                         viewport={{ once: true, margin: "-50px" }}
                                     >
                                         <motion.div
-                                            whileHover={{ y: -5 }}
-                                            transition={{ duration: 0.2 }}
+                                            whileHover={shouldReduceMotion ? undefined : { y: -5 }}
+                                            transition={shouldReduceMotion ? undefined : { duration: 0.2 }}
                                             className="group relative overflow-hidden rounded-lg bg-gray-100 shadow-md transition-shadow hover:shadow-xl"
                                         >
                                             {/* Main Image */}
@@ -297,8 +322,8 @@ export function WorkGrid({ items, itemsPerPage: initialItemsPerPage = ITEMS_PER_
                         </div>
                     ) : (
                         <motion.p
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
+                            initial={shouldReduceMotion ? false : { opacity: 0 }}
+                            animate={shouldReduceMotion ? undefined : { opacity: 1 }}
                             className="text-center text-gray-500"
                         >
                             No items match your current filters.

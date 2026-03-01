@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { PostHogProvider } from "@/lib/posthog";
+import { SITE_URL, getSiteUrl } from "@/lib/site-config";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -11,13 +12,13 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://www.broncelfurniture.com"),
+    metadataBase: new URL(SITE_URL),
     title: {
-        default: "Bespoke Broncel Furniture | Building Your Dream",
+        default: "Bespoke Fitted Kitchens & Wardrobes in South Yorkshire | Broncel Furniture",
         template: "%s | Bespoke Broncel Furniture"
     },
     description:
-        "Building your dream furniture in South Yorkshire. Custom-made wardrobes and kitchens crafted with exceptional craftsmanship and attention to detail.",
+        "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of carpentry experience. View our portfolio and get a free quote.",
     keywords: [
         "bespoke furniture",
         "custom wardrobes",
@@ -26,16 +27,20 @@ export const metadata: Metadata = {
         "handmade furniture",
         "Broncel Furniture"
     ],
+    alternates: {
+        canonical: SITE_URL
+    },
     authors: [{ name: "Bespoke Broncel Furniture" }],
     openGraph: {
         type: "website",
         locale: "en_GB",
         siteName: "Bespoke Broncel Furniture",
-        title: "Bespoke Broncel Furniture | Building Your Dream",
-        description: "Custom-made wardrobes and kitchens crafted with exceptional craftsmanship.",
+        title: "Bespoke Fitted Kitchens & Wardrobes in South Yorkshire | Broncel Furniture",
+        description:
+            "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of experience. View our portfolio.",
         images: [
             {
-                url: "https://www.broncelfurniture.com/hero-bg.webp",
+                url: getSiteUrl("/hero-bg.webp"),
                 width: 1200,
                 height: 630,
                 alt: "Bespoke Broncel Furniture"
@@ -45,8 +50,9 @@ export const metadata: Metadata = {
     twitter: {
         card: "summary_large_image",
         title: "Bespoke Broncel Furniture",
-        description: "Custom-made wardrobes and kitchens crafted with exceptional craftsmanship.",
-        images: ["https://www.broncelfurniture.com/hero-bg.webp"]
+        description:
+            "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of experience. View our portfolio.",
+        images: [getSiteUrl("/hero-bg.webp")]
     },
     robots: {
         index: true,

@@ -1,9 +1,12 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Header, Footer, FallbackImage } from "@/components";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import { FallbackImage } from "@/components/FallbackImage";
 import { getPastWorkBySlug, getAllPastWorkSlugs, getAllPastWork } from "@/lib/data/past-work";
 import { formatDate } from "@/lib/utils";
+import { getSiteUrl } from "@/lib/site-config";
 import { WorkDetailClient } from "./WorkDetailClient";
 import { ProjectGallery } from "./ProjectGallery";
 
@@ -33,6 +36,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
         title: item.name,
         description: item.description,
+        alternates: {
+            canonical: getSiteUrl(`/work/${slug}`)
+        },
         openGraph: {
             title: `${item.name} | Bespoke Broncel Furniture`,
             description: item.description,
@@ -40,7 +46,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             images: item.images[0]
                 ? [
                       {
-                          url: item.images[0].url,
+                          url: getSiteUrl(item.images[0].url),
                           alt: item.images[0].alt
                       }
                   ]
@@ -49,7 +55,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
         twitter: {
             card: "summary_large_image",
             title: item.name,
-            description: item.description
+            description: item.description,
+            images: item.images[0] ? [getSiteUrl(item.images[0].url)] : []
         },
         keywords: [`custom ${categoryLabel.toLowerCase()}`, "bespoke furniture", item.name, "South Yorkshire"]
     };
@@ -72,20 +79,26 @@ export default async function WorkDetailPage({ params }: PageProps) {
     // JSON-LD Schema for SEO
     const jsonLd = {
         "@context": "https://schema.org",
-        "@type": "Product",
+        "@type": "ImageGallery",
         name: item.name,
         description: item.description,
-        image: item.images.map(img => img.url),
-        category: categoryLabel,
-        brand: {
+        image: item.images.map(img => ({
+            "@type": "ImageObject",
+            url: getSiteUrl(img.url),
+            name: item.name,
+            description: img.alt,
+            creator: {
+                "@type": "Organization",
+                name: "Bespoke Broncel Furniture"
+            }
+        })),
+        creator: {
             "@type": "Organization",
-            name: "Bespoke Broncel Furniture"
+            name: "Bespoke Broncel Furniture",
+            url: getSiteUrl()
         },
-        offers: {
-            "@type": "Offer",
-            availability: "https://schema.org/InStock",
-            priceCurrency: "GBP"
-        }
+        dateCreated: item.createdAt,
+        genre: categoryLabel
     };
 
     return (
@@ -113,7 +126,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
                 </div>
 
                 {/* Hero Image */}
-                <div className="relative h-[50vh] bg-gray-200 md:h-[60vh]">
+                <figure className="relative h-[50vh] bg-gray-200 md:h-[60vh]">
                     <FallbackImage
                         src={item.images[0]?.url || "/placeholder.jpg"}
                         alt={item.images[0]?.alt || item.name}
@@ -136,7 +149,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
                             )}
                         </div>
                     </div>
-                </div>
+                </figure>
 
                 {/* Content */}
                 <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">

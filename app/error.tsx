@@ -12,10 +12,11 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
         <div className="bg-background flex min-h-screen items-center justify-center">
             <div className="p-8 text-center">
                 <h2 className="text-foreground mb-4 text-2xl font-semibold">Something went wrong</h2>
-                <p className="text-muted-foreground mb-6">We apologize for the inconvenience. Please try again.</p>
+                <p className="mb-6 text-gray-600">We apologize for the inconvenience. Please try again.</p>
                 <button
+                    type="button"
                     onClick={reset}
-                    className="bg-primary text-primary-foreground rounded-lg px-6 py-3 transition-opacity hover:opacity-90"
+                    className="bg-brand-dark hover:bg-brand-light rounded-lg px-6 py-3 text-white transition-colors"
                 >
                     Try again
                 </button>

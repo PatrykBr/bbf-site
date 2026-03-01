@@ -1,13 +1,11 @@
-import { ShareMethod } from "./types";
+import { ShareMethod, ImageOrientation } from "./types";
+import { getSiteUrl } from "./site-config";
 
 /**
  * Generate UTM-tagged share URLs
  */
 export function getShareUrl(itemSlug: string, shareMethod: ShareMethod): string {
-    const baseUrl =
-        typeof window !== "undefined"
-            ? window.location.origin
-            : process.env.NEXT_PUBLIC_SITE_URL || "https://broncelfurniture.co.uk";
+    const baseUrl = typeof window !== "undefined" ? window.location.origin : getSiteUrl();
 
     const itemUrl = `${baseUrl}/work/${itemSlug}`;
     const utmParams = new URLSearchParams({
@@ -37,6 +35,17 @@ export function getWhatsAppShareUrl(itemSlug: string, itemName: string): string 
 }
 
 /**
+ * Open a third-party URL safely in a new tab
+ */
+export function openExternalUrl(url: string): void {
+    const newWindow = window.open(url, "_blank", "noopener,noreferrer");
+
+    if (newWindow) {
+        newWindow.opener = null;
+    }
+}
+
+/**
  * Copy link to clipboard
  */
 export async function copyToClipboard(itemSlug: string): Promise<boolean> {
@@ -61,28 +70,46 @@ export function isValidEmail(email: string): boolean {
 /**
  * Validate contact form
  */
-export function validateContactForm(data: { name: string; email: string; message: string }): {
+export function validateContactForm(data: { name: string; email: string; phone?: string; message: string }): {
     isValid: boolean;
     errors: Record<string, string>;
 } {
     const errors: Record<string, string> = {};
+    const name = data.name.trim();
+    const email = data.email.trim();
+    const phone = data.phone?.trim() || "";
+    const message = data.message.trim();
 
-    if (!data.name.trim()) {
+    if (!name) {
         errors.name = "Name is required";
-    } else if (data.name.trim().length < 2) {
+    } else if (name.length < 2) {
         errors.name = "Name must be at least 2 characters";
+    } else if (name.length > 80) {
+        errors.name = "Name must be 80 characters or fewer";
     }
 
-    if (!data.email.trim()) {
+    if (!email) {
         errors.email = "Email is required";
-    } else if (!isValidEmail(data.email)) {
+    } else if (email.length > 254) {
+        errors.email = "Email must be 254 characters or fewer";
+    } else if (!isValidEmail(email)) {
         errors.email = "Please enter a valid email address";
     }
 
-    if (!data.message.trim()) {
+    if (phone) {
+        if (phone.length > 30) {
+            errors.phone = "Phone number must be 30 characters or fewer";
+        } else if (!/^[0-9+()\-\s]+$/.test(phone)) {
+            errors.phone = "Please enter a valid phone number";
+        }
+    }
+
+    if (!message) {
         errors.message = "Message is required";
-    } else if (data.message.trim().length < 10) {
+    } else if (message.length < 10) {
         errors.message = "Message must be at least 10 characters";
+    } else if (message.length > 5000) {
+        errors.message = "Message must be 5000 characters or fewer";
     }
 
     return {
@@ -90,21 +117,19 @@ export function validateContactForm(data: { name: string; email: string; message
         errors
     };
 }
-
 /**
- * Format phone number for display
+ * Get aspect ratio class based on image orientation
  */
-export function formatPhoneNumber(phone: string): string {
-    // Already formatted or return as-is
-    if (phone.includes(" ")) return phone;
-
-    // Format UK mobile: +447523706742 -> +44 7523 706742
-    if (phone.startsWith("+44")) {
-        const digits = phone.slice(3);
-        return `+44 ${digits.slice(0, 4)} ${digits.slice(4)}`;
+export function getAspectRatioClass(orientation: ImageOrientation = "landscape"): string {
+    switch (orientation) {
+        case "portrait":
+            return "aspect-[3/4]";
+        case "square":
+            return "aspect-square";
+        case "landscape":
+        default:
+            return "aspect-[4/3]";
     }
-
-    return phone;
 }
 
 /**
@@ -117,21 +142,4 @@ export function formatDate(dateString: string): string {
         month: "long",
         day: "numeric"
     });
-}
-
-/**
- * Slugify text
- */
-export function slugify(text: string): string {
-    return text
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)+/g, "");
-}
-
-/**
- * Class name utility for conditional classes
- */
-export function cn(...classes: (string | boolean | undefined)[]): string {
-    return classes.filter(Boolean).join(" ");
 }

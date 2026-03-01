@@ -21,7 +21,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "portrait"
             }
         ],
-        createdAt: "2024-10-15T11:20:00.000Z",
+        createdAt: "2022-03-12T11:20:00.000Z",
         slug: "walnut-white-interior-layout"
     },
     {
@@ -38,7 +38,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "portrait"
             }
         ],
-        createdAt: "2024-10-16T13:10:00.000Z",
+        createdAt: "2023-06-08T13:10:00.000Z",
         slug: "light-oak-sliding-wardrobe"
     },
     {
@@ -55,7 +55,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "portrait"
             }
         ],
-        createdAt: "2024-10-18T09:15:00.000Z",
+        createdAt: "2022-09-22T09:15:00.000Z",
         slug: "textured-concrete-effect-wardrobe"
     },
     {
@@ -72,7 +72,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "landscape"
             }
         ],
-        createdAt: "2024-10-19T12:40:00.000Z",
+        createdAt: "2024-01-19T12:40:00.000Z",
         slug: "white-mirrored-lattice-wardrobe"
     },
     {
@@ -89,7 +89,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "landscape"
             }
         ],
-        createdAt: "2024-10-20T10:00:00.000Z",
+        createdAt: "2023-11-14T10:00:00.000Z",
         slug: "industrial-loft-angled-wardrobe"
     },
     {
@@ -106,7 +106,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "landscape"
             }
         ],
-        createdAt: "2024-10-21T15:55:00.000Z",
+        createdAt: "2022-07-05T15:55:00.000Z",
         slug: "high-gloss-taupe-sliding-wardrobe"
     },
     {
@@ -123,7 +123,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "portrait"
             }
         ],
-        createdAt: "2024-10-25T16:45:00.000Z",
+        createdAt: "2024-05-28T16:45:00.000Z",
         slug: "terracotta-dressing-room-suite"
     },
     {
@@ -140,7 +140,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "portrait"
             }
         ],
-        createdAt: "2024-10-22T14:30:00.000Z",
+        createdAt: "2023-02-17T14:30:00.000Z",
         slug: "blush-pink-shaker-wardrobe"
     },
     {
@@ -157,7 +157,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "landscape"
             }
         ],
-        createdAt: "2024-10-28T09:00:00.000Z",
+        createdAt: "2022-12-01T09:00:00.000Z",
         slug: "classic-greige-panelled-wardrobe"
     },
 
@@ -175,7 +175,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "landscape"
             }
         ],
-        createdAt: "2024-11-01T10:00:00.000Z",
+        createdAt: "2024-08-11T10:00:00.000Z",
         slug: "navy-blue-shaker-kitchen"
     },
     {
@@ -192,7 +192,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "landscape"
             }
         ],
-        createdAt: "2024-11-05T14:20:00.000Z",
+        createdAt: "2023-04-21T14:20:00.000Z",
         slug: "scandinavian-white-wood-kitchen"
     },
     {
@@ -209,7 +209,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "portrait"
             }
         ],
-        createdAt: "2024-11-04T09:15:00.000Z",
+        createdAt: "2022-10-30T09:15:00.000Z",
         slug: "minimalist-white-handleless-kitchen"
     },
     {
@@ -226,7 +226,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "portrait"
             }
         ],
-        createdAt: "2024-11-03T16:45:00.000Z",
+        createdAt: "2024-02-07T16:45:00.000Z",
         slug: "graphite-oak-contrast-kitchen"
     },
     {
@@ -243,7 +243,7 @@ export const pastWorkItems: PastWorkItem[] = [
                 orientation: "landscape"
             }
         ],
-        createdAt: "2024-11-02T11:30:00.000Z",
+        createdAt: "2023-08-03T11:30:00.000Z",
         slug: "two-tone-gloss-texture-kitchen"
     }
 ];
@@ -262,20 +262,6 @@ export function getAllPastWork(sortByFeatured = true): PastWorkItem[] {
         });
     }
     return [...pastWorkItems].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-}
-
-/**
- * Get past work by category
- */
-export function getPastWorkByCategory(category: "wardrobe" | "kitchen"): PastWorkItem[] {
-    return getAllPastWork().filter(item => item.category === category);
-}
-
-/**
- * Get featured past work items
- */
-export function getFeaturedPastWork(): PastWorkItem[] {
-    return pastWorkItems.filter(item => item.isFeatured);
 }
 
 /**
