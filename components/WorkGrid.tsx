@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useCallback, useEffect } from "react";
+import { useState, useMemo, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Masonry from "react-masonry-css";
@@ -58,6 +58,11 @@ export function WorkGrid({ items, itemsPerPage: itemsPerPageProp }: WorkGridProp
         item: PastWorkItem;
         itemIndex: number;
     } | null>(null);
+    const gridRef = useRef<HTMLDivElement>(null);
+
+    const scrollToTop = useCallback(() => {
+        gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, []);
 
     const { trackClickPastWork, trackViewPastWork } = useAnalytics();
     const shouldReduceMotion = useReducedMotion();
@@ -160,7 +165,7 @@ export function WorkGrid({ items, itemsPerPage: itemsPerPageProp }: WorkGridProp
     }
 
     return (
-        <section id="work" className="bg-brand-light overflow-hidden py-20">
+        <section id="work" ref={gridRef} className="bg-brand-light overflow-hidden py-20">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <motion.h2
                     initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
@@ -335,7 +340,7 @@ export function WorkGrid({ items, itemsPerPage: itemsPerPageProp }: WorkGridProp
                 {totalPages > 1 && (
                     <div className="mt-12 flex items-center justify-center gap-2">
                         <button
-                            onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                            onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); scrollToTop(); }}
                             disabled={currentPage === 1}
                             className="rounded bg-gray-100 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
                         >
@@ -346,7 +351,7 @@ export function WorkGrid({ items, itemsPerPage: itemsPerPageProp }: WorkGridProp
                             {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                                 <button
                                     key={page}
-                                    onClick={() => setCurrentPage(page)}
+                                    onClick={() => { setCurrentPage(page); scrollToTop(); }}
                                     className={`h-10 w-10 rounded transition-colors ${
                                         currentPage === page
                                             ? "bg-brand-dark text-white"
@@ -359,7 +364,7 @@ export function WorkGrid({ items, itemsPerPage: itemsPerPageProp }: WorkGridProp
                         </div>
 
                         <button
-                            onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                            onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); scrollToTop(); }}
                             disabled={currentPage === totalPages}
                             className="rounded bg-gray-100 px-4 py-2 text-gray-700 transition-colors hover:bg-gray-200 disabled:cursor-not-allowed disabled:opacity-50"
                         >
