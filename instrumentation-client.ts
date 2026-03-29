@@ -9,7 +9,7 @@ function initPostHog() {
     }
 
     posthog.init(POSTHOG_KEY, {
-        api_host: "/ph",
+        api_host: "https://t.broncelfurniture.com",
         ui_host: "https://eu.posthog.com",
         defaults: "2026-01-30"
     });
