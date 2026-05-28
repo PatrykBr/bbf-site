@@ -214,7 +214,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
                                 href={`/work/${prevItem.slug}`}
                                 className="hover:text-brand-dark flex items-center gap-2 text-gray-600 transition-colors"
                             >
-                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
@@ -243,7 +243,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
                             >
                                 <span className="hidden sm:inline">{nextItem.name}</span>
                                 <span className="sm:hidden">Next</span>
-                                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"

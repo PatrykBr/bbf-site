@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
@@ -6,6 +7,30 @@ import { ContactSection } from "@/components/ContactSection";
 import { WorkGrid } from "@/components/WorkGrid";
 import { getAllPastWork } from "@/lib/data/past-work";
 import { getSiteUrl } from "@/lib/site-config";
+
+export const metadata: Metadata = {
+    title: "Bespoke Broncel Furniture | Custom Kitchens & Wardrobes | South Yorkshire",
+    description:
+        "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of carpentry experience. Contact us for a free quote.",
+    alternates: {
+        canonical: getSiteUrl()
+    },
+    openGraph: {
+        title: "Bespoke Broncel Furniture | Custom Kitchens & Wardrobes",
+        description:
+            "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of carpentry experience.",
+        type: "website",
+        url: getSiteUrl(),
+        images: [{ url: getSiteUrl("/hero-bg.webp") }]
+    },
+    twitter: {
+        card: "summary_large_image",
+        title: "Bespoke Broncel Furniture | Custom Kitchens & Wardrobes",
+        description:
+            "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of carpentry experience.",
+        images: [getSiteUrl("/hero-bg.webp")]
+    }
+};
 
 export default function Home() {
     const pastWork = getAllPastWork(true);

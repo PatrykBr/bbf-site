@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { motion, useReducedMotion, type Variants } from "framer-motion";
+import { m, useReducedMotion, type Variants } from "framer-motion";
 import { ContactForm } from "./ContactForm";
 import { contactInfo, businessHours } from "@/lib/data/contact";
 
@@ -39,7 +39,7 @@ export function ContactSection() {
             className="bg-brand-light flex min-h-screen flex-col justify-center overflow-hidden py-20"
         >
             <div className="w-full px-4 sm:px-8 lg:px-16">
-                <motion.h2
+                <m.h2
                     initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
                     whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
                     viewport={{ once: true }}
@@ -47,11 +47,11 @@ export function ContactSection() {
                     className="mb-12 text-center text-3xl font-bold text-white sm:text-4xl"
                 >
                     Get In Touch
-                </motion.h2>
+                </m.h2>
 
                 <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
                     {/* Contact Methods */}
-                    <motion.div
+                    <m.div
                         initial={shouldReduceMotion ? false : { opacity: 0, x: -40 }}
                         whileInView={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
                         viewport={{ once: true, margin: "-50px" }}
@@ -60,7 +60,7 @@ export function ContactSection() {
                     >
                         <h3 className="mb-6 text-xl font-semibold text-white">Contact Methods</h3>
 
-                        <motion.div
+                        <m.div
                             variants={containerVariants}
                             initial={shouldReduceMotion ? false : "hidden"}
                             whileInView={shouldReduceMotion ? undefined : "visible"}
@@ -68,15 +68,15 @@ export function ContactSection() {
                             className="space-y-6"
                         >
                             {/* Phone / WhatsApp (Preferred) */}
-                            <motion.a
+                            <m.a
                                 href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
                                 variants={itemVariants}
                                 whileHover={shouldReduceMotion ? undefined : hoverAnimation}
                                 className="-m-3 flex cursor-pointer items-start gap-4 rounded-xl p-3 transition-colors hover:bg-white/5"
                             >
-                                <div className="bg-brand-light flex h-12 w-12 shrink-0 items-center justify-center rounded-lg">
+                                <div className="bg-brand-light flex size-12 shrink-0 items-center justify-center rounded-lg">
                                     <svg
-                                        className="h-6 w-6 text-white"
+                                        className="size-6 text-white"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -101,18 +101,18 @@ export function ContactSection() {
                                         Available {businessHours.days}, {businessHours.hours}
                                     </p>
                                 </div>
-                            </motion.a>
+                            </m.a>
 
                             {/* Email */}
-                            <motion.a
+                            <m.a
                                 href={`mailto:${contactInfo.email}`}
                                 variants={itemVariants}
                                 whileHover={shouldReduceMotion ? undefined : hoverAnimation}
                                 className="-m-3 flex cursor-pointer items-start gap-4 rounded-xl p-3 transition-colors hover:bg-white/5"
                             >
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-red-500">
+                                <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-red-500">
                                     <svg
-                                        className="h-6 w-6 text-white"
+                                        className="size-6 text-white"
                                         fill="none"
                                         stroke="currentColor"
                                         viewBox="0 0 24 24"
@@ -130,10 +130,10 @@ export function ContactSection() {
                                     <span className="text-white">{contactInfo.email}</span>
                                     <p className="mt-1 text-sm text-white/60">We respond to emails within 24 hours</p>
                                 </div>
-                            </motion.a>
+                            </m.a>
 
                             {/* Facebook */}
-                            <motion.a
+                            <m.a
                                 href={contactInfo.facebook}
                                 target="_blank"
                                 rel="noopener noreferrer"
@@ -141,8 +141,8 @@ export function ContactSection() {
                                 whileHover={shouldReduceMotion ? undefined : hoverAnimation}
                                 className="-m-3 flex cursor-pointer items-start gap-4 rounded-xl p-3 transition-colors hover:bg-white/5"
                             >
-                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-[#1877F2]">
-                                    <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                <div className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-[#1877F2]">
+                                    <svg className="size-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="M18.77,7.46H14.5v-1.9c0-.9.6-1.1,1-1.1h3V.5h-4.33C10.24.5,9.5,3.44,9.5,5.32v2.15h-3v4h3v12h5v-12h3.85l.42-4Z" />
                                     </svg>
                                 </div>
@@ -153,11 +153,11 @@ export function ContactSection() {
                                         Follow us for latest updates and inspiration
                                     </p>
                                 </div>
-                            </motion.a>
-                        </motion.div>
+                            </m.a>
+                        </m.div>
 
                         {/* Location Card with Background Image */}
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             whileInView={{ opacity: 1, scale: 1 }}
                             viewport={{ once: true }}
@@ -177,11 +177,11 @@ export function ContactSection() {
                                 <p className="text-xl font-bold text-white sm:text-2xl">Bespoke Broncel Furniture</p>
                                 <p className="text-sm text-white/90 italic">South Yorkshire, UK</p>
                             </div>
-                        </motion.div>
-                    </motion.div>
+                        </m.div>
+                    </m.div>
 
                     {/* Contact Form */}
-                    <motion.div
+                    <m.div
                         initial={shouldReduceMotion ? false : { opacity: 0, x: 40 }}
                         whileInView={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
                         viewport={{ once: true, margin: "-50px" }}
@@ -190,7 +190,7 @@ export function ContactSection() {
                     >
                         <h3 className="text-brand-dark mb-6 text-xl font-semibold">Send Us A Message</h3>
                         <ContactForm />
-                    </motion.div>
+                    </m.div>
                 </div>
             </div>
         </section>

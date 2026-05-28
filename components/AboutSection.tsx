@@ -2,7 +2,7 @@
 
 import { useRef } from "react";
 import Image from "next/image";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { m, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { companyInfo } from "@/lib/data/contact";
 
 export function AboutSection() {
@@ -24,7 +24,7 @@ export function AboutSection() {
             {/* Window Frame with equal padding */}
             <div className="relative aspect-2/3 w-full overflow-hidden rounded-lg sm:aspect-16/10 lg:aspect-16/8">
                 {/* Parallax Background Image */}
-                <motion.div
+                <m.div
                     className="absolute inset-0 scale-150"
                     style={{
                         y: backgroundY,
@@ -38,12 +38,12 @@ export function AboutSection() {
                         sizes="100vw"
                         className="object-cover object-center"
                     />
-                </motion.div>
+                </m.div>
                 <div className="absolute inset-0 bg-black/40 backdrop-blur-xs" />
 
                 {/* Content inside the window */}
                 <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 py-8 text-center text-white sm:px-8 sm:py-12">
-                    <motion.h2
+                    <m.h2
                         initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
                         whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
                         viewport={{ once: true }}
@@ -51,8 +51,8 @@ export function AboutSection() {
                         className="mb-4 text-2xl font-bold sm:mb-6 sm:text-4xl md:text-5xl"
                     >
                         Designed for your Home
-                    </motion.h2>
-                    <motion.p
+                    </m.h2>
+                    <m.p
                         initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
                         whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
                         viewport={{ once: true }}
@@ -60,7 +60,7 @@ export function AboutSection() {
                         className="max-w-3xl text-base leading-relaxed text-white/90 sm:text-lg"
                     >
                         {companyInfo.description}
-                    </motion.p>
+                    </m.p>
                 </div>
             </div>
         </section>

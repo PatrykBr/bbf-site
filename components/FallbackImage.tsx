@@ -44,13 +44,15 @@ function FallbackImageComponent({
             <div
                 className={`from-brand-light/20 to-brand-dark/20 flex items-center justify-center bg-linear-to-br ${fill ? "absolute inset-0" : ""} ${className}`}
                 style={!fill ? { width, height } : undefined}
-                role="img"
+                role={onClick ? "button" : "img"}
                 aria-label={alt}
                 onClick={onClick}
+                onKeyDown={onClick ? (e) => { if (e.key === "Enter" || e.key === " ") onClick(); } : undefined}
+                tabIndex={onClick ? 0 : undefined}
             >
                 <div className="p-4 text-center">
                     <svg
-                        className="text-brand-dark/30 mx-auto mb-3 h-16 w-16"
+                        className="text-brand-dark/30 mx-auto mb-3 size-16"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"

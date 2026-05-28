@@ -33,7 +33,7 @@ function pruneInMemoryStore(now: number, windowMs: number) {
         return;
     }
 
-    const sortedByLastSeen = [...rateLimitMap.entries()].sort((a, b) => a[1].lastSeen - b[1].lastSeen);
+    const sortedByLastSeen = [...rateLimitMap.entries()].toSorted((a, b) => a[1].lastSeen - b[1].lastSeen);
     const overflowCount = rateLimitMap.size - MAX_IN_MEMORY_KEYS;
 
     for (let index = 0; index < overflowCount; index++) {

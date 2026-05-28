@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { m, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { companyInfo } from "@/lib/data/contact";
 
 export function Hero() {
@@ -25,7 +25,7 @@ export function Hero() {
             {/* Window Frame - stays fixed, clips the parallax image */}
             <div className="relative w-full overflow-hidden rounded-lg">
                 {/* Parallax Background Image - moves behind the window */}
-                <motion.div
+                <m.div
                     className="absolute inset-0 scale-125"
                     style={{
                         y: backgroundY,
@@ -41,28 +41,28 @@ export function Hero() {
                         sizes="100vw"
                         className="object-cover object-center"
                     />
-                </motion.div>
+                </m.div>
                 <div className="absolute inset-0 bg-black/30 backdrop-blur-xs" />
 
                 {/* Content inside the window */}
                 <div className="relative z-10 px-4 py-35 text-center text-white sm:px-8 sm:py-32 md:py-40 lg:py-48">
-                    <motion.h1
+                    <m.h1
                         initial={shouldReduceMotion ? false : { opacity: 0, y: 30 }}
                         animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
                         transition={shouldReduceMotion ? undefined : { duration: 0.8, ease: "easeOut" }}
                         className="mb-6 text-4xl leading-tight font-bold sm:text-5xl md:text-7xl"
                     >
                         {companyInfo.name}
-                    </motion.h1>
-                    <motion.p
+                    </m.h1>
+                    <m.p
                         initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
                         animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
                         transition={shouldReduceMotion ? undefined : { duration: 0.8, delay: 0.2, ease: "easeOut" }}
                         className="mb-8 text-xl text-white/90 italic sm:text-2xl"
                     >
                         {companyInfo.tagline}
-                    </motion.p>
-                    <motion.div
+                    </m.p>
+                    <m.div
                         initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
                         animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
                         transition={shouldReduceMotion ? undefined : { duration: 0.8, delay: 0.4, ease: "easeOut" }}
@@ -80,7 +80,7 @@ export function Hero() {
                         >
                             Get In Touch
                         </Link>
-                    </motion.div>
+                    </m.div>
                 </div>
             </div>
         </section>

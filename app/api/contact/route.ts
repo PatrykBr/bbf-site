@@ -190,174 +190,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<ContactAp
             to: [TO_EMAIL],
             subject: `New Contact Form Submission from ${body.name}`,
             replyTo: body.email,
-            html: `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <meta name="viewport" content="width=device-width, initial-scale=1.0">
-          <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
-        </head>
-        <body style="margin: 0; padding: 0; background-color: #21450d; font-family: 'Outfit', Arial, sans-serif;">
-          <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #21450d;">
-            <tr>
-              <td style="padding: 0;">
-                <table role="presentation" style="max-width: 600px; margin: 0 auto; background: #21450d;">
-                  
-                  <!-- Header with Logo -->
-                  <tr>
-                    <td style="background: linear-gradient(135deg, #162e08 0%, #21450d 50%, #2d5a14 100%); padding: 40px 40px 35px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                      <img src="cid:company-logo" alt="Bespoke Broncel Furniture" style="max-height: 70px; max-width: 220px; margin-bottom: 20px;">
-                      <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">
-                        ✉️ New Message Received
-                      </h1>
-                      <p style="margin: 12px 0 0; color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 400;">
-                        Someone reached out via your website contact form
-                      </p>
-                    </td>
-                  </tr>
-                  
-                  <!-- Contact Card -->
-                  <tr>
-                    <td style="padding: 30px 40px 20px;">
-                      <table role="presentation" style="width: 100%; background: rgba(255,255,255,0.08); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                        <tr>
-                          <td style="padding: 24px 26px;">
-                            <!-- Name -->
-                            <table role="presentation" style="width: 100%; margin-bottom: 16px;">
-                              <tr>
-                                <td style="width: 44px; vertical-align: top;">
-                                  <div style="width: 38px; height: 38px; background: rgba(255,255,255,0.15); border-radius: 10px; text-align: center; line-height: 38px; font-size: 17px;">
-                                    👤
-                                  </div>
-                                </td>
-                                <td style="vertical-align: middle; padding-left: 14px;">
-                                  <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500;">Name</p>
-                                  <p style="margin: 4px 0 0; color: #ffffff; font-size: 17px; font-weight: 600;">${escapeHtml(
-                                      body.name
-                                  )}</p>
-                                </td>
-                              </tr>
-                            </table>
-                            
-                            <!-- Email -->
-                            <table role="presentation" style="width: 100%; margin-bottom: 16px;">
-                              <tr>
-                                <td style="width: 44px; vertical-align: top;">
-                                  <div style="width: 38px; height: 38px; background: rgba(255,255,255,0.15); border-radius: 10px; text-align: center; line-height: 38px; font-size: 17px;">
-                                    📧
-                                  </div>
-                                </td>
-                                <td style="vertical-align: middle; padding-left: 14px;">
-                                  <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500;">Email</p>
-                                  <a href="mailto:${escapeHtml(
-                                      body.email
-                                  )}" style="display: inline-block; margin: 4px 0 0; color: #a8d98a; font-size: 17px; font-weight: 600; text-decoration: none;">
-                                    ${escapeHtml(body.email)}
-                                  </a>
-                                </td>
-                              </tr>
-                            </table>
-                            
-                            ${
-                                body.phone
-                                    ? `
-                            <!-- Phone -->
-                            <table role="presentation" style="width: 100%;">
-                              <tr>
-                                <td style="width: 44px; vertical-align: top;">
-                                  <div style="width: 38px; height: 38px; background: rgba(255,255,255,0.15); border-radius: 10px; text-align: center; line-height: 38px; font-size: 17px;">
-                                    📱
-                                  </div>
-                                </td>
-                                <td style="vertical-align: middle; padding-left: 14px;">
-                                  <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500;">Phone / WhatsApp</p>
-                                  <a href="tel:${escapeHtml(
-                                      body.phone
-                                  )}" style="display: inline-block; margin: 4px 0 0; color: #a8d98a; font-size: 17px; font-weight: 600; text-decoration: none;">
-                                    ${escapeHtml(body.phone)}
-                                  </a>
-                                </td>
-                              </tr>
-                            </table>
-                            `
-                                    : ""
-                            }
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                  
-                  <!-- Message Section -->
-                  <tr>
-                    <td style="padding: 0 40px 30px;">
-                      <p style="margin: 0 0 12px; color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;">
-                        💬 Message
-                      </p>
-                      <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px;">
-                        <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 15px; line-height: 1.7; white-space: pre-wrap;">${escapeHtml(
-                            body.message
-                        )}</p>
-                      </div>
-                    </td>
-                  </tr>
-                  
-                  <!-- Quick Actions -->
-                  <tr>
-                    <td style="padding: 0 40px 30px;">
-                      <table role="presentation" style="width: 100%;">
-                        <tr>
-                          <td style="text-align: center;">
-                            <a href="mailto:${escapeHtml(
-                                body.email
-                            )}?subject=Re: Your inquiry to Bespoke Broncel Furniture" style="display: inline-block; background: #ffffff; color: #21450d; text-decoration: none; padding: 14px 36px; border-radius: 10px; font-size: 15px; font-weight: 700; letter-spacing: 0.3px;">
-                              Reply to ${escapeHtml(body.name.split(" ")[0])}
-                            </a>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                  
-                  <!-- Footer -->
-                  <tr>
-                    <td style="background: rgba(0,0,0,0.15); padding: 22px 40px; border-top: 1px solid rgba(255,255,255,0.08);">
-                      <table role="presentation" style="width: 100%;">
-                        <tr>
-                          <td style="text-align: center;">
-                            <p style="margin: 0; color: rgba(255,255,255,0.85); font-size: 14px; font-weight: 600;">
-                              Bespoke Broncel Furniture
-                            </p>
-                            <p style="margin: 6px 0 0; color: rgba(255,255,255,0.5); font-size: 12px;">
-                              Crafting Dreams Into Reality
-                            </p>
-                          </td>
-                        </tr>
-                      </table>
-                    </td>
-                  </tr>
-                  
-                </table>
-              </td>
-            </tr>
-          </table>
-        </body>
-        </html>
-      `,
-            text: `
-New Contact Form Submission
-
-Name: ${body.name}
-Email: ${body.email}
-Phone: ${body.phone || "Not provided"}
-
-Message:
-${body.message}
-
----
-Sent from Bespoke Broncel Furniture website
-      `,
+            html: buildEmailHtml(body),
+            text: buildEmailText(body),
             attachments: logoBase64
                 ? [
                       {
@@ -412,7 +246,108 @@ Sent from Bespoke Broncel Furniture website
     }
 }
 
-// Helper function to escape HTML
+function buildEmailHtml(body: ContactFormSubmission): string {
+    const phoneRow = body.phone
+        ? `
+            <!-- Phone -->
+            <table role="presentation" style="width: 100%;">
+              <tr>
+                <td style="width: 44px; vertical-align: top;">
+                  <div style="width: 38px; height: 38px; background: rgba(255,255,255,0.15); border-radius: 10px; text-align: center; line-height: 38px; font-size: 17px;">📱</div>
+                </td>
+                <td style="vertical-align: middle; padding-left: 14px;">
+                  <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500;">Phone / WhatsApp</p>
+                  <a href="tel:${escapeHtml(body.phone)}" style="display: inline-block; margin: 4px 0 0; color: #a8d98a; font-size: 17px; font-weight: 600; text-decoration: none;">${escapeHtml(body.phone)}</a>
+                </td>
+              </tr>
+            </table>`
+        : "";
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body style="margin: 0; padding: 0; background-color: #21450d; font-family: 'Outfit', Arial, sans-serif;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #21450d;">
+    <tr><td style="padding: 0;">
+      <table role="presentation" style="max-width: 600px; margin: 0 auto; background: #21450d;">
+        <tr>
+          <td style="background: linear-gradient(135deg, #162e08 0%, #21450d 50%, #2d5a14 100%); padding: 40px 40px 35px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <img src="cid:company-logo" alt="Bespoke Broncel Furniture" style="max-height: 70px; max-width: 220px; margin-bottom: 20px;">
+            <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; letter-spacing: -0.5px;">✉️ New Message Received</h1>
+            <p style="margin: 12px 0 0; color: rgba(255,255,255,0.7); font-size: 14px; font-weight: 400;">Someone reached out via your website contact form</p>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 30px 40px 20px;">
+            <table role="presentation" style="width: 100%; background: rgba(255,255,255,0.08); border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
+              <tr><td style="padding: 24px 26px;">
+                <table role="presentation" style="width: 100%; margin-bottom: 16px;">
+                  <tr>
+                    <td style="width: 44px; vertical-align: top;"><div style="width: 38px; height: 38px; background: rgba(255,255,255,0.15); border-radius: 10px; text-align: center; line-height: 38px; font-size: 17px;">👤</div></td>
+                    <td style="vertical-align: middle; padding-left: 14px;">
+                      <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500;">Name</p>
+                      <p style="margin: 4px 0 0; color: #ffffff; font-size: 17px; font-weight: 600;">${escapeHtml(body.name)}</p>
+                    </td>
+                  </tr>
+                </table>
+                <table role="presentation" style="width: 100%; margin-bottom: 16px;">
+                  <tr>
+                    <td style="width: 44px; vertical-align: top;"><div style="width: 38px; height: 38px; background: rgba(255,255,255,0.15); border-radius: 10px; text-align: center; line-height: 38px; font-size: 17px;">📧</div></td>
+                    <td style="vertical-align: middle; padding-left: 14px;">
+                      <p style="margin: 0; color: rgba(255,255,255,0.6); font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; font-weight: 500;">Email</p>
+                      <a href="mailto:${escapeHtml(body.email)}" style="display: inline-block; margin: 4px 0 0; color: #a8d98a; font-size: 17px; font-weight: 600; text-decoration: none;">${escapeHtml(body.email)}</a>
+                    </td>
+                  </tr>
+                </table>
+                ${phoneRow}
+              </td></tr>
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 0 40px 30px;">
+            <p style="margin: 0 0 12px; color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.8px;">💬 Message</p>
+            <div style="background: rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 20px;">
+              <p style="margin: 0; color: rgba(255,255,255,0.9); font-size: 15px; line-height: 1.7; white-space: pre-wrap;">${escapeHtml(body.message)}</p>
+            </div>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding: 0 40px 30px; text-align: center;">
+            <a href="mailto:${escapeHtml(body.email)}?subject=Re: Your inquiry to Bespoke Broncel Furniture" style="display: inline-block; background: #ffffff; color: #21450d; text-decoration: none; padding: 14px 36px; border-radius: 10px; font-size: 15px; font-weight: 700; letter-spacing: 0.3px;">Reply to ${escapeHtml(body.name.split(" ")[0])}</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="background: rgba(0,0,0,0.15); padding: 22px 40px; border-top: 1px solid rgba(255,255,255,0.08); text-align: center;">
+            <p style="margin: 0; color: rgba(255,255,255,0.85); font-size: 14px; font-weight: 600;">Bespoke Broncel Furniture</p>
+            <p style="margin: 6px 0 0; color: rgba(255,255,255,0.5); font-size: 12px;">Crafting Dreams Into Reality</p>
+          </td>
+        </tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+}
+
+function buildEmailText(body: ContactFormSubmission): string {
+    return `New Contact Form Submission
+
+Name: ${body.name}
+Email: ${body.email}
+Phone: ${body.phone || "Not provided"}
+
+Message:
+${body.message}
+
+---
+Sent from Bespoke Broncel Furniture website`;
+}
+
 function escapeHtml(text: string): string {
     const map: Record<string, string> = {
         "&": "&amp;",
