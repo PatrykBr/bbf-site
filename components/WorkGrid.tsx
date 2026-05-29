@@ -9,7 +9,12 @@ import { useAnalytics } from "@/lib/posthog";
 import type { PastWorkItem, WorkFilter } from "@/lib/types";
 import { getAspectRatioClass } from "@/lib/utils";
 
-const ImageModal = dynamic(() => import("./ImageModal").then(mod => ({ default: mod.ImageModal })));
+// `loading` gives this dynamic import its own Suspense boundary. Without it, the first-load
+// suspension bubbles to the page-level app/loading.tsx, which remounts the page and resets
+// scroll to the top (smooth-scrolls to the hero) the first time a work is opened.
+const ImageModal = dynamic(() => import("./ImageModal").then(mod => ({ default: mod.ImageModal })), {
+    loading: () => null
+});
 
 interface WorkGridProps {
     items: PastWorkItem[];

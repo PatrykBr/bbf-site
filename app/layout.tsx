@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
 import { PostHogProvider } from "@/lib/posthog";
 import { MotionProvider } from "@/components/MotionProvider";
@@ -59,6 +59,11 @@ export const metadata: Metadata = {
         index: true,
         follow: true
     }
+};
+
+// Matches the brand-dark hero so the mobile browser toolbar blends with the top of the page.
+export const viewport: Viewport = {
+    themeColor: "#0e370d"
 };
 
 export default function RootLayout({
