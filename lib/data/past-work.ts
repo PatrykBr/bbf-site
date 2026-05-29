@@ -253,7 +253,7 @@ export const pastWorkItems: PastWorkItem[] = [
  */
 export function getAllPastWork(sortByFeatured = true): PastWorkItem[] {
     if (sortByFeatured) {
-        return [...pastWorkItems].sort((a, b) => {
+        return pastWorkItems.toSorted((a, b) => {
             // Featured items first
             if (a.isFeatured && !b.isFeatured) return -1;
             if (!a.isFeatured && b.isFeatured) return 1;
@@ -261,7 +261,7 @@ export function getAllPastWork(sortByFeatured = true): PastWorkItem[] {
             return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
     }
-    return [...pastWorkItems].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return pastWorkItems.toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 /**

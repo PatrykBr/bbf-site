@@ -1,111 +1,133 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useReducer, useCallback, useEffect, useRef } from "react";
 import { validateContactForm } from "@/lib/utils";
 import type { ContactFormData, ContactApiResponse } from "@/lib/types";
 
 type FormStatus = "idle" | "submitting" | "success" | "error";
 
+type FormState = {
+    formData: ContactFormData;
+    honeypot: string;
+    errors: Record<string, string>;
+    status: FormStatus;
+    statusMessage: string;
+};
+
+type FormAction =
+    | { type: "SET_FIELD"; name: string; value: string }
+    | { type: "SET_HONEYPOT"; value: string }
+    | { type: "SET_ERRORS"; errors: Record<string, string> }
+    | { type: "SUBMIT_START" }
+    | { type: "SUBMIT_SUCCESS"; message: string }
+    | { type: "SUBMIT_ERROR"; message: string; fieldErrors?: Record<string, string> };
+
+const initialState: FormState = {
+    formData: { name: "", email: "", phone: "", message: "" },
+    honeypot: "",
+    errors: {},
+    status: "idle",
+    statusMessage: ""
+};
+
+function formReducer(state: FormState, action: FormAction): FormState {
+    switch (action.type) {
+        case "SET_FIELD": {
+            const errors = { ...state.errors };
+            delete errors[action.name];
+            return { ...state, formData: { ...state.formData, [action.name]: action.value }, errors };
+        }
+        case "SET_HONEYPOT":
+            return { ...state, honeypot: action.value };
+        case "SET_ERRORS":
+            return { ...state, errors: action.errors };
+        case "SUBMIT_START":
+            return { ...state, status: "submitting", errors: {} };
+        case "SUBMIT_SUCCESS":
+            return {
+                ...state,
+                status: "success",
+                statusMessage: action.message,
+                errors: {},
+                formData: { name: "", email: "", phone: "", message: "" }
+            };
+        case "SUBMIT_ERROR":
+            return {
+                ...state,
+                status: "error",
+                statusMessage: action.message,
+                errors: action.fieldErrors ?? state.errors
+            };
+        default:
+            return state;
+    }
+}
+
 export function ContactForm() {
-    const [formData, setFormData] = useState<ContactFormData>({
-        name: "",
-        email: "",
-        phone: "",
-        message: ""
-    });
-    const [honeypot, setHoneypot] = useState(""); // Hidden field for bot detection
-    const [formRenderedAt] = useState(() => Date.now()); // Track when form was rendered
-    const [errors, setErrors] = useState<Record<string, string>>({});
-    const [status, setStatus] = useState<FormStatus>("idle");
-    const [statusMessage, setStatusMessage] = useState("");
+    const [state, dispatch] = useReducer(formReducer, initialState);
+    const formRenderedAtRef = useRef<number>(0);
 
-    const handleChange = useCallback(
-        (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-            const { name, value } = e.target;
-            setFormData(prev => ({ ...prev, [name]: value }));
+    useEffect(() => {
+        formRenderedAtRef.current = Date.now();
+    }, []);
 
-            // Clear error when user starts typing
-            if (errors[name]) {
-                setErrors(prev => {
-                    const newErrors = { ...prev };
-                    delete newErrors[name];
-                    return newErrors;
-                });
-            }
-        },
-        [errors]
-    );
+    const updateField = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        dispatch({ type: "SET_FIELD", name: e.target.name, value: e.target.value });
+    }, []);
 
     const handleSubmit = useCallback(
         async (e: React.FormEvent) => {
             e.preventDefault();
 
-            // Validate form
-            const validation = validateContactForm({
-                name: formData.name,
-                email: formData.email,
-                phone: formData.phone,
-                message: formData.message
-            });
-
+            const validation = validateContactForm(state.formData);
             if (!validation.isValid) {
-                setErrors(validation.errors);
+                dispatch({ type: "SET_ERRORS", errors: validation.errors });
                 return;
             }
 
-            setStatus("submitting");
-            setErrors({});
+            dispatch({ type: "SUBMIT_START" });
 
             try {
                 const response = await fetch("/api/contact", {
                     method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
+                    headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        ...formData,
-                        _honeypot: honeypot,
-                        _formRenderedAt: formRenderedAt
+                        ...state.formData,
+                        _honeypot: state.honeypot,
+                        _formRenderedAt: formRenderedAtRef.current
                     })
                 });
 
                 const result: ContactApiResponse = await response.json();
 
                 if (result.success) {
-                    setStatus("success");
-                    setStatusMessage(result.message);
-                    setErrors({});
-
-                    // Reset form
-                    setFormData({
-                        name: "",
-                        email: "",
-                        phone: "",
-                        message: ""
-                    });
+                    dispatch({ type: "SUBMIT_SUCCESS", message: result.message });
                 } else {
-                    setStatus("error");
-                    setStatusMessage(result.message || "Something went wrong. Please try again.");
-
-                    if (result.fieldErrors) {
-                        setErrors(result.fieldErrors);
-                    }
+                    dispatch({
+                        type: "SUBMIT_ERROR",
+                        message: result.message || "Something went wrong. Please try again.",
+                        fieldErrors: result.fieldErrors
+                    });
 
                     if (process.env.NODE_ENV === "development") {
                         console.error("[Contact Form] Error:", result.error);
                     }
                 }
             } catch (error) {
-                setStatus("error");
-                setStatusMessage("Unable to send message. Please try again or contact us directly.");
+                dispatch({
+                    type: "SUBMIT_ERROR",
+                    message: "Unable to send message. Please try again or contact us directly."
+                });
 
                 if (process.env.NODE_ENV === "development") {
                     console.error("[Contact Form] Network error:", error);
                 }
             }
         },
-        [formData, honeypot, formRenderedAt]
+        [state.formData, state.honeypot]
     );
+
+    const { formData, errors, status, statusMessage, honeypot } = state;
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -117,7 +139,7 @@ export function ContactForm() {
                     id="_honeypot"
                     name="_honeypot"
                     value={honeypot}
-                    onChange={e => setHoneypot(e.target.value)}
+                    onChange={e => dispatch({ type: "SET_HONEYPOT", value: e.target.value })}
                     tabIndex={-1}
                     autoComplete="off"
                 />
@@ -132,7 +154,7 @@ export function ContactForm() {
                     id="name"
                     name="name"
                     value={formData.name}
-                    onChange={handleChange}
+                    onChange={updateField}
                     required
                     aria-invalid={Boolean(errors.name)}
                     aria-describedby={errors.name ? "name-error" : undefined}
@@ -159,7 +181,7 @@ export function ContactForm() {
                     id="email"
                     name="email"
                     value={formData.email}
-                    onChange={handleChange}
+                    onChange={updateField}
                     required
                     aria-invalid={Boolean(errors.email)}
                     aria-describedby={errors.email ? "email-error" : undefined}
@@ -186,7 +208,7 @@ export function ContactForm() {
                     id="phone"
                     name="phone"
                     value={formData.phone}
-                    onChange={handleChange}
+                    onChange={updateField}
                     aria-invalid={Boolean(errors.phone)}
                     aria-describedby={errors.phone ? "phone-error" : undefined}
                     className="focus:ring-brand-light w-full rounded-lg border border-gray-300 px-4 py-2 transition-colors focus:border-transparent focus:ring-2"
@@ -209,7 +231,7 @@ export function ContactForm() {
                     id="message"
                     name="message"
                     value={formData.message}
-                    onChange={handleChange}
+                    onChange={updateField}
                     rows={5}
                     required
                     aria-invalid={Boolean(errors.message)}
@@ -229,13 +251,12 @@ export function ContactForm() {
 
             {/* Status Message */}
             {status === "success" && (
-                <div
-                    role="status"
+                <output
                     aria-live="polite"
-                    className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800"
+                    className="block rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800"
                 >
                     {statusMessage}
-                </div>
+                </output>
             )}
 
             {status === "error" && (
@@ -256,7 +277,7 @@ export function ContactForm() {
             >
                 {status === "submitting" ? (
                     <>
-                        <svg className="h-5 w-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <svg className="size-5 animate-spin" fill="none" viewBox="0 0 24 24">
                             <circle
                                 className="opacity-25"
                                 cx="12"
@@ -271,12 +292,12 @@ export function ContactForm() {
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                             />
                         </svg>
-                        Sending...
+                        Sending…
                     </>
                 ) : (
                     <>
                         Send Message
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
                                 strokeLinecap="round"
                                 strokeLinejoin="round"

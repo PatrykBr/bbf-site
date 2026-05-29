@@ -23,22 +23,6 @@ body {
     font-family: var(--font-sans);
 }
 
-/* Masonry grid styles */
-.masonry-grid {
-    display: flex;
-    width: auto;
-    margin-left: -20px;
-}
-
-.masonry-grid_column {
-    padding-left: 20px;
-    background-clip: padding-box;
-}
-
-.masonry-grid_column > div {
-    margin-bottom: 20px;
-}
-
 /* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 8px;

@@ -9,7 +9,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
     }, [error]);
 
     return (
-        <html>
+        <html lang="en">
             <body>
                 <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
                     <div style={{ padding: "2rem", textAlign: "center" }}>
@@ -20,6 +20,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
                             We apologize for the inconvenience. Please try again.
                         </p>
                         <button
+                            type="button"
                             onClick={reset}
                             style={{
                                 backgroundColor: "#21450d",

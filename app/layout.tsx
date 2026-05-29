@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import { PostHogProvider } from "@/lib/posthog";
+import { MotionProvider } from "@/components/MotionProvider";
 import { SITE_URL, getSiteUrl } from "@/lib/site-config";
 import "./globals.css";
 
@@ -66,9 +67,11 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" data-scroll-behavior="smooth">
             <body className={`${poppins.variable} font-sans antialiased`}>
-                <PostHogProvider>{children}</PostHogProvider>
+                <MotionProvider>
+                    <PostHogProvider>{children}</PostHogProvider>
+                </MotionProvider>
             </body>
         </html>
     );

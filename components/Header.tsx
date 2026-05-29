@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, Suspense, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence } from "framer-motion";
 import { contactInfo } from "@/lib/data/contact";
 
 export function Header() {
@@ -19,7 +19,7 @@ function HeaderInner() {
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [activeSection, setActiveSection] = useState("home");
-    const [isNavigating, setIsNavigating] = useState(false);
+    const isNavigatingRef = useRef(false);
     const navigationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const mobileMenuId = "mobile-navigation";
     const activeSectionForNav = pathname === "/" ? activeSection : "";
@@ -35,11 +35,11 @@ function HeaderInner() {
             clearTimeout(navigationTimeoutRef.current);
         }
 
-        setIsNavigating(true);
+        isNavigatingRef.current = true;
         setActiveSection(section);
         // Re-enable observer updates after scroll completes
         navigationTimeoutRef.current = setTimeout(() => {
-            setIsNavigating(false);
+            isNavigatingRef.current = false;
             navigationTimeoutRef.current = null;
         }, 1000);
     };
@@ -62,7 +62,7 @@ function HeaderInner() {
 
         const observer = new IntersectionObserver(
             entries => {
-                if (isNavigating) return;
+                if (isNavigatingRef.current) return;
 
                 // Find the first entry that is intersecting
                 const visibleEntry = entries.find(entry => entry.isIntersecting);
@@ -85,10 +85,10 @@ function HeaderInner() {
         return () => {
             observer.disconnect();
         };
-    }, [isNavigating, pathname]);
+    }, [pathname]);
 
     return (
-        <motion.header
+        <m.header
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
@@ -98,7 +98,7 @@ function HeaderInner() {
                 <div className="flex h-16 items-center justify-between md:h-20">
                     {/* Logo */}
                     <Link href="/" className="flex h-full items-center gap-3">
-                        <motion.div
+                        <m.div
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             className="relative aspect-715/349 h-[75%]"
@@ -111,24 +111,24 @@ function HeaderInner() {
                                 priority
                                 sizes="220px"
                             />
-                        </motion.div>
+                        </m.div>
                     </Link>
 
                     {/* Desktop Navigation - Two Row Layout */}
                     <div className="hidden flex-col items-end gap-1 md:flex">
                         {/* Top Row: Phone & Contact Button */}
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             transition={{ delay: 0.3 }}
                             className="flex items-center gap-4"
                         >
-                            <motion.a
+                            <m.a
                                 href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
                                 className="flex items-center gap-1.5 text-sm font-semibold text-white/90 hover:text-white"
                                 whileHover="shaking"
                             >
-                                <motion.svg
+                                <m.svg
                                     variants={{
                                         shaking: {
                                             rotate: [0, -10, 10, -10, 10, 0],
@@ -140,7 +140,7 @@ function HeaderInner() {
                                             }
                                         }
                                     }}
-                                    className="h-4 w-4"
+                                    className="size-4"
                                     fill="none"
                                     stroke="currentColor"
                                     viewBox="0 0 24 24"
@@ -151,23 +151,23 @@ function HeaderInner() {
                                         strokeWidth={2}
                                         d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"
                                     />
-                                </motion.svg>
+                                </m.svg>
                                 <span>{contactInfo.phone}</span>
-                            </motion.a>
-                            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                            </m.a>
+                            <m.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                 <Link
                                     href="/#contact"
                                     className="bg-brand-light inline-block rounded-lg px-4 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                                 >
                                     Contact Us
                                 </Link>
-                            </motion.div>
-                        </motion.div>
+                            </m.div>
+                        </m.div>
 
                         {/* Bottom Row: Navigation Links with Animated Underline */}
                         <nav className="flex items-center gap-8">
                             {navLinks.map((link, index) => (
-                                <motion.div
+                                <m.div
                                     key={link.href}
                                     initial={{ opacity: 0, y: -10 }}
                                     animate={{ opacity: 1, y: 0 }}
@@ -186,13 +186,13 @@ function HeaderInner() {
                                         {link.label}
                                     </Link>
                                     {activeSectionForNav === link.section && (
-                                        <motion.div
+                                        <m.div
                                             layoutId="activeSection"
                                             className="bg-brand-light absolute right-0 -bottom-0.5 left-0 -mx-1 h-[2.5px] rounded-xs"
                                             transition={{ type: "spring", stiffness: 380, damping: 25 }}
                                         />
                                     )}
-                                </motion.div>
+                                </m.div>
                             ))}
                         </nav>
                     </div>
@@ -213,7 +213,7 @@ function HeaderInner() {
                             aria-expanded={isMenuOpen}
                             aria-controls={mobileMenuId}
                         >
-                            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 {isMenuOpen ? (
                                     <path
                                         strokeLinecap="round"
@@ -237,7 +237,7 @@ function HeaderInner() {
                 {/* Mobile Menu */}
                 <AnimatePresence>
                     {isMenuOpen && (
-                        <motion.div
+                        <m.div
                             id={mobileMenuId}
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: "auto" }}
@@ -247,7 +247,7 @@ function HeaderInner() {
                         >
                             <nav className="flex flex-col gap-4">
                                 {navLinks.map((link, index) => (
-                                    <motion.div
+                                    <m.div
                                         key={link.href}
                                         initial={{ opacity: 0, x: -20 }}
                                         animate={{ opacity: 1, x: 0 }}
@@ -260,16 +260,16 @@ function HeaderInner() {
                                         >
                                             {link.label}
                                         </Link>
-                                    </motion.div>
+                                    </m.div>
                                 ))}
-                                <motion.a
+                                <m.a
                                     initial={{ opacity: 0, x: -20 }}
                                     animate={{ opacity: 1, x: 0 }}
                                     transition={{ delay: 0.2 }}
                                     href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
                                     className="flex items-center gap-1.5 text-sm text-white/80 hover:text-white"
                                 >
-                                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
@@ -278,12 +278,12 @@ function HeaderInner() {
                                         />
                                     </svg>
                                     {contactInfo.phone}
-                                </motion.a>
+                                </m.a>
                             </nav>
-                        </motion.div>
+                        </m.div>
                     )}
                 </AnimatePresence>
             </div>
-        </motion.header>
+        </m.header>
     );
 }

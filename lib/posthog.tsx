@@ -2,7 +2,7 @@
 
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider, usePostHog } from "posthog-js/react";
-import { ReactNode } from "react";
+import { ReactNode, useCallback } from "react";
 import type {
     SharePastWorkEvent,
     ClickPastWorkEvent,
@@ -25,70 +25,55 @@ export function PostHogProvider({ children }: { children: ReactNode }) {
 export function useAnalytics() {
     const posthogClient = usePostHog();
 
-    /**
-     * Track when user shares a past work item
-     */
-    const trackSharePastWork = (workId: string, category: WorkCategory, shareMethod: ShareMethod) => {
-        const event: SharePastWorkEvent = {
-            work_id: workId,
-            category,
-            share_method: shareMethod,
-            timestamp: new Date().toISOString()
-        };
+    const capture = useCallback(
+        (eventName: string, event: Record<string, unknown>) => {
+            try {
+                posthogClient?.capture(eventName, event);
 
-        try {
-            posthogClient?.capture("share_past_work", event);
-
-            if (process.env.NODE_ENV === "development") {
-                console.log("[Analytics] share_past_work:", event);
+                if (process.env.NODE_ENV === "development") {
+                    console.log(`[Analytics] ${eventName}:`, event);
+                }
+            } catch (error) {
+                console.error(`[Analytics] Failed to track ${eventName}:`, error);
             }
-        } catch (error) {
-            console.error("[Analytics] Failed to track share event:", error);
-        }
-    };
+        },
+        [posthogClient]
+    );
 
-    /**
-     * Track when user clicks to view a past work item
-     */
-    const trackClickPastWork = (workId: string, category: WorkCategory) => {
-        const event: ClickPastWorkEvent = {
-            work_id: workId,
-            category,
-            timestamp: new Date().toISOString()
-        };
+    const trackSharePastWork = useCallback(
+        (workId: string, category: WorkCategory, shareMethod: ShareMethod) => {
+            capture("share_past_work", {
+                work_id: workId,
+                category,
+                share_method: shareMethod,
+                timestamp: new Date().toISOString()
+            } satisfies SharePastWorkEvent);
+        },
+        [capture]
+    );
 
-        try {
-            posthogClient?.capture("click_past_work", event);
+    const trackClickPastWork = useCallback(
+        (workId: string, category: WorkCategory) => {
+            capture("click_past_work", {
+                work_id: workId,
+                category,
+                timestamp: new Date().toISOString()
+            } satisfies ClickPastWorkEvent);
+        },
+        [capture]
+    );
 
-            if (process.env.NODE_ENV === "development") {
-                console.log("[Analytics] click_past_work:", event);
-            }
-        } catch (error) {
-            console.error("[Analytics] Failed to track click event:", error);
-        }
-    };
-
-    /**
-     * Track when user views a past work item (via click, navigation, or gallery)
-     */
-    const trackViewPastWork = (workId: string, category: WorkCategory, viewSource: ViewSource) => {
-        const event: ViewPastWorkEvent = {
-            work_id: workId,
-            category,
-            view_source: viewSource,
-            timestamp: new Date().toISOString()
-        };
-
-        try {
-            posthogClient?.capture("view_past_work", event);
-
-            if (process.env.NODE_ENV === "development") {
-                console.log("[Analytics] view_past_work:", event);
-            }
-        } catch (error) {
-            console.error("[Analytics] Failed to track view event:", error);
-        }
-    };
+    const trackViewPastWork = useCallback(
+        (workId: string, category: WorkCategory, viewSource: ViewSource) => {
+            capture("view_past_work", {
+                work_id: workId,
+                category,
+                view_source: viewSource,
+                timestamp: new Date().toISOString()
+            } satisfies ViewPastWorkEvent);
+        },
+        [capture]
+    );
 
     return {
         trackSharePastWork,

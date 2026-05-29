@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect, useCallback, useEffectEvent, useRef } from "react";
+import { m, AnimatePresence } from "framer-motion";
 import { FallbackImage } from "@/components/FallbackImage";
 import { useAnalytics } from "@/lib/posthog";
 import type { WorkImage, WorkCategory } from "@/lib/types";
@@ -45,6 +45,10 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
         });
     }, [images.length, workId, category, trackViewPastWork]);
 
+    const onClose = useEffectEvent(handleClose);
+    const onNext = useEffectEvent(handleNext);
+    const onPrev = useEffectEvent(handlePrev);
+
     // Keyboard navigation
     useEffect(() => {
         if (selectedIndex === null) return;
@@ -54,13 +58,13 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
         const handleKeyDown = (e: KeyboardEvent) => {
             switch (e.key) {
                 case "Escape":
-                    handleClose();
+                    onClose();
                     break;
                 case "ArrowRight":
-                    handleNext();
+                    onNext();
                     break;
                 case "ArrowLeft":
-                    handlePrev();
+                    onPrev();
                     break;
             }
         };
@@ -72,16 +76,16 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
             document.removeEventListener("keydown", handleKeyDown);
             document.body.style.overflow = "unset";
         };
-    }, [selectedIndex, handleClose, handleNext, handlePrev]);
+    }, [selectedIndex]);
 
     return (
         <>
             <h3 className="text-brand-dark mb-4 text-xl font-semibold">
                 {images.length > 1 ? "Project Gallery" : "Project Image"}
             </h3>
-            <div className="columns-1 gap-4 space-y-4 sm:columns-2">
+            <div className="mx-auto max-w-md columns-1 gap-4 space-y-4 sm:max-w-3xl sm:columns-2 lg:max-w-none">
                 {images.map((image, index) => (
-                    <figure key={index} className="break-inside-avoid">
+                    <figure key={image.url} className="break-inside-avoid">
                         <button
                             type="button"
                             onClick={() => {
@@ -102,7 +106,7 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                             {/* Hover overlay */}
                             <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
                                 <span className="font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
-                                    <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg className="size-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path
                                             strokeLinecap="round"
                                             strokeLinejoin="round"
@@ -121,7 +125,7 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
             {/* Lightbox Modal */}
             <AnimatePresence>
                 {selectedIndex !== null && (
-                    <motion.div
+                    <m.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -133,7 +137,7 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                         onClick={handleClose}
                     >
                         {/* Close Button */}
-                        <motion.button
+                        <m.button
                             initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1 }}
                             ref={closeButtonRef}
@@ -142,7 +146,7 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                             className="absolute top-4 right-4 z-50 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                             aria-label="Close"
                         >
-                            <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg className="size-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -150,11 +154,11 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                                     d="M6 18L18 6M6 6l12 12"
                                 />
                             </svg>
-                        </motion.button>
+                        </m.button>
 
                         {/* Navigation - Previous */}
                         {images.length > 1 && (
-                            <motion.button
+                            <m.button
                                 initial={{ opacity: 0, x: -20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 whileHover={{ scale: 1.1 }}
@@ -167,7 +171,7 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                                 className="absolute top-1/2 left-4 z-50 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                                 aria-label="Previous image"
                             >
-                                <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="size-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
@@ -175,12 +179,12 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                                         d="M15 19l-7-7 7-7"
                                     />
                                 </svg>
-                            </motion.button>
+                            </m.button>
                         )}
 
                         {/* Navigation - Next */}
                         {images.length > 1 && (
-                            <motion.button
+                            <m.button
                                 initial={{ opacity: 0, x: 20 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 whileHover={{ scale: 1.1 }}
@@ -193,7 +197,7 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                                 className="absolute top-1/2 right-4 z-50 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                                 aria-label="Next image"
                             >
-                                <svg className="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg className="size-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path
                                         strokeLinecap="round"
                                         strokeLinejoin="round"
@@ -201,7 +205,7 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                                         d="M9 5l7 7-7 7"
                                     />
                                 </svg>
-                            </motion.button>
+                            </m.button>
                         )}
 
                         {/* Image */}
@@ -210,7 +214,7 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                             onClick={e => e.stopPropagation()}
                         >
                             <AnimatePresence mode="wait">
-                                <motion.div
+                                <m.div
                                     key={selectedIndex}
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
@@ -225,12 +229,12 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                                         className="object-contain"
                                         sizes="(max-width: 1280px) 100vw, 1280px"
                                     />
-                                </motion.div>
+                                </m.div>
                             </AnimatePresence>
                         </div>
 
                         {/* Bottom info */}
-                        <motion.div
+                        <m.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="absolute right-0 bottom-4 left-0 text-center"
@@ -239,8 +243,8 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                                 {projectName}
                                 {images.length > 1 && ` • ${selectedIndex + 1} of ${images.length}`}
                             </p>
-                        </motion.div>
-                    </motion.div>
+                        </m.div>
+                    </m.div>
                 )}
             </AnimatePresence>
         </>
