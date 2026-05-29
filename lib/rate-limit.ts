@@ -18,7 +18,7 @@ export interface RateLimitResult {
     source: "memory" | "upstash";
 }
 
-function nowSeconds(windowMs: number): number {
+function windowSeconds(windowMs: number): number {
     return Math.ceil(windowMs / 1000);
 }
 
@@ -55,7 +55,7 @@ function checkInMemoryRateLimit(identifier: string, maxRequests: number, windowM
         return {
             success: true,
             remaining: maxRequests - 1,
-            resetIn: nowSeconds(windowMs),
+            resetIn: windowSeconds(windowMs),
             limit: maxRequests,
             source: "memory"
         };
@@ -66,7 +66,7 @@ function checkInMemoryRateLimit(identifier: string, maxRequests: number, windowM
         return {
             success: true,
             remaining: maxRequests - 1,
-            resetIn: nowSeconds(windowMs),
+            resetIn: windowSeconds(windowMs),
             limit: maxRequests,
             source: "memory"
         };
@@ -163,7 +163,7 @@ async function checkUpstashRateLimit(
 
     const remaining = Math.max(0, maxRequests - currentCount);
     const ttlMs = await upstashCommand(["pttl", key]);
-    const resetIn = ttlMs && ttlMs > 0 ? Math.ceil(ttlMs / 1000) : nowSeconds(windowMs);
+    const resetIn = ttlMs && ttlMs > 0 ? Math.ceil(ttlMs / 1000) : windowSeconds(windowMs);
 
     return {
         success: currentCount <= maxRequests,

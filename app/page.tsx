@@ -7,6 +7,7 @@ import { ContactSection } from "@/components/ContactSection";
 import { WorkGrid } from "@/components/WorkGrid";
 import { getAllPastWork } from "@/lib/data/past-work";
 import { getSiteUrl } from "@/lib/site-config";
+import { serializeJsonLd } from "@/lib/utils";
 
 export const metadata: Metadata = {
     title: "Bespoke Broncel Furniture | Custom Kitchens & Wardrobes | South Yorkshire",
@@ -17,8 +18,7 @@ export const metadata: Metadata = {
     },
     openGraph: {
         title: "Bespoke Broncel Furniture | Custom Kitchens & Wardrobes",
-        description:
-            "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of carpentry experience.",
+        description: "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of carpentry experience.",
         type: "website",
         url: getSiteUrl(),
         images: [{ url: getSiteUrl("/hero-bg.webp") }]
@@ -26,8 +26,7 @@ export const metadata: Metadata = {
     twitter: {
         card: "summary_large_image",
         title: "Bespoke Broncel Furniture | Custom Kitchens & Wardrobes",
-        description:
-            "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of carpentry experience.",
+        description: "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of carpentry experience.",
         images: [getSiteUrl("/hero-bg.webp")]
     }
 };
@@ -62,10 +61,7 @@ export default function Home() {
         <>
             <Header />
             <main>
-                <script
-                    type="application/ld+json"
-                    dangerouslySetInnerHTML={{ __html: JSON.stringify(localBusinessSchema) }}
-                />
+                <script type="application/ld+json">{serializeJsonLd(localBusinessSchema)}</script>
                 <Hero />
                 <WorkGrid items={pastWork} />
                 <AboutSection />

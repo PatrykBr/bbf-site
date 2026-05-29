@@ -31,6 +31,19 @@ function getColumnCount(width: number): number {
     return 4;
 }
 
+function getGalleryGridClass(columnCount: number): string {
+    switch (columnCount) {
+        case 1:
+            return "mx-auto grid max-w-md grid-cols-1 gap-5";
+        case 2:
+            return "mx-auto grid max-w-3xl grid-cols-2 gap-5";
+        case 3:
+            return "mx-auto grid max-w-5xl grid-cols-3 gap-5";
+        default:
+            return "grid grid-cols-4 gap-5";
+    }
+}
+
 const itemVariants: Variants = {
     hidden: { opacity: 0, y: 20 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.4 } }
@@ -252,6 +265,7 @@ export function WorkGrid({ items, itemsPerPage: itemsPerPageProp }: WorkGridProp
         paginatedItems.forEach((item, i) => cols[i % columnCount].push(item));
         return cols;
     }, [paginatedItems, columnCount]);
+    const galleryGridClass = getGalleryGridClass(columnCount);
 
     const handleImageClick = useCallback(
         (item: PastWorkItem) => {
@@ -306,9 +320,9 @@ export function WorkGrid({ items, itemsPerPage: itemsPerPageProp }: WorkGridProp
                 <AnimatePresence mode="wait">
                     {paginatedItems.length > 0 ? (
                         <div key={`${filter}-${String(showFeatured)}-${currentPage}`}>
-                            <div className="masonry-grid">
+                            <div className={galleryGridClass}>
                                 {columnedItems.map((colItems, colIdx) => (
-                                    <div key={colItems[0]?.id ?? colIdx} className="masonry-grid_column">
+                                    <div key={colItems[0]?.id ?? colIdx} className="flex min-w-0 flex-col gap-5">
                                         {colItems.map(item => (
                                             <WorkCard
                                                 key={item.id}

@@ -1,58 +1,14 @@
 "use client";
 
-import { useState, useCallback, useEffect, useRef } from "react";
-import { useAnalytics } from "@/lib/posthog";
-import { getFacebookShareUrl, getWhatsAppShareUrl, copyToClipboard, openExternalUrl } from "@/lib/utils";
-import type { PastWorkItem, ShareMethod } from "@/lib/types";
+import { useShareActions } from "@/lib/use-share";
+import type { PastWorkItem } from "@/lib/types";
 
 interface WorkDetailClientProps {
     item: PastWorkItem;
 }
 
 export function WorkDetailClient({ item }: WorkDetailClientProps) {
-    const [copySuccess, setCopySuccess] = useState(false);
-    const { trackSharePastWork } = useAnalytics();
-    const copySuccessTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    useEffect(
-        () => () => {
-            if (copySuccessTimeoutRef.current) {
-                clearTimeout(copySuccessTimeoutRef.current);
-            }
-        },
-        []
-    );
-
-    const handleShare = useCallback(
-        async (method: ShareMethod) => {
-            trackSharePastWork(item.id, item.category, method);
-
-            switch (method) {
-                case "facebook":
-                    openExternalUrl(getFacebookShareUrl(item.slug));
-                    break;
-                case "whatsapp":
-                    openExternalUrl(getWhatsAppShareUrl(item.slug, item.name));
-                    break;
-                case "copy":
-                    const success = await copyToClipboard(item.slug);
-                    if (success) {
-                        setCopySuccess(true);
-
-                        if (copySuccessTimeoutRef.current) {
-                            clearTimeout(copySuccessTimeoutRef.current);
-                        }
-
-                        copySuccessTimeoutRef.current = setTimeout(() => {
-                            setCopySuccess(false);
-                            copySuccessTimeoutRef.current = null;
-                        }, 2000);
-                    }
-                    break;
-            }
-        },
-        [item, trackSharePastWork]
-    );
+    const { copySuccess, share } = useShareActions(item);
 
     return (
         <div className="mt-6 border-t border-gray-200 pt-6">
@@ -60,7 +16,7 @@ export function WorkDetailClient({ item }: WorkDetailClientProps) {
             <div className="flex gap-2">
                 <button
                     type="button"
-                    onClick={() => handleShare("facebook")}
+                    onClick={() => share("facebook")}
                     className="flex flex-1 items-center justify-center gap-2 rounded bg-[#1877F2] px-3 py-2 text-sm text-white transition-colors hover:bg-[#1877F2]/90"
                     aria-label="Share on Facebook"
                 >
@@ -71,7 +27,7 @@ export function WorkDetailClient({ item }: WorkDetailClientProps) {
 
                 <button
                     type="button"
-                    onClick={() => handleShare("whatsapp")}
+                    onClick={() => share("whatsapp")}
                     className="flex flex-1 items-center justify-center gap-2 rounded bg-[#25D366] px-3 py-2 text-sm text-white transition-colors hover:bg-[#25D366]/90"
                     aria-label="Share on WhatsApp"
                 >
@@ -82,7 +38,7 @@ export function WorkDetailClient({ item }: WorkDetailClientProps) {
 
                 <button
                     type="button"
-                    onClick={() => handleShare("copy")}
+                    onClick={() => share("copy")}
                     className="flex flex-1 items-center justify-center gap-2 rounded bg-gray-200 px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-300"
                     aria-label="Copy link"
                 >

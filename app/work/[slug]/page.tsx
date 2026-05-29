@@ -5,7 +5,7 @@ import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { FallbackImage } from "@/components/FallbackImage";
 import { getPastWorkBySlug, getAllPastWorkSlugs, getAllPastWork } from "@/lib/data/past-work";
-import { formatDate } from "@/lib/utils";
+import { formatDate, serializeJsonLd } from "@/lib/utils";
 import { getSiteUrl } from "@/lib/site-config";
 import { WorkDetailClient } from "./WorkDetailClient";
 import { ProjectGallery } from "./ProjectGallery";
@@ -106,7 +106,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
             <Header />
             <main className="pt-20">
                 {/* JSON-LD */}
-                <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+                <script type="application/ld+json">{serializeJsonLd(jsonLd)}</script>
 
                 {/* Breadcrumb */}
                 <div className="bg-gray-50 py-4">

@@ -391,11 +391,12 @@ function getClientIp(request: NextRequest): string {
             continue;
         }
 
-        const candidates = value.split(",").map(part => part.trim());
-        const validIp = candidates.find(candidate => isIP(candidate));
+        for (const candidate of value.split(",")) {
+            const ip = candidate.trim();
 
-        if (validIp) {
-            return validIp;
+            if (isIP(ip)) {
+                return ip;
+            }
         }
     }
 

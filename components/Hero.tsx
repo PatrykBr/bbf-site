@@ -46,28 +46,13 @@ export function Hero() {
 
                 {/* Content inside the window */}
                 <div className="relative z-10 px-4 py-35 text-center text-white sm:px-8 sm:py-32 md:py-40 lg:py-48">
-                    <m.h1
-                        initial={shouldReduceMotion ? false : { opacity: 0, y: 30 }}
-                        animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-                        transition={shouldReduceMotion ? undefined : { duration: 0.8, ease: "easeOut" }}
-                        className="mb-6 text-4xl leading-tight font-bold sm:text-5xl md:text-7xl"
-                    >
+                    <h1 className="mb-6 text-4xl leading-tight font-bold sm:text-5xl md:text-7xl">
                         {companyInfo.name}
-                    </m.h1>
-                    <m.p
-                        initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
-                        animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-                        transition={shouldReduceMotion ? undefined : { duration: 0.8, delay: 0.2, ease: "easeOut" }}
-                        className="mb-8 text-xl text-white/90 italic sm:text-2xl"
-                    >
+                    </h1>
+                    <p className="mb-8 text-xl text-white/90 italic sm:text-2xl">
                         {companyInfo.tagline}
-                    </m.p>
-                    <m.div
-                        initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
-                        animate={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
-                        transition={shouldReduceMotion ? undefined : { duration: 0.8, delay: 0.4, ease: "easeOut" }}
-                        className="flex flex-col justify-center gap-4 sm:flex-row"
-                    >
+                    </p>
+                    <div className="flex flex-col justify-center gap-4 sm:flex-row">
                         <Link
                             href="/#work"
                             className="text-brand-dark inline-flex items-center justify-center gap-2 rounded-lg bg-white px-8 py-3.5 font-semibold shadow-lg shadow-black/20 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-black/30"
@@ -80,7 +65,7 @@ export function Hero() {
                         >
                             Get In Touch
                         </Link>
-                    </m.div>
+                    </div>
                 </div>
             </div>
         </section>

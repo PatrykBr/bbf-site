@@ -1,11 +1,11 @@
 "use client";
 
-import { useReducer, useCallback, useEffect, useEffectEvent, useRef } from "react";
+import { useReducer, useEffect, useEffectEvent, useRef } from "react";
 import Link from "next/link";
-import { m, AnimatePresence } from "framer-motion";
+import { m, AnimatePresence, type Variants } from "framer-motion";
 import { FallbackImage } from "./FallbackImage";
 import { useAnalytics } from "@/lib/posthog";
-import { getFacebookShareUrl, getWhatsAppShareUrl, copyToClipboard, openExternalUrl } from "@/lib/utils";
+import { useShareActions } from "@/lib/use-share";
 import type { PastWorkItem, ShareMethod, WorkFilter, WorkCategory, ViewSource } from "@/lib/types";
 
 interface ImageModalProps {
@@ -29,31 +29,38 @@ const getFilterLabel = (filter: WorkFilter, showFeatured: boolean): string => {
     return "Kitchens";
 };
 
+function focusElementSafely(element: HTMLElement | null) {
+    if (!element?.isConnected) return;
+
+    try {
+        element.focus({ preventScroll: true });
+    } catch {
+        element.focus();
+    }
+}
+
 // ---------- reducer ----------
 
 type ModalState = {
-    copySuccess: boolean;
     direction: number;
     showGallery: boolean;
     galleryImageIndex: number;
 };
 
 type ModalAction =
-    | { type: "COPY_SUCCESS" }
-    | { type: "COPY_RESET" }
     | { type: "NAVIGATE"; direction: number }
     | { type: "SHOW_GALLERY" }
     | { type: "CLOSE_GALLERY" }
     | { type: "SET_GALLERY_INDEX"; index: number };
 
-const modalInitial: ModalState = { copySuccess: false, direction: 0, showGallery: false, galleryImageIndex: 0 };
+const modalInitial: ModalState = {
+    direction: 0,
+    showGallery: false,
+    galleryImageIndex: 0
+};
 
 function modalReducer(state: ModalState, action: ModalAction): ModalState {
     switch (action.type) {
-        case "COPY_SUCCESS":
-            return { ...state, copySuccess: true };
-        case "COPY_RESET":
-            return { ...state, copySuccess: false };
         case "NAVIGATE":
             return { ...state, direction: action.direction, showGallery: false, galleryImageIndex: 0 };
         case "SHOW_GALLERY":
@@ -108,7 +115,10 @@ function GalleryView({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 type="button"
-                onClick={e => { e.stopPropagation(); onBack(); }}
+                onClick={e => {
+                    e.stopPropagation();
+                    onBack();
+                }}
                 className="absolute top-4 left-4 z-50 flex items-center gap-2 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                 aria-label="Back to main view"
             >
@@ -123,7 +133,10 @@ function GalleryView({
                 animate={{ opacity: 1, scale: 1 }}
                 ref={closeButtonRef}
                 type="button"
-                onClick={onClose}
+                onClick={e => {
+                    e.stopPropagation();
+                    onClose();
+                }}
                 className="absolute top-4 right-4 z-50 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                 aria-label="Close modal"
             >
@@ -136,7 +149,11 @@ function GalleryView({
                 type="button"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={e => { e.stopPropagation(); trackView(item.id, item.category, "gallery"); onPrevImage(); }}
+                onClick={e => {
+                    e.stopPropagation();
+                    trackView(item.id, item.category, "gallery");
+                    onPrevImage();
+                }}
                 className="absolute top-1/2 left-4 z-50 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                 aria-label="Previous image"
             >
@@ -149,7 +166,11 @@ function GalleryView({
                 type="button"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                onClick={e => { e.stopPropagation(); trackView(item.id, item.category, "gallery"); onNextImage(); }}
+                onClick={e => {
+                    e.stopPropagation();
+                    trackView(item.id, item.category, "gallery");
+                    onNextImage();
+                }}
                 className="absolute top-1/2 right-4 z-50 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                 aria-label="Next image"
             >
@@ -189,7 +210,10 @@ function GalleryView({
                     <button
                         key={img.url}
                         type="button"
-                        onClick={() => { if (idx !== galleryImageIndex) trackView(item.id, item.category, "gallery"); onSetIndex(idx); }}
+                        onClick={() => {
+                            if (idx !== galleryImageIndex) trackView(item.id, item.category, "gallery");
+                            onSetIndex(idx);
+                        }}
                         className={`h-16 w-16 overflow-hidden rounded-lg border-2 transition-all ${
                             idx === galleryImageIndex
                                 ? "scale-110 border-white"
@@ -218,166 +242,47 @@ function GalleryView({
     );
 }
 
-// ---------- ImageModal ----------
+// ---------- MainModalView ----------
 
-export function ImageModal({
+const imageVariants: Variants = {
+    enter: (dir: number) => ({ x: dir > 0 ? 100 : -100, opacity: 0 }),
+    center: { x: 0, opacity: 1 },
+    exit: (dir: number) => ({ x: dir < 0 ? 100 : -100, opacity: 0 })
+};
+
+interface MainModalViewProps {
+    item: PastWorkItem;
+    allItems: PastWorkItem[];
+    currentItemIndex: number;
+    direction: number;
+    copySuccess: boolean;
+    activeFilter: WorkFilter;
+    showFeatured: boolean;
+    closeButtonRef: React.RefObject<HTMLButtonElement | null>;
+    onClose: () => void;
+    onPrev: (event: React.MouseEvent) => void;
+    onNext: (event: React.MouseEvent) => void;
+    onShowGallery: () => void;
+    onShare: (method: ShareMethod) => Promise<void> | void;
+}
+
+function MainModalView({
     item,
     allItems,
     currentItemIndex,
+    direction,
+    copySuccess,
+    activeFilter,
+    showFeatured,
+    closeButtonRef,
     onClose,
-    onNavigateToItem,
-    activeFilter = "all",
-    showFeatured = false
-}: ImageModalProps) {
-    const [modalState, dispatch] = useReducer(modalReducer, modalInitial);
-    const { copySuccess, direction, showGallery, galleryImageIndex } = modalState;
-
-    const { trackSharePastWork, trackViewPastWork } = useAnalytics();
-    const copySuccessTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-    const mainCloseButtonRef = useRef<HTMLButtonElement>(null);
-    const galleryCloseButtonRef = useRef<HTMLButtonElement>(null);
-    const lastFocusedElementRef = useRef<HTMLElement | null>(null);
-
+    onPrev,
+    onNext,
+    onShowGallery,
+    onShare
+}: MainModalViewProps) {
     const currentImage = item.images[0];
     const hasMultipleImages = item.images.length > 1;
-
-    useEffect(() => {
-        lastFocusedElementRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-        const timeoutId = copySuccessTimeoutRef.current;
-
-        return () => {
-            clearTimeout(timeoutId ?? undefined);
-            lastFocusedElementRef.current?.focus();
-        };
-    }, []);
-
-    useEffect(() => {
-        const focusTarget = showGallery ? galleryCloseButtonRef.current : mainCloseButtonRef.current;
-        focusTarget?.focus();
-    }, [showGallery, item.id]);
-
-    const onCloseEvent = useEffectEvent(onClose);
-    const onNavigateToItemEvent = useEffectEvent(onNavigateToItem);
-
-    useEffect(() => {
-        const handleKeyDown = (e: KeyboardEvent) => {
-            if (showGallery) {
-                switch (e.key) {
-                    case "Escape":
-                        dispatch({ type: "CLOSE_GALLERY" });
-                        break;
-                    case "ArrowRight": {
-                        trackViewPastWork(item.id, item.category, "gallery");
-                        dispatch({ type: "SET_GALLERY_INDEX", index: (galleryImageIndex + 1) % item.images.length });
-                        break;
-                    }
-                    case "ArrowLeft": {
-                        trackViewPastWork(item.id, item.category, "gallery");
-                        dispatch({ type: "SET_GALLERY_INDEX", index: (galleryImageIndex - 1 + item.images.length) % item.images.length });
-                        break;
-                    }
-                }
-            } else {
-                switch (e.key) {
-                    case "Escape":
-                        onCloseEvent();
-                        break;
-                    case "ArrowRight": {
-                        const nextIndex = (currentItemIndex + 1) % allItems.length;
-                        const nextItem = allItems[nextIndex];
-                        if (nextItem) trackViewPastWork(nextItem.id, nextItem.category, "navigation");
-                        dispatch({ type: "NAVIGATE", direction: 1 });
-                        onNavigateToItemEvent(nextIndex);
-                        break;
-                    }
-                    case "ArrowLeft": {
-                        const prevIndex = (currentItemIndex - 1 + allItems.length) % allItems.length;
-                        const prevItem = allItems[prevIndex];
-                        if (prevItem) trackViewPastWork(prevItem.id, prevItem.category, "navigation");
-                        dispatch({ type: "NAVIGATE", direction: -1 });
-                        onNavigateToItemEvent(prevIndex);
-                        break;
-                    }
-                }
-            }
-        };
-
-        document.addEventListener("keydown", handleKeyDown);
-        document.body.style.overflow = "hidden";
-
-        return () => {
-            document.removeEventListener("keydown", handleKeyDown);
-            document.body.style.overflow = "unset";
-        };
-    }, [showGallery, galleryImageIndex, item.id, item.category, item.images, currentItemIndex, allItems, trackViewPastWork]);
-
-    const handleShare = useCallback(
-        async (method: ShareMethod) => {
-            trackSharePastWork(item.id, item.category, method);
-
-            switch (method) {
-                case "facebook":
-                    openExternalUrl(getFacebookShareUrl(item.slug));
-                    break;
-                case "whatsapp":
-                    openExternalUrl(getWhatsAppShareUrl(item.slug, item.name));
-                    break;
-                case "copy": {
-                    const success = await copyToClipboard(item.slug);
-                    if (success) {
-                        dispatch({ type: "COPY_SUCCESS" });
-                        if (copySuccessTimeoutRef.current) clearTimeout(copySuccessTimeoutRef.current);
-                        copySuccessTimeoutRef.current = setTimeout(() => {
-                            dispatch({ type: "COPY_RESET" });
-                            copySuccessTimeoutRef.current = null;
-                        }, 2000);
-                    }
-                    break;
-                }
-            }
-        },
-        [item, trackSharePastWork]
-    );
-
-    const handlePrev = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        const prevIndex = (currentItemIndex - 1 + allItems.length) % allItems.length;
-        const prevItem = allItems[prevIndex];
-        if (prevItem) trackViewPastWork(prevItem.id, prevItem.category, "navigation");
-        dispatch({ type: "NAVIGATE", direction: -1 });
-        onNavigateToItem(prevIndex);
-    };
-
-    const handleNext = (e: React.MouseEvent) => {
-        e.stopPropagation();
-        const nextIndex = (currentItemIndex + 1) % allItems.length;
-        const nextItem = allItems[nextIndex];
-        if (nextItem) trackViewPastWork(nextItem.id, nextItem.category, "navigation");
-        dispatch({ type: "NAVIGATE", direction: 1 });
-        onNavigateToItem(nextIndex);
-    };
-
-    const imageVariants = {
-        enter: (dir: number) => ({ x: dir > 0 ? 100 : -100, opacity: 0 }),
-        center: { x: 0, opacity: 1 },
-        exit: (dir: number) => ({ x: dir < 0 ? 100 : -100, opacity: 0 })
-    };
-
-    if (showGallery) {
-        return (
-            <GalleryView
-                item={item}
-                galleryImageIndex={galleryImageIndex}
-                closeButtonRef={galleryCloseButtonRef}
-                onClose={onClose}
-                onBack={() => dispatch({ type: "CLOSE_GALLERY" })}
-                onPrevImage={() => dispatch({ type: "SET_GALLERY_INDEX", index: (galleryImageIndex - 1 + item.images.length) % item.images.length })}
-                onNextImage={() => dispatch({ type: "SET_GALLERY_INDEX", index: (galleryImageIndex + 1) % item.images.length })}
-                onSetIndex={index => dispatch({ type: "SET_GALLERY_INDEX", index })}
-                trackView={trackViewPastWork}
-            />
-        );
-    }
 
     return (
         <m.div
@@ -395,9 +300,12 @@ export function ImageModal({
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: 0.1 }}
-                ref={mainCloseButtonRef}
+                ref={closeButtonRef}
                 type="button"
-                onClick={onClose}
+                onClick={e => {
+                    e.stopPropagation();
+                    onClose();
+                }}
                 className="absolute top-4 right-4 z-50 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                 aria-label="Close modal"
             >
@@ -413,7 +321,7 @@ export function ImageModal({
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 type="button"
-                onClick={handlePrev}
+                onClick={onPrev}
                 className="absolute top-1/2 left-4 z-50 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                 aria-label="Previous image"
             >
@@ -429,7 +337,7 @@ export function ImageModal({
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 type="button"
-                onClick={handleNext}
+                onClick={onNext}
                 className="absolute top-1/2 right-4 z-50 -translate-y-1/2 rounded-full bg-black/50 p-2 text-white/80 transition-colors hover:bg-black/70 hover:text-white"
                 aria-label="Next image"
             >
@@ -486,11 +394,16 @@ export function ImageModal({
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                     type="button"
-                                    onClick={() => { trackViewPastWork(item.id, item.category, "gallery"); dispatch({ type: "SHOW_GALLERY" }); }}
+                                    onClick={onShowGallery}
                                     className="bg-brand-light hover:bg-brand-light/90 flex items-center gap-2 rounded px-4 py-2 text-sm font-medium text-white transition-colors"
                                 >
                                     <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                                        />
                                     </svg>
                                     <span>View All {item.images.length} Photos</span>
                                 </m.button>
@@ -501,7 +414,12 @@ export function ImageModal({
                                 className="text-brand-dark flex items-center gap-2 rounded bg-white px-4 py-2 text-sm font-medium transition-colors hover:bg-white/90"
                             >
                                 <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                    />
                                 </svg>
                                 <span>View Details</span>
                             </Link>
@@ -513,7 +431,7 @@ export function ImageModal({
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             type="button"
-                            onClick={() => handleShare("facebook")}
+                            onClick={() => onShare("facebook")}
                             className="flex items-center gap-2 rounded bg-[#1877F2] px-4 py-2 text-sm text-white transition-colors hover:bg-[#1877F2]/90"
                             aria-label="Share on Facebook"
                         >
@@ -527,7 +445,7 @@ export function ImageModal({
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             type="button"
-                            onClick={() => handleShare("whatsapp")}
+                            onClick={() => onShare("whatsapp")}
                             className="flex items-center gap-2 rounded bg-[#25D366] px-4 py-2 text-sm text-white transition-colors hover:bg-[#25D366]/90"
                             aria-label="Share on WhatsApp"
                         >
@@ -541,12 +459,17 @@ export function ImageModal({
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             type="button"
-                            onClick={() => handleShare("copy")}
+                            onClick={() => onShare("copy")}
                             className="flex items-center gap-2 rounded bg-gray-600 px-4 py-2 text-sm text-white transition-colors hover:bg-gray-500"
                             aria-label="Copy link"
                         >
                             <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                <path
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    strokeWidth={2}
+                                    d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"
+                                />
                             </svg>
                             <span className="hidden sm:inline">{copySuccess ? "Copied!" : "Copy Link"}</span>
                         </m.button>
@@ -554,5 +477,170 @@ export function ImageModal({
                 </div>
             </m.div>
         </m.div>
+    );
+}
+
+// ---------- ImageModal ----------
+
+export function ImageModal({
+    item,
+    allItems,
+    currentItemIndex,
+    onClose,
+    onNavigateToItem,
+    activeFilter = "all",
+    showFeatured = false
+}: ImageModalProps) {
+    const [modalState, dispatch] = useReducer(modalReducer, modalInitial);
+    const { direction, showGallery, galleryImageIndex } = modalState;
+
+    const { trackViewPastWork } = useAnalytics();
+    const { copySuccess, share } = useShareActions(item);
+    const mainCloseButtonRef = useRef<HTMLButtonElement>(null);
+    const galleryCloseButtonRef = useRef<HTMLButtonElement>(null);
+    const lastFocusedElementRef = useRef<HTMLElement | null>(null);
+
+    useEffect(() => {
+        lastFocusedElementRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        const previousBodyOverflow = document.body.style.overflow;
+        document.body.style.overflow = "hidden";
+
+        return () => {
+            document.body.style.overflow = previousBodyOverflow;
+            focusElementSafely(lastFocusedElementRef.current);
+            lastFocusedElementRef.current = null;
+        };
+    }, []);
+
+    useEffect(() => {
+        const focusTarget = showGallery ? galleryCloseButtonRef.current : mainCloseButtonRef.current;
+        focusElementSafely(focusTarget);
+    }, [showGallery, item.id]);
+
+    const onCloseEvent = useEffectEvent(onClose);
+    const onNavigateToItemEvent = useEffectEvent(onNavigateToItem);
+
+    useEffect(() => {
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (showGallery) {
+                switch (e.key) {
+                    case "Escape":
+                        dispatch({ type: "CLOSE_GALLERY" });
+                        break;
+                    case "ArrowRight": {
+                        trackViewPastWork(item.id, item.category, "gallery");
+                        dispatch({ type: "SET_GALLERY_INDEX", index: (galleryImageIndex + 1) % item.images.length });
+                        break;
+                    }
+                    case "ArrowLeft": {
+                        trackViewPastWork(item.id, item.category, "gallery");
+                        dispatch({
+                            type: "SET_GALLERY_INDEX",
+                            index: (galleryImageIndex - 1 + item.images.length) % item.images.length
+                        });
+                        break;
+                    }
+                }
+            } else {
+                switch (e.key) {
+                    case "Escape":
+                        onCloseEvent();
+                        break;
+                    case "ArrowRight": {
+                        const nextIndex = (currentItemIndex + 1) % allItems.length;
+                        const nextItem = allItems[nextIndex];
+                        if (nextItem) trackViewPastWork(nextItem.id, nextItem.category, "navigation");
+                        dispatch({ type: "NAVIGATE", direction: 1 });
+                        onNavigateToItemEvent(nextIndex);
+                        break;
+                    }
+                    case "ArrowLeft": {
+                        const prevIndex = (currentItemIndex - 1 + allItems.length) % allItems.length;
+                        const prevItem = allItems[prevIndex];
+                        if (prevItem) trackViewPastWork(prevItem.id, prevItem.category, "navigation");
+                        dispatch({ type: "NAVIGATE", direction: -1 });
+                        onNavigateToItemEvent(prevIndex);
+                        break;
+                    }
+                }
+            }
+        };
+
+        document.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            document.removeEventListener("keydown", handleKeyDown);
+        };
+    }, [
+        showGallery,
+        galleryImageIndex,
+        item.id,
+        item.category,
+        item.images,
+        currentItemIndex,
+        allItems,
+        trackViewPastWork
+    ]);
+
+    const handlePrev = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const prevIndex = (currentItemIndex - 1 + allItems.length) % allItems.length;
+        const prevItem = allItems[prevIndex];
+        if (prevItem) trackViewPastWork(prevItem.id, prevItem.category, "navigation");
+        dispatch({ type: "NAVIGATE", direction: -1 });
+        onNavigateToItem(prevIndex);
+    };
+
+    const handleNext = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        const nextIndex = (currentItemIndex + 1) % allItems.length;
+        const nextItem = allItems[nextIndex];
+        if (nextItem) trackViewPastWork(nextItem.id, nextItem.category, "navigation");
+        dispatch({ type: "NAVIGATE", direction: 1 });
+        onNavigateToItem(nextIndex);
+    };
+
+    if (showGallery) {
+        return (
+            <GalleryView
+                item={item}
+                galleryImageIndex={galleryImageIndex}
+                closeButtonRef={galleryCloseButtonRef}
+                onClose={onClose}
+                onBack={() => dispatch({ type: "CLOSE_GALLERY" })}
+                onPrevImage={() =>
+                    dispatch({
+                        type: "SET_GALLERY_INDEX",
+                        index: (galleryImageIndex - 1 + item.images.length) % item.images.length
+                    })
+                }
+                onNextImage={() =>
+                    dispatch({ type: "SET_GALLERY_INDEX", index: (galleryImageIndex + 1) % item.images.length })
+                }
+                onSetIndex={index => dispatch({ type: "SET_GALLERY_INDEX", index })}
+                trackView={trackViewPastWork}
+            />
+        );
+    }
+
+    return (
+        <MainModalView
+            item={item}
+            allItems={allItems}
+            currentItemIndex={currentItemIndex}
+            direction={direction}
+            copySuccess={copySuccess}
+            activeFilter={activeFilter}
+            showFeatured={showFeatured}
+            closeButtonRef={mainCloseButtonRef}
+            onClose={onClose}
+            onPrev={handlePrev}
+            onNext={handleNext}
+            onShowGallery={() => {
+                trackViewPastWork(item.id, item.category, "gallery");
+                dispatch({ type: "SHOW_GALLERY" });
+            }}
+            onShare={share}
+        />
     );
 }

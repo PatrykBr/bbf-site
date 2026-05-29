@@ -83,7 +83,7 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
             <h3 className="text-brand-dark mb-4 text-xl font-semibold">
                 {images.length > 1 ? "Project Gallery" : "Project Image"}
             </h3>
-            <div className="columns-1 gap-4 space-y-4 sm:columns-2">
+            <div className="mx-auto max-w-md columns-1 gap-4 space-y-4 sm:max-w-3xl sm:columns-2 lg:max-w-none">
                 {images.map((image, index) => (
                     <figure key={image.url} className="break-inside-avoid">
                         <button

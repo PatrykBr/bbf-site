@@ -60,6 +60,13 @@ export async function copyToClipboard(itemSlug: string): Promise<boolean> {
 }
 
 /**
+ * Serialize JSON-LD safely for inline script content.
+ */
+export function serializeJsonLd(data: unknown): string {
+    return JSON.stringify(data).replace(/</g, "\\u003c");
+}
+
+/**
  * Validate email format
  */
 export function isValidEmail(email: string): boolean {
