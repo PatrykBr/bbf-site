@@ -131,13 +131,14 @@ export function ContactForm() {
 
     return (
         <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Honeypot field - hidden from users, bots will fill it */}
+            {/* Honeypot field - hidden from users, bots will fill it. Named "website" to bait
+                form-filling bots; the value is still submitted under the _honeypot key. */}
             <div className="absolute -left-[9999px] opacity-0" aria-hidden="true">
-                <label htmlFor="_honeypot">Leave this field empty</label>
+                <label htmlFor="website">Website</label>
                 <input
                     type="text"
-                    id="_honeypot"
-                    name="_honeypot"
+                    id="website"
+                    name="website"
                     value={honeypot}
                     onChange={e => dispatch({ type: "SET_HONEYPOT", value: e.target.value })}
                     tabIndex={-1}
