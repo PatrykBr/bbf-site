@@ -47,7 +47,8 @@ body {
     outline-offset: 2px;
 }
 
-/* Smooth scrolling */
+/* Smooth scrolling; brand-dark background so the overscroll area matches the hero */
 html {
     scroll-behavior: smooth;
+    background: var(--brand-dark);
 }
