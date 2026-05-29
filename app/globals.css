@@ -18,7 +18,9 @@
 }
 
 body {
-    background: var(--background);
+    /* brand-dark, not --background: the full-bleed sections cover the body, so this is only
+       ever seen in the iOS Safari overscroll/rubber-band area, which follows body (not html). */
+    background: var(--brand-dark);
     color: var(--foreground);
     font-family: var(--font-sans);
 }
