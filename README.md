@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Bespoke Broncel Furniture
 
-## Getting Started
+A responsive website developed for **Bespoke Broncel Furniture**, a fitted furniture business in South Yorkshire.
 
-First, run the development server:
+**Live site:** [broncelfurniture.com](https://www.broncelfurniture.com)
+
+## What it does
+
+- Presents past kitchen and wardrobe projects in a responsive, category-filterable gallery with individual shareable project views.
+- Provides a contact form with client-side and server-side validation, anti-spam checks, rate limiting and email delivery via Resend.
+- Captures optional site and portfolio interaction analytics with PostHog.
+- Supports search and sharing through SEO metadata, Open Graph images, canonical URLs and structured business information.
+- Uses a mobile-first interface with Framer Motion animations and reduced-motion support.
+
+## Technology
+
+- **Next.js 16**, **React 19**, **TypeScript**
+- **Tailwind CSS 4**, **Framer Motion**
+- **Resend** for contact email delivery
+- **PostHog** for analytics
+- **ESLint**, **Prettier** and TypeScript checking
+
+The project is intentionally a straightforward website rather than a general-purpose CMS. Portfolio data is maintained in `lib/data/past-work.ts`.
+
+## Local development
+
+Requirements: Node.js 24.x and npm.
 
 ```bash
+npm ci
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+The `.env.example` file documents configuration for the public site URL, optional PostHog analytics and Resend contact-form delivery. Provide your own email API key and sender/recipient configuration to test actual form delivery. Do not commit credentials.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Quality checks
 
-## Learn More
+```bash
+npm run check        # ESLint + TypeScript
+npm run format:check
+npm run build
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Project structure
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `app/`: Next.js routes, metadata and the contact API
+- `components/`: page sections, gallery, modal and contact form
+- `lib/data/`: portfolio and business content
+- `lib/`: shared data access, utilities, validation and analytics
+- `public/`: site assets and portfolio images
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Developed as a practical full-stack project serving a real small business.
