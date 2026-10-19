@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
-import { afterAll, beforeAll, test } from "bun:test";
+import { afterAll, beforeAll, beforeEach, test } from "bun:test";
 import { startNextServer } from "./helpers/next-server.ts";
+import { startRateLimitServer } from "./helpers/rate-limit-server.ts";
 
 const emails: { subject: string; reply_to: string; html: string; text: string }[] = [];
 let deliveryFails = false;
 let mail: ReturnType<typeof Bun.serve>;
 let site: Awaited<ReturnType<typeof startNextServer>>;
 let unconfigured: Awaited<ReturnType<typeof startNextServer>>;
+let rateLimit: ReturnType<typeof startRateLimitServer>;
 let client = 1;
 const valid = {
     name: " Jane Smith ",
@@ -33,16 +35,25 @@ beforeAll(async () => {
         }
     });
     const mailUrl = mail.url.origin;
+    rateLimit = startRateLimitServer();
+    const rateLimitEnv = { TURSO_DATABASE_URL: rateLimit.url, TURSO_AUTH_TOKEN: "fixture-token" };
     site = await startNextServer("start", {
+        ...rateLimitEnv,
         RESEND_API_KEY: "re_local_fixture",
         RESEND_BASE_URL: mailUrl,
         CONTACT_IP_HEADER: "x-test-client-ip"
     });
-    unconfigured = await startNextServer("start", { RESEND_BASE_URL: mailUrl });
+    unconfigured = await startNextServer("start", { ...rateLimitEnv, RESEND_BASE_URL: mailUrl });
 }, 30_000);
 
 afterAll(async () => {
-    await Promise.all([site?.stop(), unconfigured?.stop(), mail?.stop(true)]);
+    await Promise.all([site?.stop(), unconfigured?.stop(), mail?.stop(true), rateLimit?.stop()]);
+});
+
+beforeEach(() => {
+    emails.length = 0;
+    deliveryFails = false;
+    rateLimit.state.unavailable = false;
 });
 
 test("valid submissions reach the mail provider with normalized, escaped content", async () => {
@@ -58,23 +69,45 @@ test("valid submissions reach the mail provider with normalized, escaped content
 
 test("honeypot submissions never reach the mail provider", async () => {
     assert.equal((await post({ ...valid, _honeypot: "spam" })).status, 200);
-    assert.equal(emails.length, 1);
+    assert.equal(emails.length, 0);
 });
 
 test("fast submissions receive a retry error", async () => {
     const response = await post({ ...valid, _formRenderedAt: Date.now() });
     assert.equal(response.status, 400);
     assert.equal((await response.json()).error, "TOO_FAST");
-    assert.equal(emails.length, 1);
+    assert.equal(emails.length, 0);
 });
 
 test("invalid request formats, oversized bodies and invalid fields are rejected", async () => {
     assert.equal((await post(valid, { "content-type": "text/plain" })).status, 415);
     for (const body of ["{", "[]", "null"]) assert.equal((await post(body)).status, 400);
-    assert.equal((await post("x".repeat(11_000))).status, 413);
+    assert.equal((await post("x".repeat(33_000))).status, 413);
     const response = await post({ ...valid, email: "bad" });
     assert.equal(response.status, 400);
     assert.ok((await response.json()).fieldErrors.email);
+});
+
+test("project enquiries include known references and ignore unknown references", async () => {
+    const project = "navy-blue-shaker-kitchen";
+    const projectResponse = await post({ ...valid, projectSlug: project });
+    assert.equal(projectResponse.status, 200);
+    const projectEmail = emails.at(-1)!;
+    assert.ok(projectEmail.text.includes("Project reference: Navy blue Shaker kitchen"));
+    assert.ok(projectEmail.html.includes(`/work/${project}`));
+
+    const unknownResponse = await post({ ...valid, projectSlug: "<script>unknown</script>" });
+    assert.equal(unknownResponse.status, 200);
+    assert.ok(!emails.at(-1)!.text.includes("Project reference:"));
+    assert.ok(!emails.at(-1)!.html.includes("<script>"));
+});
+
+test("full-length Unicode and JSON-escaped messages reach the mail provider", async () => {
+    for (const message of ["家".repeat(5000), '"\\\n'.repeat(1666)]) {
+        const response = await post({ ...valid, message });
+        assert.equal(response.status, 200);
+        assert.ok(emails.at(-1)!.text.includes(message.trim()));
+    }
 });
 
 test("provider failures return a 502 response", async () => {
@@ -101,4 +134,50 @@ test("a missing email API key returns a configuration error", async () => {
     });
     assert.equal(response.status, 500);
     assert.equal((await response.json()).error, "RESEND_NOT_CONFIGURED");
+});
+
+test("a shared rate-limit outage returns 503 and never sends an email", async () => {
+    rateLimit.state.unavailable = true;
+    const response = await post(valid);
+    assert.equal(response.status, 503);
+    assert.equal((await response.json()).error, "RATE_LIMIT_UNAVAILABLE");
+    assert.equal(emails.length, 0);
+});
+
+test("separate application processes share one quota", async () => {
+    const headers = { "content-type": "application/json", "x-test-client-ip": "198.51.100.42" };
+    const secondEnv = {
+        TURSO_DATABASE_URL: rateLimit.url,
+        TURSO_AUTH_TOKEN: "fixture-token",
+        CONTACT_IP_HEADER: "x-test-client-ip"
+    };
+    let second = await startNextServer("start", secondEnv);
+    try {
+        const responses = await Promise.all(
+            Array.from({ length: 12 }, (_, index) =>
+                fetch(`${index % 2 ? site.url : second.url}/api/contact`, {
+                    method: "POST",
+                    headers,
+                    body: JSON.stringify({ _honeypot: "fixture" })
+                })
+            )
+        );
+        assert.equal(responses.filter(response => response.status === 200).length, 5);
+        assert.equal(responses.filter(response => response.status === 429).length, 7);
+        assert.equal(emails.length, 0);
+        await second.stop();
+        second = await startNextServer("start", secondEnv);
+        assert.equal(
+            (
+                await fetch(`${second.url}/api/contact`, {
+                    method: "POST",
+                    headers,
+                    body: JSON.stringify({ _honeypot: "fixture" })
+                })
+            ).status,
+            429
+        );
+    } finally {
+        await second.stop();
+    }
 });

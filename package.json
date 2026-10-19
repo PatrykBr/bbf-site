@@ -13,6 +13,8 @@
         "format": "bun --bun prettier --write .",
         "format:check": "bun --bun prettier --check .",
         "check": "bun run --parallel lint typecheck test",
+        "check:services": "bun run ./scripts/check-services.ts",
+        "db:setup": "bun run ./scripts/setup-rate-limit.ts",
         "test": "bun test",
         "test:watch": "bun test --watch",
         "test:coverage": "bun test --coverage",

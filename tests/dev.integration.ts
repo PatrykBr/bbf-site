@@ -4,7 +4,8 @@ import { startNextServer } from "./helpers/next-server.ts";
 
 let site: Awaited<ReturnType<typeof startNextServer>>;
 beforeAll(async () => {
-    site = await startNextServer("dev");
+    const url = process.env.TEST_DEV_URL;
+    site = url ? { url, stop: async () => {} } : await startNextServer("dev");
 }, 70_000);
 afterAll(async () => {
     await site?.stop();

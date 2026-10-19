@@ -53,6 +53,14 @@ test("accepts exact-size JSON and sanitizes unexpected field types", async () =>
     if (result.success) assert.equal(result.data.name, "");
 });
 
+test("accepts messages at the form limit after UTF-8 encoding and JSON escaping", async () => {
+    for (const message of ["家".repeat(5000), "\u0001".repeat(5000)]) {
+        const result = await parseContactBody(request(JSON.stringify({ message })));
+        assert.equal(result.success, true);
+        if (result.success) assert.equal(result.data.message, message);
+    }
+});
+
 test("untrusted IP headers and user agents share one rate limit", () => {
     process.env.VERCEL = "";
     process.env.CONTACT_IP_HEADER = "";

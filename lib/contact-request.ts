@@ -3,6 +3,7 @@ import { isIP } from "node:net";
 import type { ContactFormData } from "./types.ts";
 
 export interface ContactFormSubmission extends ContactFormData {
+    projectSlug?: string;
     _honeypot?: string;
     _formRenderedAt?: number;
 }
@@ -18,7 +19,7 @@ export function getRateLimitIdentifier(headers: Headers): string {
     return ip && isIP(ip) ? createHash("sha256").update(ip).digest("hex") : "unknown";
 }
 
-export async function parseContactBody(request: Request, maxBytes = 10 * 1024): Promise<ParsedBody> {
+export async function parseContactBody(request: Request, maxBytes = 32 * 1024): Promise<ParsedBody> {
     if (Number(request.headers.get("content-length")) > maxBytes) {
         return { success: false, code: "BODY_TOO_LARGE" };
     }
@@ -52,6 +53,7 @@ export async function parseContactBody(request: Request, maxBytes = 10 * 1024): 
                 email: typeof parsed.email === "string" ? parsed.email : "",
                 phone: typeof parsed.phone === "string" ? parsed.phone : undefined,
                 message: typeof parsed.message === "string" ? parsed.message : "",
+                projectSlug: typeof parsed.projectSlug === "string" ? parsed.projectSlug : undefined,
                 _honeypot: typeof parsed._honeypot === "string" ? parsed._honeypot : undefined,
                 _formRenderedAt: typeof parsed._formRenderedAt === "number" ? parsed._formRenderedAt : undefined
             }

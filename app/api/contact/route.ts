@@ -7,6 +7,8 @@ import { contactInfo } from "@/lib/data/contact";
 import { validateContactForm } from "@/lib/contact";
 import { checkRateLimit } from "@/lib/rate-limit";
 import type { ContactApiResponse } from "@/lib/types";
+import { getPastWorkBySlug } from "@/lib/data/past-work";
+import { getSiteUrl } from "@/lib/site-config";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -22,7 +24,22 @@ export async function POST(request: NextRequest): Promise<NextResponse<ContactAp
     const rateLimitIdentifier = getRateLimitIdentifier(request.headers);
 
     try {
-        const rateLimit = checkRateLimit(rateLimitIdentifier, MAX_REQUESTS_PER_WINDOW, RATE_LIMIT_WINDOW_MS);
+        const rateLimit = await checkRateLimit(
+            rateLimitIdentifier,
+            MAX_REQUESTS_PER_WINDOW,
+            RATE_LIMIT_WINDOW_MS
+        ).catch(() => null);
+        if (!rateLimit) {
+            logError(requestId, "Contact rate limit is unavailable");
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "This form cannot send emails right now. Please call or email us.",
+                    error: "RATE_LIMIT_UNAVAILABLE"
+                },
+                { status: 503, headers: { "Retry-After": "60" } }
+            );
+        }
         const rateLimitHeaders = getRateLimitHeaders(rateLimit);
 
         if (!rateLimit.success) {
@@ -131,11 +148,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<ContactAp
             );
         }
 
+        const project = body.projectSlug ? getPastWorkBySlug(body.projectSlug) : undefined;
         const dataToSend = {
             name: body.name.trim(),
             email: body.email.trim(),
             phone: body.phone?.trim(),
-            message: body.message.trim()
+            message: project
+                ? `${body.message.trim()}\n\nProject reference: ${project.name}\n${getSiteUrl(`/work/${project.slug}`)}`
+                : body.message.trim()
         };
 
         const { data, error } = await resend.emails.send({
@@ -189,7 +209,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<ContactAp
     }
 }
 
-function getRateLimitHeaders(rateLimit: ReturnType<typeof checkRateLimit>): HeadersInit {
+function getRateLimitHeaders(rateLimit: Awaited<ReturnType<typeof checkRateLimit>>): HeadersInit {
     return {
         "X-RateLimit-Limit": String(rateLimit.limit),
         "X-RateLimit-Remaining": String(rateLimit.remaining),
