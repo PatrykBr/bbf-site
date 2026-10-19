@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { m, useReducedMotion, type Variants } from "framer-motion";
+import { m, useReducedMotion, type Variants } from "motion/react";
 import { ContactForm } from "./ContactForm";
 import { contactInfo, businessHours } from "@/lib/data/contact";
 

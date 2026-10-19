@@ -2,7 +2,7 @@
 
 import { useReducer, useEffect, useEffectEvent, useRef } from "react";
 import Link from "next/link";
-import { m, AnimatePresence, type Variants } from "framer-motion";
+import { m, AnimatePresence, type Variants } from "motion/react";
 import { FallbackImage } from "./FallbackImage";
 import { useAnalytics } from "@/lib/posthog";
 import { useShareActions } from "@/lib/use-share";

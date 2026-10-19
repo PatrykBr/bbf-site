@@ -3,7 +3,7 @@
 import { useState, useReducer, useMemo, useCallback, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { m, AnimatePresence, useReducedMotion, type Variants } from "framer-motion";
+import { m, AnimatePresence, useReducedMotion, type Variants } from "motion/react";
 import { FallbackImage } from "./FallbackImage";
 import { useAnalytics } from "@/lib/posthog";
 import type { PastWorkItem, WorkFilter } from "@/lib/types";

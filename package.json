@@ -1,53 +1,49 @@
 {
     "name": "bff-new",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "private": true,
+    "packageManager": "bun@1.4.3",
     "engines": {
-        "node": "24.x"
+        "node": "24.x",
+        "bun": ">=1.4.3"
     },
     "scripts": {
-        "dev": "next dev",
-        "build": "next build",
-        "start": "next start",
-        "lint": "eslint .",
-        "lint:fix": "eslint . --fix",
-        "typecheck": "tsc --noEmit",
-        "format": "prettier --write .",
-        "format:check": "prettier --check .",
-        "check": "npm run lint && npm run typecheck"
+        "dev": "bun --bun next dev",
+        "build": "bun --bun next build",
+        "start": "bun --bun next start",
+        "lint": "bun --bun eslint . --max-warnings=0",
+        "lint:fix": "bun --bun eslint . --fix",
+        "typecheck": "bun --bun next typegen && bun --check",
+        "format": "bun --bun prettier --write .",
+        "format:check": "bun --bun prettier --check .",
+        "check": "bun run --parallel lint typecheck test",
+        "test": "bun test",
+        "test:watch": "bun test --watch",
+        "test:coverage": "bun test --coverage",
+        "test:integration": "bun test ./tests/contact.integration.ts",
+        "test:dev": "bun test ./tests/dev.integration.ts"
     },
     "dependencies": {
-        "framer-motion": "^12.40.0",
-        "next": "16.2.6",
-        "posthog-js": "^1.376.2",
-        "posthog-node": "^5.35.4",
-        "react": "19.2.6",
-        "react-dom": "19.2.6",
-        "resend": "^6.12.4"
+        "motion": "^14.3.0",
+        "next": "16.4.2",
+        "posthog-js": "^1.438.12",
+        "posthog-node": "^5.56.2",
+        "react": "19.3.1",
+        "react-dom": "19.3.1",
+        "resend": "^6.34.1"
     },
     "devDependencies": {
-        "@tailwindcss/postcss": "^4.3.0",
-        "@types/node": "^25.9.1",
-        "@types/react": "^19.2.15",
-        "@types/react-dom": "^19.2.3",
-        "eslint": "^9",
-        "eslint-config-next": "16.2.6",
-        "prettier": "^3.8.3",
-        "prettier-plugin-tailwindcss": "^0.8.0",
-        "tailwindcss": "^4.3.0",
-        "typescript": "^6.0.3"
+        "@tailwindcss/postcss": "^4.3.3",
+        "@types/bun": "1.4.3",
+        "@types/node": "^24.19.2",
+        "@types/react": "^19.3.0",
+        "@types/react-dom": "^19.3.0",
+        "eslint": "^9.39.5",
+        "eslint-config-next": "16.4.2",
+        "prettier": "^3.9.10",
+        "prettier-plugin-tailwindcss": "^0.8.1",
+        "tailwindcss": "^4.3.3",
+        "typescript": "~6.0.3"
     },
-    "overrides": {
-        "protobufjs": ">=7.5.6",
-        "postcss": "8.5.15",
-        "dompurify": "3.4.6",
-        "flatted": "3.4.2",
-        "picomatch": "2.3.2",
-        "tinyglobby": {
-            "picomatch": "4.0.4"
-        },
-        "fdir": {
-            "picomatch": "4.0.4"
-        }
-    }
+    "type": "module"
 }
