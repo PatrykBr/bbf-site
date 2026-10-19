@@ -20,7 +20,7 @@
         "test:dev": "bun test ./tests/dev.integration.ts"
     },
     "dependencies": {
-        "motion": "^14.3.0",
+        "motion": "14.3.0",
         "next": "16.4.2",
         "posthog-js": "^1.438.12",
         "posthog-node": "^5.56.2",
@@ -41,5 +41,11 @@
         "tailwindcss": "^4.3.3",
         "typescript": "~6.0.3"
     },
-    "type": "module"
+    "overrides": {
+        "fast-glob": "npm:tinyglobby@0.2.17"
+    },
+    "type": "module",
+    "patchedDependencies": {
+        "@next/eslint-plugin-next@16.4.2": "patches/@next%2Feslint-plugin-next@16.4.2.patch"
+    }
 }
