@@ -30,6 +30,10 @@ export async function onRequestError(
             }
         }
 
-        await posthog.captureExceptionImmediate(err, distinctId);
+        try {
+            await posthog.captureExceptionImmediate(err, distinctId);
+        } catch {
+            // Preserve the original error if telemetry is unavailable.
+        }
     }
 }

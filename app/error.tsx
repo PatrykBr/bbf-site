@@ -1,11 +1,11 @@
 "use client";
 
-import posthog from "posthog-js";
+import { captureException } from "@/lib/posthog";
 import { useEffect } from "react";
 
-export default function Error({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function Error({ error, retry }: { error: unknown; retry: () => void }) {
     useEffect(() => {
-        posthog.captureException(error);
+        captureException(error);
     }, [error]);
 
     return (
@@ -15,7 +15,7 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
                 <p className="mb-6 text-gray-600">Please try loading the page again.</p>
                 <button
                     type="button"
-                    onClick={reset}
+                    onClick={retry}
                     className="bg-brand-dark hover:bg-brand-light rounded-lg px-6 py-3 text-white transition-colors"
                 >
                     Try again

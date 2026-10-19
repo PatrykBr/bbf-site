@@ -1,11 +1,11 @@
 "use client";
 
-import posthog from "posthog-js";
+import { captureException } from "@/lib/posthog";
 import { useEffect } from "react";
 
-export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function GlobalError({ error, retry }: { error: unknown; retry: () => void }) {
     useEffect(() => {
-        posthog.captureException(error);
+        captureException(error);
     }, [error]);
 
     return (
@@ -19,7 +19,7 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
                         <p style={{ color: "#666", marginBottom: "1.5rem" }}>Please try loading the page again.</p>
                         <button
                             type="button"
-                            onClick={reset}
+                            onClick={retry}
                             style={{
                                 backgroundColor: "#21450d",
                                 color: "#fff",
