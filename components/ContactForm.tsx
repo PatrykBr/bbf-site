@@ -1,7 +1,7 @@
 "use client";
 
-import { useReducer, useCallback, useEffect, useRef } from "react";
-import { validateContactForm } from "@/lib/utils";
+import { useReducer, useCallback, useEffect, useRef, type ChangeEvent, type SubmitEvent } from "react";
+import { validateContactForm } from "@/lib/contact";
 import type { ContactFormData, ContactApiResponse } from "@/lib/types";
 
 type FormStatus = "idle" | "submitting" | "success" | "error";
@@ -15,7 +15,7 @@ type FormState = {
 };
 
 type FormAction =
-    | { type: "SET_FIELD"; name: string; value: string }
+    | { type: "SET_FIELD"; name: keyof ContactFormData; value: string }
     | { type: "SET_HONEYPOT"; value: string }
     | { type: "SET_ERRORS"; errors: Record<string, string> }
     | { type: "SUBMIT_START" }
@@ -35,7 +35,13 @@ function formReducer(state: FormState, action: FormAction): FormState {
         case "SET_FIELD": {
             const errors = { ...state.errors };
             delete errors[action.name];
-            return { ...state, formData: { ...state.formData, [action.name]: action.value }, errors };
+            return {
+                ...state,
+                status: "idle",
+                statusMessage: "",
+                formData: { ...state.formData, [action.name]: action.value },
+                errors
+            };
         }
         case "SET_HONEYPOT":
             return { ...state, honeypot: action.value };
@@ -65,26 +71,36 @@ function formReducer(state: FormState, action: FormAction): FormState {
 
 export function ContactForm() {
     const [state, dispatch] = useReducer(formReducer, initialState);
+    const submittingRef = useRef(false);
     const formRenderedAtRef = useRef<number>(0);
 
     useEffect(() => {
         formRenderedAtRef.current = Date.now();
     }, []);
 
-    const updateField = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        dispatch({ type: "SET_FIELD", name: e.target.name, value: e.target.value });
+    const updateField = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        dispatch({
+            type: "SET_FIELD",
+            name: e.currentTarget.name as keyof ContactFormData,
+            value: e.currentTarget.value
+        });
     }, []);
 
     const handleSubmit = useCallback(
-        async (e: React.FormEvent) => {
+        async (e: SubmitEvent<HTMLFormElement>) => {
             e.preventDefault();
+            if (submittingRef.current) return;
+            const form = e.currentTarget;
 
             const validation = validateContactForm(state.formData);
             if (!validation.isValid) {
                 dispatch({ type: "SET_ERRORS", errors: validation.errors });
+                const field = form.elements.namedItem(Object.keys(validation.errors)[0]);
+                if (field instanceof HTMLElement) field.focus();
                 return;
             }
 
+            submittingRef.current = true;
             dispatch({ type: "SUBMIT_START" });
 
             try {
@@ -100,28 +116,30 @@ export function ContactForm() {
 
                 const result: ContactApiResponse = await response.json();
 
-                if (result.success) {
+                if (response.ok && result.success) {
                     dispatch({ type: "SUBMIT_SUCCESS", message: result.message });
                 } else {
                     dispatch({
                         type: "SUBMIT_ERROR",
-                        message: result.message || "Something went wrong. Please try again.",
+                        message: result.message || "Your message could not be sent. Please try again.",
                         fieldErrors: result.fieldErrors
                     });
 
                     if (process.env.NODE_ENV === "development") {
-                        console.error("[Contact Form] Error:", result.error);
+                        console.error("[Contact form] Error:", result.error);
                     }
                 }
             } catch (error) {
                 dispatch({
                     type: "SUBMIT_ERROR",
-                    message: "Unable to send message. Please try again or contact us directly."
+                    message: "Your message could not be sent. Please try again, or call or email us."
                 });
 
                 if (process.env.NODE_ENV === "development") {
-                    console.error("[Contact Form] Network error:", error);
+                    console.error("[Contact form] Network error:", error);
                 }
+            } finally {
+                submittingRef.current = false;
             }
         },
         [state.formData, state.honeypot]
@@ -130,10 +148,9 @@ export function ContactForm() {
     const { formData, errors, status, statusMessage, honeypot } = state;
 
     return (
-        <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Honeypot field - hidden from users, bots will fill it. Named "website" to bait
-                form-filling bots; the value is still submitted under the _honeypot key. */}
-            <div className="absolute -left-[9999px] opacity-0" aria-hidden="true">
+        <form noValidate onSubmit={handleSubmit} className="space-y-4">
+            {/* Bots may fill this hidden field. Send its value as _honeypot. */}
+            <div className="sr-only" aria-hidden="true">
                 <label htmlFor="website">Website</label>
                 <input
                     type="text"
@@ -145,7 +162,6 @@ export function ContactForm() {
                     autoComplete="off"
                 />
             </div>
-            {/* Name Field */}
             <div>
                 <label htmlFor="name" className="mb-1 block text-sm font-medium text-gray-700">
                     Name <span className="text-red-500">*</span>
@@ -154,6 +170,8 @@ export function ContactForm() {
                     type="text"
                     id="name"
                     name="name"
+                    autoComplete="name"
+                    maxLength={80}
                     value={formData.name}
                     onChange={updateField}
                     required
@@ -162,7 +180,7 @@ export function ContactForm() {
                     className={`focus:ring-brand-light w-full rounded-lg border px-4 py-2 transition-colors focus:border-transparent focus:ring-2 ${
                         errors.name ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder="Your Name"
+                    placeholder="Your name"
                     disabled={status === "submitting"}
                 />
                 {errors.name ? (
@@ -172,7 +190,6 @@ export function ContactForm() {
                 ) : null}
             </div>
 
-            {/* Email Field */}
             <div>
                 <label htmlFor="email" className="mb-1 block text-sm font-medium text-gray-700">
                     Email <span className="text-red-500">*</span>
@@ -181,6 +198,8 @@ export function ContactForm() {
                     type="email"
                     id="email"
                     name="email"
+                    autoComplete="email"
+                    maxLength={254}
                     value={formData.email}
                     onChange={updateField}
                     required
@@ -189,7 +208,7 @@ export function ContactForm() {
                     className={`focus:ring-brand-light w-full rounded-lg border px-4 py-2 transition-colors focus:border-transparent focus:ring-2 ${
                         errors.email ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder="Your Email"
+                    placeholder="Your email address"
                     disabled={status === "submitting"}
                 />
                 {errors.email ? (
@@ -199,21 +218,22 @@ export function ContactForm() {
                 ) : null}
             </div>
 
-            {/* Phone Field (Optional) */}
             <div>
                 <label htmlFor="phone" className="mb-1 block text-sm font-medium text-gray-700">
-                    Phone Number <span className="font-normal text-gray-400">(Optional)</span>
+                    Phone number <span className="font-normal text-gray-400">Optional</span>
                 </label>
                 <input
                     type="tel"
                     id="phone"
                     name="phone"
+                    autoComplete="tel"
+                    maxLength={30}
                     value={formData.phone}
                     onChange={updateField}
                     aria-invalid={Boolean(errors.phone)}
                     aria-describedby={errors.phone ? "phone-error" : undefined}
-                    className="focus:ring-brand-light w-full rounded-lg border border-gray-300 px-4 py-2 transition-colors focus:border-transparent focus:ring-2"
-                    placeholder="Your Phone Number"
+                    className={`focus:ring-brand-light w-full rounded-lg border px-4 py-2 transition-colors focus:border-transparent focus:ring-2 ${errors.phone ? "border-red-500" : "border-gray-300"}`}
+                    placeholder="Your phone number"
                     disabled={status === "submitting"}
                 />
                 {errors.phone ? (
@@ -223,7 +243,6 @@ export function ContactForm() {
                 ) : null}
             </div>
 
-            {/* Message Field */}
             <div>
                 <label htmlFor="message" className="mb-1 block text-sm font-medium text-gray-700">
                     Message <span className="text-red-500">*</span>
@@ -231,6 +250,7 @@ export function ContactForm() {
                 <textarea
                     id="message"
                     name="message"
+                    maxLength={5000}
                     value={formData.message}
                     onChange={updateField}
                     rows={5}
@@ -240,7 +260,7 @@ export function ContactForm() {
                     className={`focus:ring-brand-light w-full resize-none rounded-lg border px-4 py-2 transition-colors focus:border-transparent focus:ring-2 ${
                         errors.message ? "border-red-500" : "border-gray-300"
                     }`}
-                    placeholder="Tell us about your project..."
+                    placeholder="Tell us what you would like made"
                     disabled={status === "submitting"}
                 />
                 {errors.message ? (
@@ -250,7 +270,6 @@ export function ContactForm() {
                 ) : null}
             </div>
 
-            {/* Status Message */}
             {status === "success" && (
                 <output
                     aria-live="polite"
@@ -270,7 +289,6 @@ export function ContactForm() {
                 </div>
             )}
 
-            {/* Submit Button */}
             <button
                 type="submit"
                 disabled={status === "submitting"}
@@ -293,11 +311,11 @@ export function ContactForm() {
                                 d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                             />
                         </svg>
-                        Sending…
+                        Sending...
                     </>
                 ) : (
                     <>
-                        Send Message
+                        Send message
                         <svg className="size-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path
                                 strokeLinecap="round"
