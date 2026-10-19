@@ -7,7 +7,7 @@ export function AboutSection() {
             id="about"
             className="bg-brand-dark flex min-h-screen flex-col justify-center px-2 py-4 sm:px-8 sm:py-8 lg:px-16"
         >
-            <div className="relative aspect-2/3 w-full overflow-hidden rounded-lg sm:aspect-16/10 lg:aspect-16/8">
+            <div className="relative aspect-2/3 w-full overflow-clip rounded-lg sm:aspect-16/10 lg:aspect-16/8">
                 <ParallaxImage src="/about-bg.webp" alt="Our furniture workshop" />
                 <div className="absolute inset-0 bg-black/45" />
 

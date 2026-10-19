@@ -9,7 +9,7 @@ export function Hero() {
             id="home"
             className="bg-brand-dark relative flex min-h-screen flex-col items-center justify-center px-2 pt-20 pb-8 sm:px-8 sm:pt-24 sm:pb-16 lg:px-16"
         >
-            <div className="hero-frame relative w-full overflow-hidden rounded-lg">
+            <div className="hero-frame relative w-full overflow-clip rounded-lg">
                 <ParallaxImage src="/hero-bg.webp" alt="Custom furniture by Bespoke Broncel Furniture" preload />
                 <div className="absolute inset-0 bg-black/35" />
 

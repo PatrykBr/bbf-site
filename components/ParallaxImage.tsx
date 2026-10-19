@@ -18,14 +18,17 @@ export function ParallaxImage({
     const ref = useRef<HTMLDivElement>(null);
     const reduceMotion = useReducedMotion();
     const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-    const y = useTransform(scrollYProgress, [0, 1], ["-9%", "9%"]);
-    const scale = useTransform(scrollYProgress, [0, 1], [1.02, 1.14]);
+    const transform = useTransform(
+        scrollYProgress,
+        [0, 1],
+        ["translate3d(0, -9%, 0) scale(1.02)", "translate3d(0, 9%, 0) scale(1.14)"]
+    );
 
     return (
-        <div ref={ref} className="absolute inset-0 overflow-hidden">
+        <div ref={ref} className="absolute inset-0 overflow-clip">
             <motion.div
                 className="parallax-image absolute -inset-[12%]"
-                style={{ y: reduceMotion ? 0 : y, scale: reduceMotion ? 1 : scale }}
+                style={{ transform: reduceMotion ? "none" : transform }}
             >
                 <Image
                     src={src}
