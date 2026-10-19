@@ -1,10 +1,3 @@
-export async function register() {
-    if (process.env.NEXT_RUNTIME === "nodejs") {
-        // Import server-side instrumentation only in Node.js runtime
-        await import("./lib/posthog-server");
-    }
-}
-
 export async function onRequestError(
     err: Error & { digest?: string },
     request: { headers: { cookie?: string | string[] } }
@@ -30,13 +23,13 @@ export async function onRequestError(
                 try {
                     const decodedCookie = decodeURIComponent(postHogCookieMatch[1]);
                     const postHogData = JSON.parse(decodedCookie);
-                    distinctId = postHogData.distinct_id;
-                } catch (e) {
-                    console.error("Error parsing PostHog cookie:", e);
+                    if (typeof postHogData?.distinct_id === "string") distinctId = postHogData.distinct_id;
+                } catch {
+                    // Invalid analytics cookies should not affect error reporting.
                 }
             }
         }
 
-        await posthog.captureException(err, distinctId);
+        await posthog.captureExceptionImmediate(err, distinctId);
     }
 }

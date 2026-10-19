@@ -17,7 +17,7 @@ function initPostHog() {
     posthog.init(POSTHOG_KEY, {
         api_host: POSTHOG_HOST,
         ui_host: "https://eu.posthog.com",
-        defaults: "2026-01-30",
+        defaults: "2026-08-30",
         advanced_disable_flags: true,
         disable_session_recording: true,
         disable_surveys: true,
