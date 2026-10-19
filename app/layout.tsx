@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Poppins } from "next/font/google";
-import { PostHogProvider } from "@/lib/posthog";
+
 import { MotionProvider } from "@/components/MotionProvider";
 import { SITE_URL, getSiteUrl } from "@/lib/site-config";
 import "./globals.css";
@@ -15,11 +15,11 @@ const poppins = Poppins({
 export const metadata: Metadata = {
     metadataBase: new URL(SITE_URL),
     title: {
-        default: "Bespoke Fitted Kitchens & Wardrobes in South Yorkshire | Broncel Furniture",
+        default: "Fitted kitchens and wardrobes in South Yorkshire | Broncel Furniture",
         template: "%s | Bespoke Broncel Furniture"
     },
     description:
-        "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of carpentry experience. View our portfolio and get a free quote.",
+        "Fitted kitchens and wardrobes in South Yorkshire, made with 25 years of carpentry experience. View our work and ask for a free quote.",
     keywords: [
         "bespoke furniture",
         "custom wardrobes",
@@ -36,9 +36,9 @@ export const metadata: Metadata = {
         type: "website",
         locale: "en_GB",
         siteName: "Bespoke Broncel Furniture",
-        title: "Bespoke Fitted Kitchens & Wardrobes in South Yorkshire | Broncel Furniture",
+        title: "Fitted kitchens and wardrobes in South Yorkshire | Broncel Furniture",
         description:
-            "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of experience. View our portfolio.",
+            "We make fitted kitchens and wardrobes in South Yorkshire, with 25 years of carpentry experience. See our completed projects.",
         images: [
             {
                 url: getSiteUrl("/hero-bg.webp"),
@@ -52,7 +52,7 @@ export const metadata: Metadata = {
         card: "summary_large_image",
         title: "Bespoke Broncel Furniture",
         description:
-            "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of experience. View our portfolio.",
+            "We make fitted kitchens and wardrobes in South Yorkshire, with 25 years of carpentry experience. See our completed projects.",
         images: [getSiteUrl("/hero-bg.webp")]
     },
     robots: {
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     }
 };
 
-// Matches the brand-dark hero so the mobile browser toolbar blends with the top of the page.
+// Match the mobile browser toolbar to the page background.
 export const viewport: Viewport = {
     themeColor: "#0e370d"
 };
@@ -74,9 +74,7 @@ export default function RootLayout({
     return (
         <html lang="en" data-scroll-behavior="smooth">
             <body className={`${poppins.variable} font-sans antialiased`}>
-                <MotionProvider>
-                    <PostHogProvider>{children}</PostHogProvider>
-                </MotionProvider>
+                <MotionProvider>{children}</MotionProvider>
             </body>
         </html>
     );

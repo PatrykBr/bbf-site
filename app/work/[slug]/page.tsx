@@ -7,27 +7,21 @@ import { FallbackImage } from "@/components/FallbackImage";
 import { getPastWorkBySlug, getAllPastWorkSlugs, getAllPastWork } from "@/lib/data/past-work";
 import { formatDate, serializeJsonLd } from "@/lib/utils";
 import { getSiteUrl } from "@/lib/site-config";
-import { WorkDetailClient } from "./WorkDetailClient";
+import { ShareButtons } from "@/components/ShareButtons";
 import { ProjectGallery } from "./ProjectGallery";
 
-interface PageProps {
-    params: Promise<{ slug: string }>;
-}
-
-// Generate static params for all work items
 export async function generateStaticParams() {
     const slugs = getAllPastWorkSlugs();
     return slugs.map(slug => ({ slug }));
 }
 
-// Generate metadata for each work item
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: PageProps<"/work/[slug]">): Promise<Metadata> {
     const { slug } = await params;
     const item = getPastWorkBySlug(slug);
 
     if (!item) {
         return {
-            title: "Work Not Found"
+            title: "Project not found"
         };
     }
 
@@ -43,26 +37,24 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             title: `${item.name} | Bespoke Broncel Furniture`,
             description: item.description,
             type: "article",
-            images: item.images[0]
-                ? [
-                      {
-                          url: getSiteUrl(item.images[0].url),
-                          alt: item.images[0].alt
-                      }
-                  ]
-                : []
+            images: [
+                {
+                    url: getSiteUrl(item.images[0].url),
+                    alt: item.images[0].alt
+                }
+            ]
         },
         twitter: {
             card: "summary_large_image",
             title: item.name,
             description: item.description,
-            images: item.images[0] ? [getSiteUrl(item.images[0].url)] : []
+            images: [getSiteUrl(item.images[0].url)]
         },
         keywords: [`custom ${categoryLabel.toLowerCase()}`, "bespoke furniture", item.name, "South Yorkshire"]
     };
 }
 
-export default async function WorkDetailPage({ params }: PageProps) {
+export default async function WorkDetailPage({ params }: PageProps<"/work/[slug]">) {
     const { slug } = await params;
     const item = getPastWorkBySlug(slug);
 
@@ -76,7 +68,6 @@ export default async function WorkDetailPage({ params }: PageProps) {
     const prevItem = currentIndex > 0 ? allWork[currentIndex - 1] : null;
     const nextItem = currentIndex < allWork.length - 1 ? allWork[currentIndex + 1] : null;
 
-    // JSON-LD Schema for SEO
     const jsonLd = {
         "@context": "https://schema.org",
         "@type": "ImageGallery",
@@ -104,11 +95,9 @@ export default async function WorkDetailPage({ params }: PageProps) {
     return (
         <>
             <Header />
-            <main className="pt-20">
-                {/* JSON-LD */}
+            <main className="bg-white pt-20">
                 <script type="application/ld+json">{serializeJsonLd(jsonLd)}</script>
 
-                {/* Breadcrumb */}
                 <div className="bg-gray-50 py-4">
                     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                         <nav className="flex items-center gap-2 text-sm">
@@ -125,14 +114,13 @@ export default async function WorkDetailPage({ params }: PageProps) {
                     </div>
                 </div>
 
-                {/* Hero Image */}
                 <figure className="relative h-[50vh] bg-gray-200 md:h-[60vh]">
                     <FallbackImage
-                        src={item.images[0]?.url || "/placeholder.jpg"}
-                        alt={item.images[0]?.alt || item.name}
+                        src={item.images[0].url}
+                        alt={item.images[0].alt}
                         fill
                         className="object-cover"
-                        priority
+                        preload
                         sizes="100vw"
                     />
                     <div className="absolute inset-0 bg-linear-to-t from-black/50 to-transparent" />
@@ -144,22 +132,19 @@ export default async function WorkDetailPage({ params }: PageProps) {
                             <h1 className="text-3xl font-bold text-white md:text-4xl lg:text-5xl">{item.name}</h1>
                             {item.isFeatured && (
                                 <span className="mt-3 inline-block rounded bg-white/20 px-3 py-1 text-sm text-white backdrop-blur-sm">
-                                    ⭐ Featured Work
+                                    Featured work
                                 </span>
                             )}
                         </div>
                     </div>
                 </figure>
 
-                {/* Content */}
                 <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-1 gap-12 lg:grid-cols-3">
-                        {/* Main Content */}
                         <div className="lg:col-span-2">
-                            <h2 className="text-brand-dark mb-4 text-2xl font-semibold">About This Project</h2>
+                            <h2 className="text-brand-dark mb-4 text-2xl font-semibold">About this project</h2>
                             <p className="mb-8 leading-relaxed text-gray-600">{item.description}</p>
 
-                            {/* Image Gallery */}
                             <ProjectGallery
                                 images={item.images}
                                 projectName={item.name}
@@ -168,10 +153,9 @@ export default async function WorkDetailPage({ params }: PageProps) {
                             />
                         </div>
 
-                        {/* Sidebar */}
                         <div className="lg:col-span-1">
                             <div className="sticky top-24 rounded-xl bg-gray-50 p-6">
-                                <h3 className="text-brand-dark mb-4 text-lg font-semibold">Project Details</h3>
+                                <h3 className="text-brand-dark mb-4 text-lg font-semibold">Project details</h3>
 
                                 <dl className="space-y-4">
                                     <div>
@@ -185,29 +169,29 @@ export default async function WorkDetailPage({ params }: PageProps) {
                                     {item.isFeatured && (
                                         <div>
                                             <dt className="text-sm text-gray-500">Status</dt>
-                                            <dd className="text-brand-light font-medium">Featured Project</dd>
+                                            <dd className="text-brand-light font-medium">Featured project</dd>
                                         </div>
                                     )}
                                 </dl>
 
-                                {/* Share Buttons */}
-                                <WorkDetailClient item={item} />
+                                <div className="mt-6 border-t border-gray-200 pt-6">
+                                    <h4 className="mb-3 text-sm font-medium text-gray-700">Share this project</h4>
+                                    <ShareButtons item={item} />
+                                </div>
 
-                                {/* CTA */}
                                 <div className="mt-8 border-t border-gray-200 pt-6">
                                     <p className="mb-4 text-sm text-gray-600">Interested in a similar project?</p>
                                     <Link
                                         href="/#contact"
                                         className="bg-brand-dark hover:bg-brand-light block w-full rounded-lg py-3 text-center font-medium text-white transition-colors"
                                     >
-                                        Get a Free Quote
+                                        Get a free quote
                                     </Link>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Navigation */}
                     <div className="mt-12 flex items-center justify-between border-t border-gray-200 pt-8">
                         {prevItem ? (
                             <Link
@@ -233,7 +217,7 @@ export default async function WorkDetailPage({ params }: PageProps) {
                             href="/#work"
                             className="text-brand-light hover:text-brand-dark font-medium transition-colors"
                         >
-                            View All Work
+                            View all work
                         </Link>
 
                         {nextItem ? (

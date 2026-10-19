@@ -8,26 +8,24 @@ export function Footer() {
         <footer className="bg-brand-dark text-white">
             <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-3 md:gap-8 lg:gap-12">
-                    {/* Company Info */}
                     <div>
                         <h3 className="mb-3 text-lg font-semibold sm:mb-4">{companyInfo.name}</h3>
                         <p className="mb-4 text-sm leading-relaxed text-white/70">
-                            Building your dream furniture with exceptional craftsmanship and attention to detail.
+                            Fitted kitchens and wardrobes made to measure in South Yorkshire.
                         </p>
                         <div className="flex flex-col gap-2 text-sm text-white/70">
                             <a
                                 href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
                                 className="transition-colors hover:text-white"
                             >
-                                📞 {contactInfo.phone}
+                                {contactInfo.phone}
                             </a>
-                            <p>📍 {companyInfo.location}</p>
+                            <p>{companyInfo.location}</p>
                         </div>
                     </div>
 
-                    {/* Quick Links */}
                     <div>
-                        <h3 className="mb-3 text-lg font-semibold sm:mb-4">Quick Links</h3>
+                        <h3 className="mb-3 text-lg font-semibold sm:mb-4">Site links</h3>
                         <nav className="flex flex-col gap-2">
                             <Link href="/" className="text-sm text-white/70 transition-colors hover:text-white">
                                 Home
@@ -44,21 +42,19 @@ export function Footer() {
                         </nav>
                     </div>
 
-                    {/* Services */}
                     <div>
                         <h3 className="mb-3 text-lg font-semibold sm:mb-4">Services</h3>
                         <nav className="flex flex-col gap-2">
                             <Link href="/#work" className="text-sm text-white/70 transition-colors hover:text-white">
-                                Bespoke Wardrobes
+                                Fitted wardrobes
                             </Link>
                             <Link href="/#work" className="text-sm text-white/70 transition-colors hover:text-white">
-                                Custom Kitchens
+                                Fitted kitchens
                             </Link>
                         </nav>
                     </div>
                 </div>
 
-                {/* Bottom Bar */}
                 <div className="mt-6 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-4 sm:mt-8 sm:flex-row sm:pt-6">
                     <p className="text-sm text-white/60">
                         © {currentYear} {companyInfo.name}. All rights reserved.

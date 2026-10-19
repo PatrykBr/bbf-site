@@ -22,9 +22,8 @@ export function Hero() {
             ref={sectionRef}
             className="bg-brand-dark relative flex min-h-screen flex-col items-center justify-center px-2 pt-20 pb-8 sm:px-8 sm:pt-24 sm:pb-16 lg:px-16"
         >
-            {/* Window Frame - stays fixed, clips the parallax image */}
+            {/* Clip the scrolling image to this frame. */}
             <div className="relative w-full overflow-hidden rounded-lg">
-                {/* Parallax Background Image - moves behind the window */}
                 <m.div
                     className="absolute inset-0 scale-125"
                     style={{
@@ -34,36 +33,32 @@ export function Hero() {
                 >
                     <Image
                         src="/hero-bg.webp"
-                        alt="Bespoke furniture craftsmanship"
+                        alt="Custom furniture by Bespoke Broncel Furniture"
                         fill
-                        priority
-                        fetchPriority="high"
+                        preload
                         sizes="100vw"
                         className="object-cover object-center"
                     />
                 </m.div>
                 <div className="absolute inset-0 bg-black/30 backdrop-blur-xs" />
 
-                {/* Content inside the window */}
                 <div className="relative z-10 px-4 py-35 text-center text-white sm:px-8 sm:py-32 md:py-40 lg:py-48">
                     <h1 className="mb-6 text-4xl leading-tight font-bold sm:text-5xl md:text-7xl">
                         {companyInfo.name}
                     </h1>
-                    <p className="mb-8 text-xl text-white/90 italic sm:text-2xl">
-                        {companyInfo.tagline}
-                    </p>
+                    <p className="mb-8 text-xl text-white/90 italic sm:text-2xl">{companyInfo.tagline}</p>
                     <div className="flex flex-col justify-center gap-4 sm:flex-row">
                         <Link
                             href="/#work"
                             className="text-brand-dark inline-flex items-center justify-center gap-2 rounded-lg bg-white px-8 py-3.5 font-semibold shadow-lg shadow-black/20 transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-black/30"
                         >
-                            View Our Work
+                            View our work
                         </Link>
                         <Link
                             href="/#contact"
                             className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/30 bg-white/10 px-8 py-3.5 font-semibold text-white shadow-lg shadow-black/10 backdrop-blur-sm transition-all duration-300 hover:scale-105 hover:bg-white/20 hover:shadow-xl"
                         >
-                            Get In Touch
+                            Get in touch
                         </Link>
                     </div>
                 </div>

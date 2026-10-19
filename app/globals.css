@@ -18,14 +18,12 @@
 }
 
 body {
-    /* brand-dark, not --background: the full-bleed sections cover the body, so this is only
-       ever seen in the iOS Safari overscroll/rubber-band area, which follows body (not html). */
+    /* iOS Safari uses the body colour during overscroll. Match it to the page sections. */
     background: var(--brand-dark);
     color: var(--foreground);
     font-family: var(--font-sans);
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
     width: 8px;
 }
@@ -43,14 +41,28 @@ body {
     background: var(--brand-dark);
 }
 
-/* Focus styles for accessibility */
 *:focus-visible {
     outline: 2px solid var(--brand-light);
     outline-offset: 2px;
 }
 
-/* Smooth scrolling; brand-dark background so the overscroll area matches the hero */
+/* Match the overscroll background to the page sections. */
 html {
     scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
     background: var(--brand-dark);
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }

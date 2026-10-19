@@ -1,27 +1,24 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useAnalytics } from "./posthog";
-import { getFacebookShareUrl, getWhatsAppShareUrl, copyToClipboard, openExternalUrl } from "./utils";
+import { trackSharePastWork } from "./posthog";
+import { getFacebookShareUrl, getWhatsAppShareUrl, getShareUrl } from "./utils";
 import type { PastWorkItem, ShareMethod } from "./types";
 
 const COPY_FEEDBACK_MS = 2000;
 
 /**
- * Share actions for a work item, with transient "copied" feedback.
- *
- * The feedback token restarts the timer when "copy" is triggered again while
- * the confirmation is still showing.
+ * Show copy feedback for two seconds. Increment the token to restart the timer
+ * when a visitor copies the link again.
  */
 export function useShareActions(item: PastWorkItem) {
-    const { trackSharePastWork } = useAnalytics();
-    const [copyState, setCopyState] = useState({ active: false, token: 0 });
+    const [copyState, setCopyState] = useState({ message: "", token: 0 });
 
     useEffect(() => {
-        if (!copyState.active) return;
+        if (!copyState.message) return;
 
         const timeoutId = setTimeout(() => {
-            setCopyState(state => ({ ...state, active: false }));
+            setCopyState(state => ({ ...state, message: "" }));
         }, COPY_FEEDBACK_MS);
 
         return () => clearTimeout(timeoutId);
@@ -29,24 +26,31 @@ export function useShareActions(item: PastWorkItem) {
 
     const share = useCallback(
         async (method: ShareMethod) => {
-            trackSharePastWork(item.id, item.category, method);
-
+            const origin = window.location.origin;
             switch (method) {
                 case "facebook":
-                    openExternalUrl(getFacebookShareUrl(item.slug));
+                    window.open(getFacebookShareUrl(item.slug, origin), "_blank", "noopener,noreferrer");
                     break;
                 case "whatsapp":
-                    openExternalUrl(getWhatsAppShareUrl(item.slug, item.name));
+                    window.open(getWhatsAppShareUrl(item.slug, item.name, origin), "_blank", "noopener,noreferrer");
                     break;
                 case "copy":
-                    if (await copyToClipboard(item.slug)) {
-                        setCopyState(state => ({ active: true, token: state.token + 1 }));
+                    try {
+                        await navigator.clipboard.writeText(getShareUrl(item.slug, "copy", origin));
+                        setCopyState(state => ({ message: "Link copied", token: state.token + 1 }));
+                    } catch {
+                        setCopyState(state => ({
+                            message: "Could not copy the link. Please use your browser's share menu.",
+                            token: state.token + 1
+                        }));
+                        return;
                     }
                     break;
             }
+            trackSharePastWork(item.id, item.category, method);
         },
-        [item, trackSharePastWork]
+        [item]
     );
 
-    return { copySuccess: copyState.active, share };
+    return { copySuccess: copyState.message === "Link copied", shareMessage: copyState.message, share };
 }

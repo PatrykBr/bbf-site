@@ -1,19 +1,17 @@
-import { PastWorkItem } from "../types";
+import type { PastWorkItem } from "../types.ts";
 
 /**
- * Past work portfolio items for Bespoke Broncel Furniture
- * Images are relative to /public/past-work/ directory
- * Use kebab-case for all file names
+ * Store portfolio images in public/past-work and use kebab-case file names.
+ * Image URLs start with /past-work/.
  */
-export const pastWorkItems: PastWorkItem[] = [
-    // Featured Wardrobes
+const pastWorkItems: PastWorkItem[] = [
     {
         id: "wardrobe-001",
-        name: "Walnut & White Interior Layout",
+        name: "Walnut and white wardrobe interior",
         category: "wardrobe",
         isFeatured: false,
         description:
-            "A premium wardrobe interior showcasing a dual-tone design. Features rich walnut drawers and framing contrasted against crisp white shelving and hanging space.",
+            "A wardrobe interior with walnut drawers and framing, white shelves and space for hanging clothes.",
         images: [
             {
                 url: "/past-work/walnut-white-interior-layout.webp",
@@ -26,15 +24,15 @@ export const pastWorkItems: PastWorkItem[] = [
     },
     {
         id: "wardrobe-002",
-        name: "Light Oak Sliding Wardrobe",
+        name: "Light oak sliding wardrobe",
         category: "wardrobe",
         isFeatured: false,
         description:
-            "A modern sliding wardrobe featuring a natural light oak finish with horizontal silver trims. Smooth sliding mechanism reveals internal drawers and ample shelving.",
+            "A sliding wardrobe with a light oak finish and horizontal silver trims. The doors open onto drawers and shelves.",
         images: [
             {
                 url: "/past-work/light-oak-sliding-wardrobe.webp",
-                alt: "Light wood effect sliding wardrobe with internal drawers",
+                alt: "Light wood-effect sliding wardrobe with internal drawers",
                 orientation: "portrait"
             }
         ],
@@ -43,15 +41,14 @@ export const pastWorkItems: PastWorkItem[] = [
     },
     {
         id: "wardrobe-003",
-        name: "Textured Concrete Effect Wardrobe",
+        name: "Textured concrete-effect wardrobe",
         category: "wardrobe",
         isFeatured: false,
-        description:
-            "A contemporary floor-to-ceiling wardrobe with a striking dark concrete texture finish. Minimalist design with discreet handles creates a sophisticated, seamless look.",
+        description: "A floor-to-ceiling wardrobe with a dark concrete-effect finish and discreet handles.",
         images: [
             {
                 url: "/past-work/textured-concrete-effect-wardrobe.webp",
-                alt: "Dark concrete texture fitted wardrobe floor to ceiling",
+                alt: "Floor-to-ceiling fitted wardrobe with a dark concrete-effect finish",
                 orientation: "portrait"
             }
         ],
@@ -60,11 +57,11 @@ export const pastWorkItems: PastWorkItem[] = [
     },
     {
         id: "wardrobe-004",
-        name: "White Mirrored Lattice Wardrobe",
+        name: "White mirrored lattice wardrobe",
         category: "wardrobe",
         isFeatured: true,
         description:
-            "A stunning white fitted wardrobe featuring mirrored doors with lattice detailing. Includes an integrated overhead pelmet with LED downlights for a bright, airy feel.",
+            "A white fitted wardrobe with lattice-framed mirror doors. An overhead pelmet holds LED downlights.",
         images: [
             {
                 url: "/past-work/white-mirrored-lattice-wardrobe.webp",
@@ -77,15 +74,15 @@ export const pastWorkItems: PastWorkItem[] = [
     },
     {
         id: "wardrobe-005",
-        name: "Industrial Loft Angled Wardrobe",
+        name: "Angled loft wardrobe",
         category: "wardrobe",
         isFeatured: true,
         description:
-            "A bespoke industrial-chic wardrobe designed for an attic conversion. Features a black-framed grid design with sliding doors, open shelving, and drawers custom-fitted to the angled ceiling slope.",
+            "A wardrobe fitted to a sloping attic ceiling, with black grid frames and sliding doors. It has open shelves and drawers.",
         images: [
             {
                 url: "/past-work/industrial-loft-angled-wardrobe.webp",
-                alt: "Industrial style loft wardrobe with black grid frame and angled ceiling fit",
+                alt: "Loft wardrobe with black grid frames fitted under a sloping ceiling",
                 orientation: "landscape"
             }
         ],
@@ -94,15 +91,15 @@ export const pastWorkItems: PastWorkItem[] = [
     },
     {
         id: "wardrobe-006",
-        name: "High-Gloss Taupe Sliding Wardrobe",
+        name: "High-gloss taupe sliding wardrobe",
         category: "wardrobe",
         isFeatured: false,
         description:
-            "A contemporary sliding wardrobe with a high-gloss taupe finish. Includes a central full-length mirror and horizontal detailing for a sleek, modern aesthetic.",
+            "A sliding wardrobe with a high-gloss taupe finish, a full-length central mirror and horizontal detailing.",
         images: [
             {
                 url: "/past-work/high-gloss-taupe-sliding-wardrobe.webp",
-                alt: "High gloss sliding wardrobe with central mirror",
+                alt: "High-gloss sliding wardrobe with a central mirror",
                 orientation: "landscape"
             }
         ],
@@ -111,15 +108,15 @@ export const pastWorkItems: PastWorkItem[] = [
     },
     {
         id: "wardrobe-007",
-        name: "Terracotta Dressing Room Suite",
+        name: "Terracotta dressing room",
         category: "wardrobe",
         isFeatured: true,
         description:
-            "A luxurious walk-in dressing room in a deep terracotta hue. Features a matching central island, vanity station, and fitted wardrobes with gold accent handles.",
+            "A terracotta walk-in dressing room with fitted wardrobes and gold handles. It has a matching central island and dressing table.",
         images: [
             {
                 url: "/past-work/terracotta-dressing-room-suite.webp",
-                alt: "Full dressing room with island and vanity in terracotta finish",
+                alt: "Terracotta dressing room with an island and dressing table",
                 orientation: "portrait"
             }
         ],
@@ -128,15 +125,15 @@ export const pastWorkItems: PastWorkItem[] = [
     },
     {
         id: "wardrobe-008",
-        name: "Blush Pink Shaker Wardrobe",
+        name: "Blush pink Shaker wardrobe",
         category: "wardrobe",
         isFeatured: false,
         description:
-            "An elegant dusty pink fitted wardrobe featuring Shaker-style doors and brass hardware. Includes full-length mirrors and convenient external drawers for optimized storage.",
+            "A dusty pink fitted wardrobe with Shaker-style doors and brass handles. It has full-length mirrors and external drawers.",
         images: [
             {
                 url: "/past-work/blush-pink-shaker-wardrobe.webp",
-                alt: "Pink shaker style wardrobe with brass handles and mirrored doors",
+                alt: "Pink Shaker-style wardrobe with brass handles and mirrored doors",
                 orientation: "portrait"
             }
         ],
@@ -145,11 +142,10 @@ export const pastWorkItems: PastWorkItem[] = [
     },
     {
         id: "wardrobe-009",
-        name: "Classic Greige Panelled Wardrobe",
+        name: "Greige panelled wardrobe",
         category: "wardrobe",
         isFeatured: false,
-        description:
-            "A sophisticated wall-to-wall fitted wardrobe in a neutral greige tone. Features timeless square panel detailing and long brass handles for a refined finish.",
+        description: "A wall-to-wall fitted wardrobe in greige, with square-panel doors and long brass handles.",
         images: [
             {
                 url: "/past-work/classic-greige-panelled-wardrobe.webp",
@@ -163,15 +159,15 @@ export const pastWorkItems: PastWorkItem[] = [
 
     {
         id: "kitchen-001",
-        name: "Navy Blue Shaker Kitchen",
+        name: "Navy blue Shaker kitchen",
         category: "kitchen",
         isFeatured: true,
         description:
-            "A timeless navy blue kitchen featuring shaker-style cabinetry and brushed brass knobs. Complemented by rustic brick-slip tiling and rich walnut-effect countertops.",
+            "A navy blue kitchen with Shaker-style cabinets, brushed brass knobs, brick-slip tiling and walnut-effect worktops.",
         images: [
             {
                 url: "/past-work/navy-blue-shaker-kitchen.webp",
-                alt: "Navy blue shaker kitchen with brick tiles and brass handles",
+                alt: "Navy blue Shaker kitchen with brick tiles and brass handles",
                 orientation: "landscape"
             }
         ],
@@ -180,15 +176,15 @@ export const pastWorkItems: PastWorkItem[] = [
     },
     {
         id: "kitchen-005",
-        name: "Scandinavian White & Wood Kitchen",
+        name: "Scandinavian white and wood kitchen",
         category: "kitchen",
         isFeatured: false,
         description:
-            "A modern compact kitchen blending matte white slab doors with oak-effect framing. Features a black glass splashback and contemporary angled extractor hood.",
+            "A compact kitchen with matt white slab doors and oak-effect framing. It has a black glass splashback and an angled extractor hood.",
         images: [
             {
                 url: "/past-work/scandinavian-white-wood-kitchen.webp",
-                alt: "Modern white and wood kitchen with black angled extractor",
+                alt: "White and wood kitchen with a black angled extractor hood",
                 orientation: "landscape"
             }
         ],
@@ -197,15 +193,15 @@ export const pastWorkItems: PastWorkItem[] = [
     },
     {
         id: "kitchen-004",
-        name: "Minimalist White Handleless Kitchen",
+        name: "White handleless kitchen",
         category: "kitchen",
         isFeatured: false,
         description:
-            "A crisp white handleless kitchen designed for a bright, airy feel. Includes light wood surfaces, a black composite sink, and a tall integrated oven tower.",
+            "A white handleless kitchen with light wood worktops and a black composite sink. The oven sits in a tall cabinet.",
         images: [
             {
                 url: "/past-work/minimalist-white-handleless-kitchen.webp",
-                alt: "Minimalist white handleless kitchen with black sink",
+                alt: "White handleless kitchen with a black sink",
                 orientation: "portrait"
             }
         ],
@@ -214,15 +210,15 @@ export const pastWorkItems: PastWorkItem[] = [
     },
     {
         id: "kitchen-003",
-        name: "Graphite & Oak Contrast Kitchen",
+        name: "Graphite and oak kitchen",
         category: "kitchen",
         isFeatured: true,
         description:
-            "A bold contemporary design featuring matte graphite handleless units. Deep grey tones are balanced by warm oak-effect splashbacks and under-cabinet lighting.",
+            "A kitchen with matt graphite handleless units, oak-effect splashbacks and lighting beneath the wall cabinets.",
         images: [
             {
                 url: "/past-work/graphite-oak-contrast-kitchen.webp",
-                alt: "Dark grey matte kitchen with oak backsplash and lighting",
+                alt: "Matt dark grey kitchen with an oak-effect splashback and lighting",
                 orientation: "portrait"
             }
         ],
@@ -231,15 +227,15 @@ export const pastWorkItems: PastWorkItem[] = [
     },
     {
         id: "kitchen-002",
-        name: "Two-Tone Gloss & Texture Kitchen",
+        name: "Two-tone gloss and texture kitchen",
         category: "kitchen",
         isFeatured: false,
         description:
-            "An L-shaped kitchen with a two-tone scheme. High-gloss white units reflect light, while a central band of textured wood-grain cabinets adds warmth.",
+            "An L-shaped kitchen with high-gloss white units and a central row of textured wood-grain cabinets.",
         images: [
             {
                 url: "/past-work/two-tone-gloss-texture-kitchen.webp",
-                alt: "High gloss white kitchen with wood grain feature units",
+                alt: "High-gloss white kitchen with wood-grain cabinets",
                 orientation: "landscape"
             }
         ],
@@ -249,31 +245,20 @@ export const pastWorkItems: PastWorkItem[] = [
 ];
 
 /**
- * Get all past work items, optionally sorted by featured status
+ * Return featured projects first, then sort each group by date, newest first.
  */
-export function getAllPastWork(sortByFeatured = true): PastWorkItem[] {
-    if (sortByFeatured) {
-        return pastWorkItems.toSorted((a, b) => {
-            // Featured items first
-            if (a.isFeatured && !b.isFeatured) return -1;
-            if (!a.isFeatured && b.isFeatured) return 1;
-            // Then by date (newest first)
-            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        });
-    }
-    return pastWorkItems.toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+export function getAllPastWork(): PastWorkItem[] {
+    return pastWorkItems.toSorted((a, b) => {
+        if (a.isFeatured && !b.isFeatured) return -1;
+        if (!a.isFeatured && b.isFeatured) return 1;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 }
 
-/**
- * Get a single past work item by slug
- */
 export function getPastWorkBySlug(slug: string): PastWorkItem | undefined {
     return pastWorkItems.find(item => item.slug === slug);
 }
 
-/**
- * Get all slugs for static generation
- */
 export function getAllPastWorkSlugs(): string[] {
     return pastWorkItems.map(item => item.slug);
 }

@@ -14,11 +14,9 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
                 <div style={{ display: "flex", minHeight: "100vh", alignItems: "center", justifyContent: "center" }}>
                     <div style={{ padding: "2rem", textAlign: "center" }}>
                         <h2 style={{ fontSize: "1.5rem", fontWeight: 600, marginBottom: "1rem" }}>
-                            Something went wrong
+                            This page could not load
                         </h2>
-                        <p style={{ color: "#666", marginBottom: "1.5rem" }}>
-                            We apologize for the inconvenience. Please try again.
-                        </p>
+                        <p style={{ color: "#666", marginBottom: "1.5rem" }}>Please try loading the page again.</p>
                         <button
                             type="button"
                             onClick={reset}

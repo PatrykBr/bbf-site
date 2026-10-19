@@ -3,55 +3,23 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, Suspense, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { m, AnimatePresence } from "motion/react";
 import { contactInfo } from "@/lib/data/contact";
 
 export function Header() {
-    return (
-        <Suspense>
-            <HeaderInner />
-        </Suspense>
-    );
-}
-
-function HeaderInner() {
     const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [activeSection, setActiveSection] = useState("home");
-    const isNavigatingRef = useRef(false);
-    const navigationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const menuButtonRef = useRef<HTMLButtonElement>(null);
     const mobileMenuId = "mobile-navigation";
     const activeSectionForNav = pathname === "/" ? activeSection : "";
 
     const navLinks = [
-        { href: "/", label: "HOME", section: "home" },
-        { href: "/#work", label: "WORK", section: "work" },
-        { href: "/#about", label: "ABOUT", section: "about" }
-    ];
-
-    const handleNavClick = (section: string) => {
-        if (navigationTimeoutRef.current) {
-            clearTimeout(navigationTimeoutRef.current);
-        }
-
-        isNavigatingRef.current = true;
-        setActiveSection(section);
-        // Re-enable observer updates after scroll completes
-        navigationTimeoutRef.current = setTimeout(() => {
-            isNavigatingRef.current = false;
-            navigationTimeoutRef.current = null;
-        }, 1000);
-    };
-
-    useEffect(
-        () => () => {
-            if (navigationTimeoutRef.current) {
-                clearTimeout(navigationTimeoutRef.current);
-            }
-        },
-        []
-    );
+        { href: "/", label: "Home", section: "home" },
+        { href: "/#work", label: "Work", section: "work" },
+        { href: "/#about", label: "About", section: "about" }
+    ] as const;
 
     useEffect(() => {
         if (pathname !== "/") {
@@ -60,30 +28,30 @@ function HeaderInner() {
 
         const sections = ["home", "work", "about", "contact"];
 
-        const observer = new IntersectionObserver(
-            entries => {
-                if (isNavigatingRef.current) return;
-
-                // Find the first entry that is intersecting
-                const visibleEntry = entries.find(entry => entry.isIntersecting);
-                if (visibleEntry) {
-                    const sectionId = visibleEntry.target.id;
-                    const navSection = sectionId === "contact" ? "about" : sectionId;
-                    setActiveSection(navSection);
+        let observer: IntersectionObserver;
+        const observeSections = () => {
+            observer?.disconnect();
+            observer = new IntersectionObserver(
+                entries => {
+                    const visible = entries.find(entry => entry.isIntersecting);
+                    if (visible) setActiveSection(visible.target.id);
+                },
+                {
+                    // Percentage root margins use the viewport width and can collapse
+                    // the observed area on wide screens. Use pixels to keep it open.
+                    rootMargin: `-96px 0px -${Math.max(0, window.innerHeight - 97)}px 0px`
                 }
-            },
-            { threshold: 0, rootMargin: "-50% 0px -50% 0px" }
-        );
-
-        sections.forEach(sectionId => {
-            const element = document.getElementById(sectionId);
-            if (element) {
-                observer.observe(element);
-            }
-        });
-
+            );
+            sections.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) observer.observe(element);
+            });
+        };
+        observeSections();
+        window.addEventListener("resize", observeSections);
         return () => {
             observer.disconnect();
+            window.removeEventListener("resize", observeSections);
         };
     }, [pathname]);
 
@@ -92,12 +60,17 @@ function HeaderInner() {
             initial={{ y: -100 }}
             animate={{ y: 0 }}
             transition={{ duration: 0.5, ease: "easeOut" }}
+            onKeyDown={event => {
+                if (event.key === "Escape" && isMenuOpen) {
+                    setIsMenuOpen(false);
+                    menuButtonRef.current?.focus();
+                }
+            }}
             className="bg-brand-dark/90 fixed top-0 right-0 left-0 z-50 backdrop-blur-xs"
         >
             <div className="mx-auto px-6 py-2 sm:px-10 lg:px-25">
                 <div className="flex h-16 items-center justify-between md:h-20">
-                    {/* Logo */}
-                    <Link href="/" className="flex h-full items-center gap-3">
+                    <Link href="/" onClick={() => setIsMenuOpen(false)} className="flex h-full items-center gap-3">
                         <m.div
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
@@ -108,15 +81,13 @@ function HeaderInner() {
                                 alt="Bespoke Broncel Furniture"
                                 fill
                                 className="object-contain"
-                                priority
+                                loading="eager"
                                 sizes="220px"
                             />
                         </m.div>
                     </Link>
 
-                    {/* Desktop Navigation - Two Row Layout */}
                     <div className="hidden flex-col items-end gap-1 md:flex">
-                        {/* Top Row: Phone & Contact Button */}
                         <m.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -159,12 +130,11 @@ function HeaderInner() {
                                     href="/#contact"
                                     className="bg-brand-light inline-block rounded-lg px-4 py-1.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
                                 >
-                                    Contact Us
+                                    Contact us
                                 </Link>
                             </m.div>
                         </m.div>
 
-                        {/* Bottom Row: Navigation Links with Animated Underline */}
                         <nav className="flex items-center gap-8">
                             {navLinks.map((link, index) => (
                                 <m.div
@@ -176,7 +146,8 @@ function HeaderInner() {
                                 >
                                     <Link
                                         href={link.href}
-                                        onClick={() => handleNavClick(link.section)}
+                                        onClick={() => setActiveSection(link.section)}
+                                        aria-current={activeSectionForNav === link.section ? "location" : undefined}
                                         className={`text-sm font-semibold tracking-wide transition-colors ${
                                             activeSectionForNav === link.section
                                                 ? "text-white"
@@ -197,10 +168,10 @@ function HeaderInner() {
                         </nav>
                     </div>
 
-                    {/* Mobile Menu Button & Contact */}
                     <div className="flex items-center gap-2 md:hidden">
                         <Link
                             href="/#contact"
+                            onClick={() => setIsMenuOpen(false)}
                             className="bg-brand-light rounded-lg px-5 py-1.5 text-sm font-medium text-white"
                         >
                             Contact
@@ -209,6 +180,7 @@ function HeaderInner() {
                             type="button"
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
                             className="p-2 text-white"
+                            ref={menuButtonRef}
                             aria-label="Toggle menu"
                             aria-expanded={isMenuOpen}
                             aria-controls={mobileMenuId}
@@ -234,7 +206,6 @@ function HeaderInner() {
                     </div>
                 </div>
 
-                {/* Mobile Menu */}
                 <AnimatePresence>
                     {isMenuOpen && (
                         <m.div

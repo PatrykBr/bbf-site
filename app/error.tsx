@@ -11,8 +11,8 @@ export default function Error({ error, reset }: { error: Error & { digest?: stri
     return (
         <div className="bg-background flex min-h-screen items-center justify-center">
             <div className="p-8 text-center">
-                <h2 className="text-foreground mb-4 text-2xl font-semibold">Something went wrong</h2>
-                <p className="mb-6 text-gray-600">We apologize for the inconvenience. Please try again.</p>
+                <h2 className="text-foreground mb-4 text-2xl font-semibold">This page could not load</h2>
+                <p className="mb-6 text-gray-600">Please try loading the page again.</p>
                 <button
                     type="button"
                     onClick={reset}

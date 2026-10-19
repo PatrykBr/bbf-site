@@ -3,16 +3,15 @@
 import { useShareActions } from "@/lib/use-share";
 import type { PastWorkItem } from "@/lib/types";
 
-interface WorkDetailClientProps {
+interface ShareButtonsProps {
     item: PastWorkItem;
 }
 
-export function WorkDetailClient({ item }: WorkDetailClientProps) {
-    const { copySuccess, share } = useShareActions(item);
+export function ShareButtons({ item }: ShareButtonsProps) {
+    const { copySuccess, shareMessage, share } = useShareActions(item);
 
     return (
-        <div className="mt-6 border-t border-gray-200 pt-6">
-            <h4 className="mb-3 text-sm font-medium text-gray-700">Share This Project</h4>
+        <div>
             <div className="flex gap-2">
                 <button
                     type="button"
@@ -58,6 +57,9 @@ export function WorkDetailClient({ item }: WorkDetailClientProps) {
                     )}
                 </button>
             </div>
+            <p role="status" className="mt-2 text-sm">
+                {shareMessage}
+            </p>
         </div>
     );
 }

@@ -10,35 +10,35 @@ import { getSiteUrl } from "@/lib/site-config";
 import { serializeJsonLd } from "@/lib/utils";
 
 export const metadata: Metadata = {
-    title: "Bespoke Broncel Furniture | Custom Kitchens & Wardrobes | South Yorkshire",
+    title: "Bespoke Broncel Furniture | Fitted kitchens and wardrobes | South Yorkshire",
     description:
-        "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of carpentry experience. Contact us for a free quote.",
+        "We make fitted kitchens and wardrobes in South Yorkshire, with 25 years of carpentry experience. Contact us for a free quote.",
     alternates: {
         canonical: getSiteUrl()
     },
     openGraph: {
-        title: "Bespoke Broncel Furniture | Custom Kitchens & Wardrobes",
-        description: "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of carpentry experience.",
+        title: "Bespoke Broncel Furniture | Fitted kitchens and wardrobes",
+        description: "We make fitted kitchens and wardrobes in South Yorkshire, with 25 years of carpentry experience.",
         type: "website",
         url: getSiteUrl(),
         images: [{ url: getSiteUrl("/hero-bg.webp") }]
     },
     twitter: {
         card: "summary_large_image",
-        title: "Bespoke Broncel Furniture | Custom Kitchens & Wardrobes",
-        description: "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of carpentry experience.",
+        title: "Bespoke Broncel Furniture | Fitted kitchens and wardrobes",
+        description: "We make fitted kitchens and wardrobes in South Yorkshire, with 25 years of carpentry experience.",
         images: [getSiteUrl("/hero-bg.webp")]
     }
 };
 
 export default function Home() {
-    const pastWork = getAllPastWork(true);
+    const pastWork = getAllPastWork();
 
     const localBusinessSchema = {
         "@context": "https://schema.org",
         "@type": "LocalBusiness",
         name: "Bespoke Broncel Furniture",
-        description: "Custom-made fitted kitchens and wardrobes in South Yorkshire. 25 years of carpentry experience.",
+        description: "We make fitted kitchens and wardrobes in South Yorkshire, with 25 years of carpentry experience.",
         telephone: "+447523706742",
         email: "broncelfurniture@gmail.com",
         address: {

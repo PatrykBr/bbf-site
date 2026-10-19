@@ -1,41 +1,30 @@
-/**
- * Core type definitions for Bespoke Broncel Furniture
- */
-
-// Work item image orientation for masonry layout
 export type ImageOrientation = "landscape" | "portrait" | "square";
 
-// Work item image
 export interface WorkImage {
     url: string;
     alt: string;
-    orientation?: ImageOrientation; // defaults to "landscape" if not specified
+    orientation?: ImageOrientation; // Defaults to "landscape".
 }
 
-// Work item category
 export type WorkCategory = "wardrobe" | "kitchen";
 
-// Past work item schema
 export interface PastWorkItem {
     id: string;
     name: string;
     category: WorkCategory;
     isFeatured: boolean;
     description: string;
-    images: WorkImage[];
-    createdAt: string; // ISO date string
+    images: [WorkImage, ...WorkImage[]];
+    createdAt: string; // ISO 8601 date.
     slug: string;
 }
 
-// Contact information format
 export interface ContactInfo {
     phone: string;
-    whatsapp: string;
     email: string;
     facebook: string;
 }
 
-// Contact form data
 export interface ContactFormData {
     name: string;
     email: string;
@@ -43,13 +32,10 @@ export interface ContactFormData {
     message: string;
 }
 
-// Filter types for work gallery
-export type WorkFilter = "all" | "wardrobe" | "kitchen";
+export type WorkFilter = "all" | WorkCategory;
 
-// Share method types
 export type ShareMethod = "facebook" | "whatsapp" | "copy";
 
-// PostHog event payloads
 export interface SharePastWorkEvent {
     work_id: string;
     category: WorkCategory;
@@ -63,7 +49,6 @@ export interface ClickPastWorkEvent {
     timestamp: string;
 }
 
-// Source of work view
 export type ViewSource = "click" | "navigation" | "gallery";
 
 export interface ViewPastWorkEvent {
@@ -73,7 +58,6 @@ export interface ViewPastWorkEvent {
     timestamp: string;
 }
 
-// API response types
 export interface ContactApiResponse {
     success: boolean;
     message: string;

@@ -40,34 +40,32 @@ export function ContactSection() {
         >
             <div className="w-full px-4 sm:px-8 lg:px-16">
                 <m.h2
-                    initial={shouldReduceMotion ? false : { opacity: 0, y: 20 }}
-                    whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={shouldReduceMotion ? undefined : { duration: 0.6 }}
+                    transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.6 }}
                     className="mb-12 text-center text-3xl font-bold text-white sm:text-4xl"
                 >
-                    Get In Touch
+                    Get in touch
                 </m.h2>
 
                 <div className="grid grid-cols-1 gap-12 lg:grid-cols-2">
-                    {/* Contact Methods */}
                     <m.div
-                        initial={shouldReduceMotion ? false : { opacity: 0, x: -40 }}
-                        whileInView={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
+                        initial={{ opacity: 0, x: -40 }}
+                        whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, margin: "-50px" }}
-                        transition={shouldReduceMotion ? undefined : { duration: 0.6 }}
+                        transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.6 }}
                         className="rounded-2xl bg-white/10 p-8 backdrop-blur-sm"
                     >
-                        <h3 className="mb-6 text-xl font-semibold text-white">Contact Methods</h3>
+                        <h3 className="mb-6 text-xl font-semibold text-white">Contact details</h3>
 
                         <m.div
                             variants={containerVariants}
-                            initial={shouldReduceMotion ? false : "hidden"}
-                            whileInView={shouldReduceMotion ? undefined : "visible"}
+                            initial={"hidden"}
+                            whileInView={"visible"}
                             viewport={{ once: true }}
                             className="space-y-6"
                         >
-                            {/* Phone / WhatsApp (Preferred) */}
                             <m.a
                                 href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
                                 variants={itemVariants}
@@ -103,7 +101,6 @@ export function ContactSection() {
                                 </div>
                             </m.a>
 
-                            {/* Email */}
                             <m.a
                                 href={`mailto:${contactInfo.email}`}
                                 variants={itemVariants}
@@ -128,11 +125,10 @@ export function ContactSection() {
                                 <div>
                                     <span className="mb-1 block font-medium text-white">Email</span>
                                     <span className="text-white">{contactInfo.email}</span>
-                                    <p className="mt-1 text-sm text-white/60">We respond to emails within 24 hours</p>
+                                    <p className="mt-1 text-sm text-white/60">We reply within 24 hours</p>
                                 </div>
                             </m.a>
 
-                            {/* Facebook */}
                             <m.a
                                 href={contactInfo.facebook}
                                 target="_blank"
@@ -149,14 +145,11 @@ export function ContactSection() {
                                 <div>
                                     <span className="mb-1 block font-medium text-white">Facebook</span>
                                     <span className="text-white">Bespoke Broncel Furniture</span>
-                                    <p className="mt-1 text-sm text-white/60">
-                                        Follow us for latest updates and inspiration
-                                    </p>
+                                    <p className="mt-1 text-sm text-white/60">See our latest projects</p>
                                 </div>
                             </m.a>
                         </m.div>
 
-                        {/* Location Card with Background Image */}
                         <m.div
                             initial={{ opacity: 0, scale: 0.95 }}
                             whileInView={{ opacity: 1, scale: 1 }}
@@ -180,15 +173,14 @@ export function ContactSection() {
                         </m.div>
                     </m.div>
 
-                    {/* Contact Form */}
                     <m.div
-                        initial={shouldReduceMotion ? false : { opacity: 0, x: 40 }}
-                        whileInView={shouldReduceMotion ? undefined : { opacity: 1, x: 0 }}
+                        initial={{ opacity: 0, x: 40 }}
+                        whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, margin: "-50px" }}
-                        transition={shouldReduceMotion ? undefined : { duration: 0.6, delay: 0.2 }}
+                        transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.6, delay: 0.2 }}
                         className="rounded-2xl bg-white p-8"
                     >
-                        <h3 className="text-brand-dark mb-6 text-xl font-semibold">Send Us A Message</h3>
+                        <h3 className="text-brand-dark mb-6 text-xl font-semibold">Send us a message</h3>
                         <ContactForm />
                     </m.div>
                 </div>
