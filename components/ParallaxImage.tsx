@@ -21,13 +21,13 @@ export function ParallaxImage({
     const transform = useTransform(
         scrollYProgress,
         [0, 1],
-        ["translate3d(0, -9%, 0) scale(1.02)", "translate3d(0, 9%, 0) scale(1.14)"]
+        ["translate3d(0, -18%, 0) scale(1.02)", "translate3d(0, 18%, 0) scale(1.14)"]
     );
 
     return (
         <div ref={ref} className="absolute inset-0 overflow-clip">
             <motion.div
-                className="parallax-image absolute -inset-[12%]"
+                className="parallax-image absolute -inset-x-[12%] -inset-y-[30%]"
                 style={{ transform: reduceMotion ? "none" : transform }}
             >
                 <Image
