@@ -16,7 +16,7 @@ export function ShareButtons({ item }: ShareButtonsProps) {
                 <button
                     type="button"
                     onClick={() => share("facebook")}
-                    className="flex flex-1 items-center justify-center gap-2 rounded bg-[#1877F2] px-3 py-2 text-sm text-white transition-colors hover:bg-[#1877F2]/90"
+                    className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded bg-[#1877F2] px-3 py-2 text-sm text-white transition-colors hover:bg-[#1877F2]/90"
                     aria-label="Share on Facebook"
                 >
                     <svg className="size-4" fill="currentColor" viewBox="0 0 24 24">
@@ -27,7 +27,7 @@ export function ShareButtons({ item }: ShareButtonsProps) {
                 <button
                     type="button"
                     onClick={() => share("whatsapp")}
-                    className="flex flex-1 items-center justify-center gap-2 rounded bg-[#25D366] px-3 py-2 text-sm text-white transition-colors hover:bg-[#25D366]/90"
+                    className="text-brand-dark flex min-h-11 flex-1 items-center justify-center gap-2 rounded bg-[#25D366] px-3 py-2 text-sm transition-colors hover:bg-[#25D366]/90"
                     aria-label="Share on WhatsApp"
                 >
                     <svg className="size-4" fill="currentColor" viewBox="0 0 24 24">
@@ -38,7 +38,7 @@ export function ShareButtons({ item }: ShareButtonsProps) {
                 <button
                     type="button"
                     onClick={() => share("copy")}
-                    className="flex flex-1 items-center justify-center gap-2 rounded bg-gray-200 px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-300"
+                    className="flex min-h-11 flex-1 items-center justify-center gap-2 rounded bg-gray-200 px-3 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-300"
                     aria-label="Copy link"
                 >
                     {copySuccess ? (

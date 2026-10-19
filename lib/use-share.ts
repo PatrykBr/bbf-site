@@ -7,18 +7,14 @@ import type { PastWorkItem, ShareMethod } from "./types";
 
 const COPY_FEEDBACK_MS = 2000;
 
-/**
- * Show copy feedback for two seconds. Increment the token to restart the timer
- * when a visitor copies the link again.
- */
 export function useShareActions(item: PastWorkItem) {
-    const [copyState, setCopyState] = useState({ message: "", token: 0 });
+    const [copyState, setCopyState] = useState({ message: "" });
 
     useEffect(() => {
         if (!copyState.message) return;
 
         const timeoutId = setTimeout(() => {
-            setCopyState(state => ({ ...state, message: "" }));
+            setCopyState({ message: "" });
         }, COPY_FEEDBACK_MS);
 
         return () => clearTimeout(timeoutId);
@@ -37,12 +33,9 @@ export function useShareActions(item: PastWorkItem) {
                 case "copy":
                     try {
                         await navigator.clipboard.writeText(getShareUrl(item.slug, "copy", origin));
-                        setCopyState(state => ({ message: "Link copied", token: state.token + 1 }));
+                        setCopyState({ message: "Link copied" });
                     } catch {
-                        setCopyState(state => ({
-                            message: "Could not copy the link. Please use your browser's share menu.",
-                            token: state.token + 1
-                        }));
+                        setCopyState({ message: "Could not copy the link. Please use your browser's share menu." });
                         return;
                     }
                     break;

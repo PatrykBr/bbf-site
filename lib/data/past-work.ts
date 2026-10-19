@@ -12,6 +12,10 @@ const pastWorkItems: PastWorkItem[] = [
         isFeatured: false,
         description:
             "A wardrobe interior with walnut drawers and framing, white shelves and space for hanging clothes.",
+        details: [
+            { label: "Interior finish", value: "Walnut drawers and framing with white shelves" },
+            { label: "Storage", value: "Drawers, open shelving and hanging space" }
+        ],
         images: [
             {
                 url: "/past-work/walnut-white-interior-layout.webp",
@@ -29,6 +33,10 @@ const pastWorkItems: PastWorkItem[] = [
         isFeatured: false,
         description:
             "A sliding wardrobe with a light oak finish and horizontal silver trims. The doors open onto drawers and shelves.",
+        details: [
+            { label: "Doors", value: "Sliding doors in a light oak finish with horizontal silver trims" },
+            { label: "Interior", value: "Drawers and shelves behind the sliding doors" }
+        ],
         images: [
             {
                 url: "/past-work/light-oak-sliding-wardrobe.webp",
@@ -45,6 +53,10 @@ const pastWorkItems: PastWorkItem[] = [
         category: "wardrobe",
         isFeatured: false,
         description: "A floor-to-ceiling wardrobe with a dark concrete-effect finish and discreet handles.",
+        details: [
+            { label: "Finish", value: "Dark concrete effect" },
+            { label: "Fit and hardware", value: "Floor-to-ceiling fitted storage with discreet handles" }
+        ],
         images: [
             {
                 url: "/past-work/textured-concrete-effect-wardrobe.webp",
@@ -62,6 +74,10 @@ const pastWorkItems: PastWorkItem[] = [
         isFeatured: true,
         description:
             "A white fitted wardrobe with lattice-framed mirror doors. An overhead pelmet holds LED downlights.",
+        details: [
+            { label: "Doors", value: "Mirrored doors with white lattice frames" },
+            { label: "Lighting", value: "LED downlights set into an overhead pelmet" }
+        ],
         images: [
             {
                 url: "/past-work/white-mirrored-lattice-wardrobe.webp",
@@ -79,6 +95,10 @@ const pastWorkItems: PastWorkItem[] = [
         isFeatured: true,
         description:
             "A wardrobe fitted to a sloping attic ceiling, with black grid frames and sliding doors. It has open shelves and drawers.",
+        details: [
+            { label: "Room shape", value: "Fitted beneath a sloping attic ceiling" },
+            { label: "Doors and storage", value: "Black grid frames, sliding doors, open shelves and drawers" }
+        ],
         images: [
             {
                 url: "/past-work/industrial-loft-angled-wardrobe.webp",
@@ -96,6 +116,10 @@ const pastWorkItems: PastWorkItem[] = [
         isFeatured: false,
         description:
             "A sliding wardrobe with a high-gloss taupe finish, a full-length central mirror and horizontal detailing.",
+        details: [
+            { label: "Door finish", value: "High-gloss taupe with horizontal detailing" },
+            { label: "Mirror", value: "Full-length mirror in the centre of the sliding wardrobe" }
+        ],
         images: [
             {
                 url: "/past-work/high-gloss-taupe-sliding-wardrobe.webp",
@@ -113,6 +137,10 @@ const pastWorkItems: PastWorkItem[] = [
         isFeatured: true,
         description:
             "A terracotta walk-in dressing room with fitted wardrobes and gold handles. It has a matching central island and dressing table.",
+        details: [
+            { label: "Finish and handles", value: "Terracotta fitted wardrobes with gold handles" },
+            { label: "Layout", value: "Walk-in dressing room with a matching central island and dressing table" }
+        ],
         images: [
             {
                 url: "/past-work/terracotta-dressing-room-suite.webp",
@@ -130,6 +158,10 @@ const pastWorkItems: PastWorkItem[] = [
         isFeatured: false,
         description:
             "A dusty pink fitted wardrobe with Shaker-style doors and brass handles. It has full-length mirrors and external drawers.",
+        details: [
+            { label: "Doors and hardware", value: "Dusty pink Shaker-style doors with brass handles" },
+            { label: "Storage and mirrors", value: "External drawers and full-length mirrors" }
+        ],
         images: [
             {
                 url: "/past-work/blush-pink-shaker-wardrobe.webp",
@@ -146,6 +178,10 @@ const pastWorkItems: PastWorkItem[] = [
         category: "wardrobe",
         isFeatured: false,
         description: "A wall-to-wall fitted wardrobe in greige, with square-panel doors and long brass handles.",
+        details: [
+            { label: "Doors", value: "Greige square-panel doors with long brass handles" },
+            { label: "Fit", value: "Fitted storage spanning the wall" }
+        ],
         images: [
             {
                 url: "/past-work/classic-greige-panelled-wardrobe.webp",
@@ -164,6 +200,10 @@ const pastWorkItems: PastWorkItem[] = [
         isFeatured: true,
         description:
             "A navy blue kitchen with Shaker-style cabinets, brushed brass knobs, brick-slip tiling and walnut-effect worktops.",
+        details: [
+            { label: "Cabinets and handles", value: "Navy blue Shaker-style cabinets with brushed brass knobs" },
+            { label: "Worktops and walls", value: "Walnut-effect worktops and brick-slip tiling" }
+        ],
         images: [
             {
                 url: "/past-work/navy-blue-shaker-kitchen.webp",
@@ -181,6 +221,10 @@ const pastWorkItems: PastWorkItem[] = [
         isFeatured: false,
         description:
             "A compact kitchen with matt white slab doors and oak-effect framing. It has a black glass splashback and an angled extractor hood.",
+        details: [
+            { label: "Cabinets", value: "Matt white slab doors with oak-effect framing" },
+            { label: "Splashback and extractor", value: "Black glass splashback and an angled extractor hood" }
+        ],
         images: [
             {
                 url: "/past-work/scandinavian-white-wood-kitchen.webp",
@@ -198,6 +242,10 @@ const pastWorkItems: PastWorkItem[] = [
         isFeatured: false,
         description:
             "A white handleless kitchen with light wood worktops and a black composite sink. The oven sits in a tall cabinet.",
+        details: [
+            { label: "Cabinets and worktops", value: "White handleless units with light wood worktops" },
+            { label: "Sink and oven", value: "Black composite sink and an oven housed in a tall cabinet" }
+        ],
         images: [
             {
                 url: "/past-work/minimalist-white-handleless-kitchen.webp",
@@ -215,6 +263,13 @@ const pastWorkItems: PastWorkItem[] = [
         isFeatured: true,
         description:
             "A kitchen with matt graphite handleless units, oak-effect splashbacks and lighting beneath the wall cabinets.",
+        details: [
+            { label: "Cabinets", value: "Matt graphite handleless units" },
+            {
+                label: "Splashbacks and lighting",
+                value: "Oak-effect splashbacks with lighting beneath the wall cabinets"
+            }
+        ],
         images: [
             {
                 url: "/past-work/graphite-oak-contrast-kitchen.webp",
@@ -232,6 +287,13 @@ const pastWorkItems: PastWorkItem[] = [
         isFeatured: false,
         description:
             "An L-shaped kitchen with high-gloss white units and a central row of textured wood-grain cabinets.",
+        details: [
+            { label: "Layout", value: "L-shaped kitchen" },
+            {
+                label: "Cabinet finishes",
+                value: "High-gloss white units with a central row of textured wood-grain cabinets"
+            }
+        ],
         images: [
             {
                 url: "/past-work/two-tone-gloss-texture-kitchen.webp",

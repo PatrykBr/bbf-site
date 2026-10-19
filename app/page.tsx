@@ -1,73 +1,38 @@
-import type { Metadata } from "next";
-import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
 import { AboutSection } from "@/components/AboutSection";
 import { ContactSection } from "@/components/ContactSection";
 import { WorkGrid } from "@/components/WorkGrid";
 import { getAllPastWork } from "@/lib/data/past-work";
+import { companyInfo } from "@/lib/data/contact";
+import { createPageMetadata } from "@/lib/seo";
 import { getSiteUrl } from "@/lib/site-config";
 import { serializeJsonLd } from "@/lib/utils";
 
-export const metadata: Metadata = {
-    title: "Bespoke Broncel Furniture | Fitted kitchens and wardrobes | South Yorkshire",
+export const metadata = createPageMetadata({
+    title: "Kitchens and wardrobes in South Yorkshire",
     description:
         "We make fitted kitchens and wardrobes in South Yorkshire, with 25 years of carpentry experience. Contact us for a free quote.",
-    alternates: {
-        canonical: getSiteUrl()
-    },
-    openGraph: {
-        title: "Bespoke Broncel Furniture | Fitted kitchens and wardrobes",
-        description: "We make fitted kitchens and wardrobes in South Yorkshire, with 25 years of carpentry experience.",
-        type: "website",
-        url: getSiteUrl(),
-        images: [{ url: getSiteUrl("/hero-bg.webp") }]
-    },
-    twitter: {
-        card: "summary_large_image",
-        title: "Bespoke Broncel Furniture | Fitted kitchens and wardrobes",
-        description: "We make fitted kitchens and wardrobes in South Yorkshire, with 25 years of carpentry experience.",
-        images: [getSiteUrl("/hero-bg.webp")]
-    }
-};
+    path: ""
+});
 
 export default function Home() {
     const pastWork = getAllPastWork();
 
-    const localBusinessSchema = {
+    const websiteSchema = {
         "@context": "https://schema.org",
-        "@type": "LocalBusiness",
-        name: "Bespoke Broncel Furniture",
-        description: "We make fitted kitchens and wardrobes in South Yorkshire, with 25 years of carpentry experience.",
-        telephone: "+447523706742",
-        email: "broncelfurniture@gmail.com",
-        address: {
-            "@type": "PostalAddress",
-            addressRegion: "South Yorkshire",
-            addressCountry: "GB"
-        },
-        url: getSiteUrl(),
-        image: getSiteUrl("/hero-bg.webp"),
-        sameAs: ["https://www.facebook.com/BespokeBroncelFurniture"],
-        priceRange: "££",
-        openingHours: "Mo-Fr 09:00-17:00",
-        areaServed: {
-            "@type": "Place",
-            name: "South Yorkshire, England"
-        }
+        "@type": "WebSite",
+        "@id": getSiteUrl("/#website"),
+        name: companyInfo.name,
+        url: getSiteUrl()
     };
 
     return (
         <>
-            <Header />
-            <main>
-                <script type="application/ld+json">{serializeJsonLd(localBusinessSchema)}</script>
-                <Hero />
-                <WorkGrid items={pastWork} />
-                <AboutSection />
-                <ContactSection />
-            </main>
-            <Footer />
+            <script type="application/ld+json">{serializeJsonLd(websiteSchema)}</script>
+            <Hero />
+            <WorkGrid items={pastWork} />
+            <ContactSection />
+            <AboutSection />
         </>
     );
 }

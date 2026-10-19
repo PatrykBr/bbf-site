@@ -1,20 +1,25 @@
+"use client";
+
 import { useState } from "react";
 import { FallbackImage } from "./FallbackImage";
 import { Modal } from "./Modal";
-import type { WorkImage } from "@/lib/types";
+import type { PastWorkItem } from "@/lib/types";
+import { ContactAction } from "./ContactAction";
 
 export function ImageGallery({
     images,
     name,
-    initialIndex = 0,
+    initialIndex,
     onClose,
-    onView
+    onView,
+    projectSlug
 }: {
-    images: WorkImage[];
+    images: PastWorkItem["images"];
     name: string;
-    initialIndex?: number;
+    initialIndex: number;
     onClose: () => void;
     onView: () => void;
+    projectSlug: string;
 }) {
     const [index, setIndex] = useState(initialIndex);
     const select = (next: number) => {
@@ -63,13 +68,13 @@ export function ImageGallery({
                     </button>
                 </>
             )}
-            <div className="relative mx-4 h-[75dvh] w-full max-w-5xl">
+            <div className="absolute inset-x-4 top-16 bottom-44 mx-auto max-w-5xl sm:top-12 sm:bottom-40">
                 <FallbackImage
                     key={images[index].url}
                     src={images[index].url}
                     alt={images[index].alt}
                     fill
-                    className="object-contain"
+                    className="gallery-photo object-contain"
                     sizes="(max-width: 1024px) 100vw, 1024px"
                 />
             </div>
@@ -93,6 +98,13 @@ export function ImageGallery({
                 <p className="text-sm" aria-live="polite">
                     {name} • {index + 1} of {images.length}
                 </p>
+                <ContactAction
+                    projectSlug={projectSlug}
+                    onClick={onClose}
+                    className="text-brand-dark inline-flex min-h-11 items-center justify-center rounded-lg bg-white px-5 py-3 text-sm font-semibold focus-visible:outline-white"
+                >
+                    Ask about this project
+                </ContactAction>
             </div>
         </Modal>
     );

@@ -4,40 +4,45 @@ import { useState } from "react";
 import { ImageGallery } from "@/components/ImageGallery";
 import { FallbackImage } from "@/components/FallbackImage";
 import { trackViewPastWork } from "@/lib/posthog";
-import type { WorkImage, WorkCategory } from "@/lib/types";
+import type { PastWorkItem, WorkCategory } from "@/lib/types";
 import { getAspectRatioClass } from "@/lib/utils";
 
 interface ProjectGalleryProps {
-    images: WorkImage[];
+    images: PastWorkItem["images"];
     projectName: string;
+    projectSlug: string;
     workId: string;
     category: WorkCategory;
 }
 
-export function ProjectGallery({ images, projectName, workId, category }: ProjectGalleryProps) {
+export function ProjectGallery({ images, projectName, projectSlug, workId, category }: ProjectGalleryProps) {
     const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
     return (
         <>
-            <h3 className="text-brand-dark mb-4 text-xl font-semibold">
-                {images.length > 1 ? "Project gallery" : "Project image"}
-            </h3>
-            <div className="mx-auto max-w-md columns-1 gap-4 space-y-4 sm:max-w-3xl sm:columns-2 lg:max-w-none">
+            <h2 className="sr-only">Project photographs</h2>
+            <div className={`space-y-4 ${images.length > 1 ? "columns-1 gap-4 sm:columns-2" : ""}`}>
                 {images.map((image, index) => (
                     <figure key={image.url} className="break-inside-avoid">
                         <button
                             type="button"
+                            aria-label={`Enlarge photo ${index + 1} of ${projectName}`}
                             onClick={() => {
                                 trackViewPastWork(workId, category, "gallery");
                                 setSelectedIndex(index);
                             }}
-                            className={`relative ${getAspectRatioClass(image.orientation)} group w-full cursor-pointer overflow-hidden rounded-lg`}
+                            className={`relative ${getAspectRatioClass(image.orientation)} group w-full cursor-pointer overflow-hidden rounded-lg focus-visible:outline-white`}
                         >
                             <FallbackImage
                                 src={image.url}
                                 alt={image.alt}
                                 fill
-                                className="object-cover transition-transform duration-300 group-hover:scale-105"
-                                sizes="(max-width: 768px) 100vw, 50vw"
+                                preload={index === 0}
+                                className="object-cover motion-safe:transition-transform motion-safe:duration-300 motion-safe:group-hover:scale-105"
+                                sizes={
+                                    images.length === 1
+                                        ? "(max-width: 1024px) 100vw, 66vw"
+                                        : "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                                }
                             />
                             <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/30">
                                 <span className="font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
@@ -51,6 +56,9 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                                     </svg>
                                 </span>
                             </div>
+                            <span className="bg-brand-dark absolute right-3 bottom-3 rounded px-3 py-2 text-xs font-semibold text-white">
+                                Enlarge photo
+                            </span>
                         </button>
                         <figcaption className="sr-only">{image.alt}</figcaption>
                     </figure>
@@ -62,6 +70,7 @@ export function ProjectGallery({ images, projectName, workId, category }: Projec
                     images={images}
                     name={projectName}
                     initialIndex={selectedIndex}
+                    projectSlug={projectSlug}
                     onClose={() => setSelectedIndex(null)}
                     onView={() => trackViewPastWork(workId, category, "gallery")}
                 />

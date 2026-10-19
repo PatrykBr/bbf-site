@@ -19,6 +19,7 @@
         "test:watch": "bun test --watch",
         "test:coverage": "bun test --coverage",
         "test:integration": "bun test ./tests/contact.integration.ts",
+        "test:seo": "bun test ./tests/seo.integration.ts",
         "test:dev": "bun test ./tests/dev.integration.ts"
     },
     "dependencies": {

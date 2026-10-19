@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { contactInfo, companyInfo } from "@/lib/data/contact";
+import { contactInfo, companyInfo, phoneHref } from "@/lib/data/contact";
+import { ContactAction } from "./ContactAction";
 
 export function Footer() {
     const currentYear = new Date().getFullYear();
@@ -14,12 +15,13 @@ export function Footer() {
                             Fitted kitchens and wardrobes made to measure in South Yorkshire.
                         </p>
                         <div className="flex flex-col gap-2 text-sm text-white/70">
-                            <a
-                                href={`tel:${contactInfo.phone.replace(/\s/g, "")}`}
+                            <ContactAction
+                                method="phone"
+                                href={phoneHref}
                                 className="transition-colors hover:text-white"
                             >
                                 {contactInfo.phone}
-                            </a>
+                            </ContactAction>
                             <p>{companyInfo.location}</p>
                         </div>
                     </div>
@@ -33,22 +35,28 @@ export function Footer() {
                             <Link href="/#about" className="text-sm text-white/70 transition-colors hover:text-white">
                                 About
                             </Link>
-                            <Link href="/#work" className="text-sm text-white/70 transition-colors hover:text-white">
+                            <Link href="/work" className="text-sm text-white/70 transition-colors hover:text-white">
                                 Work
                             </Link>
-                            <Link href="/#contact" className="text-sm text-white/70 transition-colors hover:text-white">
+                            <ContactAction className="text-sm text-white/70 transition-colors hover:text-white">
                                 Contact
-                            </Link>
+                            </ContactAction>
                         </nav>
                     </div>
 
                     <div>
                         <h3 className="mb-3 text-lg font-semibold sm:mb-4">Services</h3>
                         <nav className="flex flex-col gap-2">
-                            <Link href="/#work" className="text-sm text-white/70 transition-colors hover:text-white">
+                            <Link
+                                href="/fitted-wardrobes"
+                                className="text-sm text-white/70 transition-colors hover:text-white"
+                            >
                                 Fitted wardrobes
                             </Link>
-                            <Link href="/#work" className="text-sm text-white/70 transition-colors hover:text-white">
+                            <Link
+                                href="/fitted-kitchens"
+                                className="text-sm text-white/70 transition-colors hover:text-white"
+                            >
                                 Fitted kitchens
                             </Link>
                         </nav>

@@ -26,24 +26,29 @@ body {
 
 ::-webkit-scrollbar {
     width: 8px;
+    background: var(--scrollbar-background, var(--brand-dark));
 }
 
 ::-webkit-scrollbar-track {
-    background: #f1f1f1;
+    background: var(--scrollbar-background, var(--brand-dark));
 }
 
 ::-webkit-scrollbar-thumb {
-    background: var(--brand-light);
+    background: var(--scrollbar-background, var(--brand-light));
     border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    background: var(--brand-dark);
+    background: var(--scrollbar-background, var(--brand-dark));
 }
 
 *:focus-visible {
     outline: 2px solid var(--brand-light);
     outline-offset: 2px;
+}
+
+dialog:focus-visible {
+    outline: none;
 }
 
 /* Match the overscroll background to the page sections. */
@@ -64,5 +69,137 @@ html {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+    }
+
+    .parallax-image {
+        inset: 0;
+        transform: none !important;
+    }
+}
+
+@keyframes hero-frame-open {
+    from {
+        clip-path: inset(5% 4% 5% 4% round 16px);
+        opacity: 0.7;
+    }
+    to {
+        clip-path: inset(0 round 8px);
+        opacity: 1;
+    }
+}
+
+@keyframes hero-copy-arrive {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes gallery-enter {
+    from {
+        opacity: 0.4;
+        transform: translateY(8px) scale(0.985);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes backdrop-enter {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    .hero-frame {
+        animation: hero-frame-open 1100ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .hero-title,
+    .hero-tagline,
+    .hero-actions {
+        animation: hero-copy-arrive 800ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .hero-title {
+        animation-delay: 100ms;
+    }
+
+    .hero-tagline {
+        animation-delay: 220ms;
+    }
+
+    .hero-actions {
+        animation-delay: 340ms;
+    }
+
+    .hero-action {
+        transition:
+            transform 240ms cubic-bezier(0.2, 0.7, 0.3, 1),
+            box-shadow 240ms ease,
+            background-color 240ms ease;
+    }
+
+    .hero-action:hover,
+    .hero-action:focus-visible {
+        transform: translateY(-3px);
+    }
+
+    .hero-action:active {
+        transform: translateY(0);
+    }
+
+    .modal-surface[open],
+    .gallery-photo {
+        animation: gallery-enter 240ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .modal-surface::backdrop {
+        animation: backdrop-enter 240ms ease both;
+    }
+}
+
+@keyframes project-scroll-rise {
+    from {
+        transform: translateY(18px);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+@keyframes workshop-copy-arrive {
+    from {
+        opacity: 0.2;
+        transform: translateY(24px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+        .project-scroll-card {
+            animation: project-scroll-rise linear both;
+            animation-timeline: view();
+            animation-range: entry 0% entry 100%;
+        }
+
+        .workshop-copy {
+            animation: workshop-copy-arrive linear both;
+            animation-timeline: view();
+            animation-range: entry 0% entry 65%;
+        }
     }
 }

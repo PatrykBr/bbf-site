@@ -1,15 +1,23 @@
 import { ContactInfo } from "../types";
 
-// Display phone and WhatsApp first, followed by email and Facebook.
 export const contactInfo: ContactInfo = {
     phone: "+44 7523 706742",
     email: "broncelfurniture@gmail.com",
     facebook: "https://www.facebook.com/BespokeBroncelFurniture"
 };
 
+export const phoneHref = `tel:${contactInfo.phone.replace(/\s/g, "")}`;
+export const whatsappHref = `https://wa.me/${contactInfo.phone.replace(/\D/g, "")}`;
+
 export const businessHours = {
     days: "Monday to Friday",
-    hours: "9am to 5pm"
+    hours: "9am to 5pm",
+    schema: {
+        "@type": "OpeningHoursSpecification",
+        dayOfWeek: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
+        opens: "09:00",
+        closes: "17:00"
+    }
 };
 
 export const companyInfo = {
