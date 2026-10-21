@@ -15,7 +15,7 @@ export function AboutSection() {
                 />
                 <div className="absolute inset-0 bg-black/45" />
 
-                <div className="parallax-content relative z-10 flex h-full flex-col items-center justify-center px-4 py-8 text-center text-white sm:px-8 sm:py-12">
+                <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 py-8 text-center text-white sm:px-8 sm:py-12">
                     <h2 className="mb-4 text-2xl font-bold sm:mb-6 sm:text-4xl md:text-5xl">
                         Furniture made to fit your home
                     </h2>

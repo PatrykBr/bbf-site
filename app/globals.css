@@ -177,15 +177,6 @@ html {
     }
 }
 
-@keyframes foreground-parallax {
-    from {
-        transform: translate3d(0, 40vh, 0);
-    }
-    to {
-        transform: translate3d(0, -40vh, 0);
-    }
-}
-
 @keyframes background-parallax {
     from {
         transform: translate3d(0, -14%, 0);
@@ -208,16 +199,10 @@ html {
             view-timeline-inset: 0;
         }
 
-        .parallax-content {
-            animation: foreground-parallax linear both;
-            animation-timeline: --photo-depth;
-            animation-range: cover 0% cover 100%;
-        }
-
         .parallax-image {
             animation: background-parallax linear both;
             animation-timeline: --photo-depth;
-            animation-range: cover 0% cover 100%;
+            animation-range: entry 100% exit 40%;
         }
     }
 }

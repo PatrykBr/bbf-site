@@ -27,7 +27,7 @@ const cases: { name: string; options: BrowserContextOptions; initialScroll?: num
 ];
 
 for (const { name, options, initialScroll = 0 } of cases) {
-    test(`${name} keeps the background stable through hydration and preserves scroll depth`, async () => {
+    test(`${name} keeps the photo stable during hydration and the text anchored to its frame`, async () => {
         const context = await browser.newContext(options);
         let releaseScripts = () => {};
         try {
@@ -71,7 +71,8 @@ for (const { name, options, initialScroll = 0 } of cases) {
 
             const result = await page.evaluate(async () => {
                 const image = document.querySelector<HTMLElement>("#home .parallax-image")!;
-                const copy = document.querySelector<HTMLElement>("#home .parallax-content")!;
+                const copy = document.querySelector<HTMLElement>("#home h1")!;
+                const frame = image.parentElement!;
                 let styleWrites = 0;
                 const observer = new MutationObserver(records => {
                     styleWrites += records.length;
@@ -80,15 +81,15 @@ for (const { name, options, initialScroll = 0 } of cases) {
                     observer.observe(element, { attributes: true, attributeFilter: ["style"] });
                 }
                 const samples = [];
+                const textOffsets = [];
                 let covered = true;
                 for (const y of [0, 300]) {
                     scrollTo(0, y);
                     await new Promise(requestAnimationFrame);
                     await new Promise(requestAnimationFrame);
-                    samples.push(
-                        new DOMMatrixReadOnly(getComputedStyle(image).transform).m42 -
-                            new DOMMatrixReadOnly(getComputedStyle(copy).transform).m42
-                    );
+                    const frameTop = frame.getBoundingClientRect().top;
+                    samples.push(image.getBoundingClientRect().top - frameTop);
+                    textOffsets.push(copy.getBoundingClientRect().top - frameTop);
                     for (const photo of document.querySelectorAll(".parallax-image")) {
                         const frame = photo.parentElement!.getBoundingClientRect();
                         const bounds = photo.getBoundingClientRect();
@@ -102,6 +103,7 @@ for (const { name, options, initialScroll = 0 } of cases) {
                 observer.disconnect();
                 return {
                     travel: samples[1] - samples[0],
+                    textDrift: Math.abs(textOffsets[1] - textOffsets[0]),
                     styleWrites,
                     covered,
                     imageWidth: image.querySelector("img")!.naturalWidth,
@@ -109,11 +111,12 @@ for (const { name, options, initialScroll = 0 } of cases) {
                 };
             });
             assert.equal(result.styleWrites, 0, "Scrolling must not update layer styles through JavaScript");
+            assert.ok(result.textDrift < 0.5, "The text must stay anchored to its container during scrolling");
             assert.ok(result.imageWidth >= 1743, "The hero must retain its source resolution");
             assert.ok(result.covered, "The photographs must cover their frames throughout the effect");
             assert.ok(!result.overflow, "The layers must stay inside the viewport");
             if (options.reducedMotion === "reduce") assert.equal(result.travel, 0);
-            else assert.ok(result.travel > 180, "The photo and text must visibly separate during scrolling");
+            else assert.ok(result.travel > 100, "The photo must visibly move within its container during scrolling");
             assert.deepEqual(errors, []);
         } finally {
             releaseScripts();
