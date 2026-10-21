@@ -31,12 +31,14 @@ Visit [broncelfurniture.com](https://www.broncelfurniture.com).
 
 - Next.js 16.4 and React 19.3 render the site.
 - Bun 1.4.3 installs dependencies, runs scripts, checks types and runs tests.
-- Tailwind CSS 4.3 supplies styles. Motion handles scroll-linked photograph movement. CSS animates the hero entrance and gallery transitions. Reduced-motion settings keep photographs still and disable entrance animations.
+- Tailwind CSS 4.3 supplies styles. Motion handles scroll-linked photograph movement. CSS animates foreground depth, the hero entrance and gallery transitions. Reduced-motion settings keep photographs and foreground text still and disable entrance animations.
 - Resend sends contact emails. PostHog provides optional analytics.
 - Turso stores the shared contact form rate limit.
 - ESLint checks code, and Prettier formats it.
 
 Edit portfolio content in `lib/data/past-work.ts` and business details in `lib/data/contact.ts`.
+
+The hero serves its original 1743×1001 WebP, about 54 KB, to avoid another lossy resize. A static import gives it a versioned URL for long-term caching. Other photographs use responsive image variants. Parallax moves the photograph and text at different speeds without scrolling zoom. Photo frames use `overflow-clip` so native scroll timelines follow the page rather than a nested scroll container.
 
 ## Local development
 

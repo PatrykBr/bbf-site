@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ContactAction } from "./ContactAction";
 import { ParallaxImage } from "./ParallaxImage";
 import { companyInfo } from "@/lib/data/contact";
+import heroImage from "@/public/hero-bg.webp";
 
 export function Hero() {
     return (
@@ -9,11 +10,16 @@ export function Hero() {
             id="home"
             className="bg-brand-dark relative flex min-h-screen flex-col items-center justify-center px-2 pt-20 pb-8 sm:px-8 sm:pt-24 sm:pb-16 lg:px-16"
         >
-            <div className="hero-frame relative w-full overflow-clip rounded-lg">
-                <ParallaxImage src="/hero-bg.webp" alt="Custom furniture by Bespoke Broncel Furniture" preload />
+            <div className="parallax-frame hero-frame relative w-full overflow-clip rounded-lg">
+                <ParallaxImage
+                    src={heroImage}
+                    alt="Custom furniture by Bespoke Broncel Furniture"
+                    preload
+                    unoptimized
+                />
                 <div className="absolute inset-0 bg-black/35" />
 
-                <div className="relative z-10 px-4 py-35 text-center text-white sm:px-8 sm:py-32 md:py-40 lg:py-48">
+                <div className="parallax-content relative z-10 px-4 py-35 text-center text-white sm:px-8 sm:py-32 md:py-40 lg:py-48">
                     <h1 className="hero-title mb-6 text-4xl leading-tight font-bold sm:text-5xl md:text-7xl">
                         {companyInfo.name}
                     </h1>

@@ -177,14 +177,12 @@ html {
     }
 }
 
-@keyframes workshop-copy-arrive {
+@keyframes foreground-parallax {
     from {
-        opacity: 0.2;
-        transform: translateY(24px);
+        transform: translate3d(0, 20vh, 0);
     }
     to {
-        opacity: 1;
-        transform: translateY(0);
+        transform: translate3d(0, -20vh, 0);
     }
 }
 
@@ -196,10 +194,15 @@ html {
             animation-range: entry 0% entry 100%;
         }
 
-        .workshop-copy {
-            animation: workshop-copy-arrive linear both;
-            animation-timeline: view();
-            animation-range: entry 0% entry 65%;
+        .parallax-frame {
+            view-timeline: --photo-depth block;
+            view-timeline-inset: 0;
+        }
+
+        .parallax-content {
+            animation: foreground-parallax linear both;
+            animation-timeline: --photo-depth;
+            animation-range: cover 0% cover 100%;
         }
     }
 }

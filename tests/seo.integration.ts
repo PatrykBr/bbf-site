@@ -119,6 +119,23 @@ test("project breadcrumbs link real pages and business data uses only the public
     assert.ok(business && !("address" in business));
 });
 
+test("the hero preloads its original image within a 60 KB transfer budget", async () => {
+    const { html } = await page("/");
+    const imageSource = html.match(/<img\b[^>]*src="([^"]*hero-bg[^"]*\.webp)"[^>]*>/)?.[1];
+    assert.ok(imageSource, "The hero must serve its source image rather than a smaller resized variant");
+    const preloads = [...html.matchAll(/<link\b[^>]*>/g)]
+        .map(match => match[0])
+        .filter(link => link.includes('rel="preload"') && link.includes('as="image"'));
+    assert.equal(preloads.filter(link => link.includes(`href="${imageSource}"`)).length, 1);
+    assert.ok(!preloads.some(link => link.includes("%2Fhero-bg.webp")));
+
+    const response = await fetch(new URL(imageSource, site.url));
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get("content-type") ?? "", /image\/webp/);
+    assert.ok(response.headers.get("cache-control")?.includes("immutable"));
+    assert.ok((await response.arrayBuffer()).byteLength <= 60_000);
+});
+
 test("missing projects return 404 and noindex without a homepage canonical", async () => {
     const { response, html } = await page("/work/missing-seo-test-project");
     assert.equal(response.status, 404);
