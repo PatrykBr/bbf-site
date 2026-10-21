@@ -106,7 +106,7 @@ export function ContactSection() {
                                 </ContactAction>
                             ))}
                         </div>
-                        <div className="relative mt-7 flex h-32 items-center justify-center overflow-clip rounded-xl sm:h-40">
+                        <div className="parallax-frame relative mt-7 flex h-32 items-center justify-center overflow-clip rounded-xl sm:h-40">
                             <ParallaxImage
                                 src="/contact-bg.webp"
                                 alt="Furniture workshop"

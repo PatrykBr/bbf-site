@@ -31,14 +31,14 @@ Visit [broncelfurniture.com](https://www.broncelfurniture.com).
 
 - Next.js 16.4 and React 19.3 render the site.
 - Bun 1.4.3 installs dependencies, runs scripts, checks types and runs tests.
-- Tailwind CSS 4.3 supplies styles. Motion handles scroll-linked photograph movement. CSS animates foreground depth, the hero entrance and gallery transitions. Reduced-motion settings keep photographs and foreground text still and disable entrance animations.
+- Tailwind CSS 4.3 supplies styles. CSS animates scroll-linked photograph and text movement, the hero entrance and gallery transitions. Reduced-motion settings keep photographs and foreground text still and disable entrance animations.
 - Resend sends contact emails. PostHog provides optional analytics.
 - Turso stores the shared contact form rate limit.
 - ESLint checks code, and Prettier formats it.
 
 Edit portfolio content in `lib/data/past-work.ts` and business details in `lib/data/contact.ts`.
 
-The hero serves its original 1743×1001 WebP, about 54 KB, to avoid another lossy resize. A static import gives it a versioned URL for long-term caching. Other photographs use responsive image variants. Parallax moves the photograph and text at different speeds without scrolling zoom. Photo frames use `overflow-clip` so native scroll timelines follow the page rather than a nested scroll container.
+The hero serves its original 1743×1001 WebP, about 54 KB, to avoid another lossy resize. A static import gives it a versioned URL for long-term caching. Other photographs use responsive image variants. Parallax moves the photograph and text at different speeds without scrolling zoom. Both use CSS scroll timelines from the first render, so hydration does not reposition the photograph. Photo frames use `overflow-clip` so timelines follow the page rather than a nested scroll container. Browsers without scroll-timeline support show static photographs.
 
 ## Local development
 
@@ -63,6 +63,7 @@ bun run build
 bun run start            # Serve the production build with Bun.
 bun run test:integration # Build first. The tests use a local email server.
 bun run test:seo         # Check metadata, page structure and project links in the production build.
+bun run test:browser     # Build first. Requires Google Chrome. Check loading and parallax in a browser.
 bun run test:dev         # Check development pages and generated CSS.
 bun run test:watch       # Rerun unit tests when files change.
 bun run test:coverage    # Print coverage and write coverage/lcov.info.
@@ -71,6 +72,8 @@ bun run test:coverage    # Print coverage and write coverage/lcov.info.
 Tests use `bun:test`. Bun mocks the clock, checks image files and runs the integration servers. `bun test` finds unit tests under `tests/`. Run the three `*.integration.ts` suites through their named scripts. Each suite stops its servers when it finishes. Contact tests use a local email server and do not send emails through Resend.
 
 The development test starts its own server. If a dev server is already running, set `TEST_DEV_URL` to its URL to test it without starting or stopping another server.
+
+`bun run test:browser` checks the background before and after delayed hydration, scroll depth, image resolution and reduced motion on desktop and mobile layouts. It uses the installed Google Chrome through Playwright Core and starts its own production server.
 
 `bun run typecheck` generates Next.js route types, then runs Bun's built-in TypeScript 7 checker with `bun --check`. Links use typed routes, and project pages use the generated `PageProps` type. Next.js also checks types during the production build.
 
